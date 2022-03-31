@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Revica"
+abstract: Revica is a bioinformatics pipeline for reference-based viral consensus genome assembly
+authors:
+  - family-names: Sereewit
+    given-names: Jaydee
+    orcid: https://orcid.org/0000-0002-7937-6398
+  - family-names: Greninger
+    given-names: Alexander 
+    orcid: https://orcid.org/0000-0002-7443-0527
+version: 1.0
+date-released: 2022-03-21
+repository-code: https://github.com/greninger-lab/revica
