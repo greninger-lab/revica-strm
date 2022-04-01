@@ -41,7 +41,7 @@ Valid command line arguments:
 	no arguments			Displays help message
 
 ## Usage notes
-- If you are using Docker on Linux, check these [post-installation steps] (especially cgroup swap limit capabilities support) for configuring Linux to work better with Docker. 
+- If you are using Docker on Linux, check these [post-installation steps](https://docs.docker.com/engine/install/linux-postinstall/) (especially cgroup swap limit capabilities support) for configuring Linux to work better with Docker. 
 - By default, Docker has full access to full RAM and CPU resources of the host. However, if you have Docker Desktop installed, go to Settings -> Resources to make sure enough resources (>4 cpus & >4 GB RAM) are allocated to docker containers. 
 - More (or less) RAM and CPU sources can be allocated to each process in the pipeline by modifying the `nextflow.config` file.
 - You can use your own reference(s) for consensus genome assembly instead of using our curated database by specifying the `--ref_xx` (where xx is one of the supported viruses) parameter followed by your fasta file. 
