@@ -41,16 +41,19 @@ Valid command line arguments:
 	no arguments			Displays help message
 
 ## Usage notes
+- If you are using Docker on Linux, check these [post-installation steps] (especially cgroup swap limit capabilities support) for configuring Linux to work better with Docker. 
 - By default, Docker has full access to full RAM and CPU resources of the host. However, if you have Docker Desktop installed, go to Settings -> Resources to make sure enough resources (>4 cpus & >4 GB RAM) are allocated to docker containers. 
 - More (or less) RAM and CPU sources can be allocated to each process in the pipeline by modifying the `nextflow.config` file.
 - You can use your own reference(s) for consensus genome assembly instead of using our curated database by specifying the `--ref_xx` (where xx is one of the supported viruses) parameter followed by your fasta file. 
 - Nextflow processes run in separate folders in the `work` directory. This is where you can inspect all the generated files of each process for each input. 
 - The `work` directory can take up a lot of space, routinely clean them up if you are done with your analysis. 
 - Some Nextflow tips:
-	- use `git pull greninger-lab/revica` to download or update to the latest Revica release
 	- if you have Revica downloaded locally, you can run the pipeline using the following command
-	`nextflow run PIPELINE_DIRECTORY_PATH/main.nf`
+	`nextflow run pipeline_dir_path/main.nf`
+	- use `nextflow pull greninger-lab/revica` to download or update to the latest Revica release
 	- use `-resume` to resume a run; this requires the `work` directory
+	- use `-profile` to select differernt configurations in the `nextflow.config` file
+	- use `-r` to specify different github revisions, branches, and releases
 	- use `nextflow log <run name> option` to show [information about pipeline execution](https://www.nextflow.io/docs/latest/tracing.html)
 	- use `-with-report` to generate a [resource usage metrics](https://www.nextflow.io/docs/latest/metrics.html) file
 

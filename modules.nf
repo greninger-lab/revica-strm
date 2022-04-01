@@ -19,9 +19,11 @@ process Trimming_SE {
     script:
     """
     #!/bin/bash
+
     base=\$(basename ${R1} ".fastq.gz")
     trimmomatic SE -threads ${task.cpus} ${R1} \$base.trimmed.fastq.gz \
     ILLUMINACLIP:${ADAPTERS}:${SETTING} LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} 
+
     """
 }
 
@@ -70,6 +72,7 @@ process Aligning_SE {
     head -1 ${base}_map_all_bbmap_covstats.txt > ${base}_map_all_bbmap_covstats.temp.txt
     awk 'NR>1' < ${base}_map_all_bbmap_covstats.txt | sort -nrk10 >> ${base}_map_all_bbmap_covstats.temp.txt
     mv ${base}_map_all_bbmap_covstats.temp.txt ${base}_map_all_bbmap_covstats.txt
+
     """
 }
 
@@ -90,6 +93,8 @@ process Viral_Identification {
 
     script:
     """
+    #!/bin/bash
+
     # find viral reference (-m minimum median_fold stats in bbmap covstats output for a virus to be identified, default 5)
     python3 $workflow.projectDir/bin/viral_identification.py \\
 	-bbmap_covstats ${base}_map_all_bbmap_covstats.txt \\
@@ -100,6 +105,7 @@ process Viral_Identification {
 	-hrsv_id hrsv_ids.txt \\
 	-hpiv_id hpiv_ids.txt \\
 	-m 5 
+
     """
 }
 
@@ -122,12 +128,15 @@ process Consensus_Generation_Prep_SE {
 
     script:
     """
+    #!/bin/bash
+
     base=\$(head -1 *_vid.txt | awk -F '\t' '{print \$1}')
     ref_id=\$(head -1 *_vid.txt | awk -F '\t' '{print \$2}')
     ref_sp=\$(head -1 *_vid.txt | awk -F '\t' '{print \$3}')
 
     cat ${Reference_rv} ${Reference_hcov} ${Reference_hmpv} ${Reference_hrsv} ${Reference_hpiv} > all_ref.fa
     samtools faidx all_ref.fa \$ref_id > \$base'_'\$ref_id'_'\$ref_sp'.fa'     
+
     """
 }
 
@@ -148,6 +157,8 @@ process Consensus_Generation_SE {
 
     script:
     """
+    #!/bin/bash
+
     # find real absolute path of outdir
     process_work_dir=\$PWD
     cd $workflow.launchDir
@@ -291,6 +302,7 @@ process Consensus_Generation_SE {
 	local=true interleaved=false maxindel=\$maxindel_num -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_sp}_mapf_stats.txt 2>&1
     samtools view -S -b -F 4 ${base}_${ref_id}_${ref_sp}_mapf.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_sp}_mapf.sorted.bam
     rm ${base}_${ref_id}_${ref_sp}_mapf.sam
+
     """
 }
 
@@ -326,6 +338,7 @@ process Serotyping {
 
     serotype=\$(awk 'FNR==1{print val,\$2}' ${base}_${ref_id}_${ref_sp}_blast_output.txt | cut -d "_" -f2- | cut -d "/" -f2-)
     echo \$serotype > ${base}_${ref_id}_${ref_sp}_serotype.txt
+
     """
 }
 
@@ -380,6 +393,7 @@ process Summary_Generation {
     serotype=\$(awk 'FNR==1{print \$1}' \${outdir_realpath}/serotype/${base}_${ref_id}_${ref_sp}_serotype.txt)
 
     printf "${base},\$num_untrimmed,\$num_trimmed,\$percent_trimmed,${ref_id},${ref_sp},\$mapped_reads,\$percent_mapped_reads,\$ref_length,\$ref_coverage,\$median_fold,\$consensus_length,\$num_ns,\$percent_n,\$serotype" >> ${base}_${ref_id}_${ref_sp}_summary.csv
+
     """
 }
 
@@ -425,8 +439,10 @@ process Trimming_PE {
     script:
     """
     #!/bin/bash
+
     trimmomatic PE -threads ${task.cpus} ${R1} ${R2} ${base}.R1.paired.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}.R2.paired.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
     ILLUMINACLIP:${ADAPTERS}:${SETTING} LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN}
+
     """
 }
 
@@ -476,6 +492,7 @@ process Aligning_PE {
     head -1 ${base}_map_all_bbmap_covstats.txt > ${base}_map_all_bbmap_covstats.temp.txt
     awk 'NR>1' < ${base}_map_all_bbmap_covstats.txt | sort -nrk10 >> ${base}_map_all_bbmap_covstats.temp.txt
     mv ${base}_map_all_bbmap_covstats.temp.txt ${base}_map_all_bbmap_covstats.txt
+
     """
 }
 
@@ -498,12 +515,15 @@ process Consensus_Generation_Prep_PE {
 
     script:
     """
+    #!/bin/bash
+
     base=\$(head -1 *_vid.txt | awk '{print \$1}')
     ref_id=\$(head -1 *_vid.txt | awk '{print \$2}')
     ref_sp=\$(head -1 *_vid.txt | awk '{print \$3}')
 
     cat ${Reference_rv} ${Reference_hcov} ${Reference_hmpv} ${Reference_hrsv} ${Reference_hpiv} > all_ref.fa
     samtools faidx all_ref.fa \$ref_id > \$base'_'\$ref_id'_'\$ref_sp'.fa'     
+
     """
 }
 
@@ -524,6 +544,7 @@ process Consensus_Generation_PE {
 
     script:
     """
+    #!/bin/bash
 
     # find real absolute path of outdir
     process_work_dir=\$PWD
@@ -670,5 +691,6 @@ process Consensus_Generation_PE {
 	local=true interleaved=false maxindel=\$maxindel_num -Xmx${task.memory.giga}g > ${base}_mapf_stats.txt 2>&1
     samtools view -S -b -F 4 ${base}_${ref_id}_${ref_sp}_mapf.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_sp}_mapf.sorted.bam
     rm ${base}_${ref_id}_${ref_sp}_mapf.sam
+
     """
 }
