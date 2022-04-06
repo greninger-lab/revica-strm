@@ -2,7 +2,7 @@
 
 /*
 ========================================================================================
-                    		   REVICA v1.0
+                    		   REVICA v1.1
 ========================================================================================
 Github Repo:
 https://github.com/greninger-lab/revica
@@ -13,13 +13,13 @@ Alex L Greninger <agrening@uw.edu>
 UW Medicine | Virology
 Department of Laboratory Medicine and Pathology
 University of Washington
-Updated: March 30, 2022
-Revision: v1.0	
+Updated: April 6, 2022
+Revision: v1.1	
 LICENSE: GNU
 ----------------------------------------------------------------------------------------
 */
 // Pipeline version
-version = '1.0'
+version = '1.1'
 // Setup pipeline help msg
 def help() {
     log.info"""
@@ -29,23 +29,20 @@ def help() {
     
 	Pipeline Usage:
 	Natively
-	nextflow run greninger-lab/revica -r main --reads input_fastq.gz_path --outdir output_dir_path
-	or with Docker (easy but slower than running natively):
-	nextflow run greninger-lab/revica -r main --reads input_fastq.gz_path --outdir output_dir_path -with-docker greningerlab/revica
+	nextflow run greninger-lab/revica -r main --reads input_fastq/fastq.gz_dir_path --outdir output_dir_path
+	or with Docker:
+	nextflow run greninger-lab/revica -r main --reads input_fastq/fastq.gz_dir_path --outdir output_dir_path -with-docker greningerlab/revica
 
 
     Valid CLI Arguments:
     REQUIRED:
-	--reads			Input fastq.gz path
+	--reads			Input fastq or fastq.gz directory path
 	--outdir		Output directory path
     OPTIONAL:
-	--pe			Specifies that the input fastq files are paired-end reads
+	--pe			For paired-end reads (default: single-end)
+	--ref			Overwrite reference file
+	--m			The median coverage threshold for the initial reference to be considered (default 5)
 	--deduplicate		Get rid of duplicated reads before consensus genome assembly
-	--ref_rv		Overwrite set multifasta rhinovirus reference file
-	--ref_hcov		Overwrite set multifasta human coronavirus reference file
-	--ref_hmpv		Overwrite set multifasta human metapneumovirus reference file
-	--ref_hrsv		Overwrite set multifasta human respiratory syncytial virus reference file
-	--ref_hpiv		Overwrite set multifasta human parainfluenza virus reference file
 	--help			Displays help message in terminal
     """
 }
@@ -56,11 +53,8 @@ params.reads = false
 params.outdir = false
 params.pe = false
 params.deduplicate = false
-params.ref_rv = false
-params.ref_hcov = false
-params.ref_hmpv = false
-params.ref_hrsv = false
-params.ref_hpiv = false
+params.ref = false
+params.m=5
 
 // Check Nextflow version for enabling DSL2
 nextflow_dsl2_v = '20.07.1'
@@ -70,6 +64,11 @@ if ( nextflow.version.matches(">= $nextflow_dsl2_v") ) {
     nextflow.preview.dsl=2
 }
 
+// Set color to red on default background
+def fg = 31
+def bg = 49
+def color = "${(char)27}[$fg;$bg"+"m"
+
 // Show help msg if --help parameter is set or if reads AND outdir are not specified
 if (params.help == true || (params.reads == false && params.outdir == false)){
     help()
@@ -78,47 +77,23 @@ if (params.help == true || (params.reads == false && params.outdir == false)){
 
 // if INPUT not set
 if (params.reads == false) {
-    println( "Please provide input fastq.gz path with --reads") 
+    println(color+"Please provide input fastq.gz path with --reads") 
     exit(1)
 }
 
 // if OUTDIR not set
 if (params.outdir == false) {
-    println( "Please provide output directory path with --outdir") 
+    println(color+"Please provide output directory path with --outdir") 
     exit(1)
 }
 
-// Setup MULTIFASTA Reference file paths for OPTIONAL-override of set file paths.
-// Rhinovirus
-if(params.ref_rv != false) {
-    Reference_rv = file(params.ref_rv)
+// Setup MULTIFASTA Reference file path for OPTIONAL-override of set file path.
+if(params.ref != false) {
+    ref = file(params.ref)
 } else {
-Reference_rv=file("${baseDir}/ref/hrv_ref_rv.fa")
+    ref = file("${baseDir}/ref/ref.fa")
 }
-// Human Coronavirus
-if(params.ref_hcov != false) {
-    Reference_hcov = file(params.ref_hcov)
-} else {
-Reference_hcov=file("${baseDir}/ref/hrv_ref_hcov.fa")
-}
-// Human metapneumovirus 
-if(params.ref_hmpv != false) {
-    Reference_hmpv = file(params.ref_hmpv)
-} else {
-Reference_hmpv=file("${baseDir}/ref/hrv_ref_hmpv.fa")
-}
-// Human respiratory syncytial virus 
-if(params.ref_hrsv != false) {
-    Reference_hrsv = file(params.ref_hrsv)
-} else {
-Reference_hrsv=file("${baseDir}/ref/hrv_ref_hrsv.fa")
-}
-// Human parainfluenza virus 
-if(params.ref_hpiv != false) {
-    Reference_hpiv = file(params.ref_hpiv)
-} else {
-Reference_hpiv=file("${baseDir}/ref/hrv_ref_hpiv.fa")
-}
+
 // Adapters file path
 ADAPTERS = file("${baseDir}/adapters/adapters.fa")
 
@@ -128,13 +103,6 @@ params.LEADING = "3"
 params.TRAILING = "3"
 params.SWINDOW = "4:20"
 params.MINLEN = "35"
-
-// bbmap maxindel for different viruses
-params.rv_maxindel = 9
-params.hcov_maxindel = 18
-params.hrsv_maxindel = 60
-params.hmpv_maxindel = 40
-params.default_maxindel = 80
 
 // Setup Blast database for serotyping
 // All BLAST db files for respiratory viruses recognized by this pipeline including:
@@ -198,14 +166,14 @@ include { Final_Processing } from './modules.nf'
 if(params.pe == false) {
     // Looks for gzipped files, assumes all separate samples
     input_read_ch = Channel
-        .fromPath("${params.reads}/*.gz")
-        .ifEmpty { error "Cannot find any FASTQ in ${params.reads} ending with .gz" }
+        .fromPath("${params.reads}/*{.fastq.gz,.fastq}")
+        .ifEmpty { error "Cannot find any FASTQ in ${params.reads} ending with fastq or fastq.gz" }
         .map { it -> file(it)}
 } else {
     // Check for R1s and R2s in input directory
     input_read_ch = Channel
-        .fromFilePairs("${params.reads}/*_R{1,2}*.gz")
-        .ifEmpty { error "Cannot find any FASTQ pairs in ${params.reads} ending with .gz" }
+        .fromFilePairs("${params.reads}/*_{R1,R2,1,2}*{.fastq.gz,.fastq}")
+        .ifEmpty { error "Cannot find any FASTQ pairs in ${params.reads} ending with fastq or fastq.gz" }
         .map { it -> [it[0], it[1][0], it[1][1]]}
 }
 
@@ -232,25 +200,17 @@ workflow {
 
         Aligning_SE (
             Trimming_SE.out[0],
-            Reference_rv,
-            Reference_hcov, 
-	    Reference_hmpv,
-	    Reference_hrsv,
-	    Reference_hpiv
+	    ref
 	)
 
 	Viral_Identification (
 	    Aligning_SE.out[0],
-	    Aligning_SE.out[1]
+	    ref
 	)
 
 	Consensus_Generation_Prep_SE (
 	    Viral_Identification.out[0].flatten(),
-	    Reference_rv,
-	    Reference_hcov,
-	    Reference_hmpv,
-	    Reference_hrsv,
-	    Reference_hpiv
+	    ref
 	)
 
         Consensus_Generation_SE (Consensus_Generation_Prep_SE.out[0])
@@ -287,25 +247,17 @@ workflow {
 
         Aligning_PE (
             Trimming_PE.out[0],
-            Reference_rv,
-            Reference_hcov, 
-	    Reference_hmpv,
-	    Reference_hrsv,
-	    Reference_hpiv
+	    ref
 	)
 
 	Viral_Identification (
 	    Aligning_PE.out[0],
-	    Aligning_PE.out[1]
+	    ref
 	)
 
 	Consensus_Generation_Prep_PE (
 	    Viral_Identification.out[0].flatten(),
-	    Reference_rv,
-	    Reference_hcov,
-	    Reference_hmpv,
-	    Reference_hrsv,
-	    Reference_hpiv
+	    ref
 	)
 
         Consensus_Generation_PE (Consensus_Generation_Prep_PE.out[0])
