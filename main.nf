@@ -2,7 +2,7 @@
 
 /*
 ========================================================================================
-                    		   REVICA v1.1
+                    		   REVICA v1.2
 ========================================================================================
 Github Repo:
 https://github.com/greninger-lab/revica
@@ -13,13 +13,12 @@ Alex L Greninger <agrening@uw.edu>
 UW Medicine | Virology
 Department of Laboratory Medicine and Pathology
 University of Washington
-Updated: April 6, 2022
-Revision: v1.1	
+Updated: April 13, 2022
 LICENSE: GNU
 ----------------------------------------------------------------------------------------
 */
 // Pipeline version
-version = '1.1'
+version = '1.2'
 // Setup pipeline help msg
 def help() {
     log.info"""

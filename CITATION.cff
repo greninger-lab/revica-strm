@@ -9,6 +9,6 @@ authors:
   - family-names: Greninger
     given-names: Alexander 
     orcid: https://orcid.org/0000-0002-7443-0527
-version: 1.1
-date-released: 2022-04-06
+version: 1.2
+date-released: 2022-04-13
 repository-code: https://github.com/greninger-lab/revica

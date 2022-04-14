@@ -1,6 +1,6 @@
 # REVICA
 
-Revica is a reference-based viral consensus genome assembly pipeline written in [Nextflow](https://www.nextflow.io/). For ease of use, Revica can be run in [Docker](https://docs.docker.com/get-docker/). Revica currently supports consensus genome assembly of rhinovirus (RV), human coronavirus (HCOV), human metapneumovirus (HMPV), human respiratory syncytial virus (HRSV), human parainfluenza virus (HPIV), and Measles morbillivirus (MeV). 
+Revica is a reference-based viral consensus genome assembly pipeline written in [Nextflow](https://www.nextflow.io/). For ease of use, Revica can be run in [Docker](https://docs.docker.com/get-docker/). Revica currently supports consensus genome assembly of rhinovirus (RV), human coronavirus (HCOV), human metapneumovirus (HMPV), human respiratory syncytial virus (HRSV), human parainfluenza virus (HPIV), Measles morbillivirus (MeV), Influenza A virus (IAV), and Influenza B virus (IBV).
 
 ## Methods
 Revica consists of the following processes:
@@ -36,12 +36,11 @@ Valid command line arguments:
 	--help				Displays help message
 
 ## Usage notes
-- You can use your own reference(s) for consensus genome assembly instead of using our curated database by specifying the `--ref` parameter followed by your fasta file. 
-	- it's important to tag the fasta sequences of the same species with the same name or abbreviation in the header section, otherwise the pipeline
-	will mistaken references for the the same species but with different accessions as coinfection/multiple infection and generate a consensus
-	genome for every reference where the median coverage of the first alignment exceed the specified threshold (default 5).  
-	- if you would like to use Revica for a virus not listed, give it a try by supplying a fasta file of reference(s). For segmented viral genomes,
-	you could try running individual segments at a time. (Serotype can't be determined for viruses not listed)
+- You can use your own reference(s) for consensus genome assembly by specifying the `--ref` parameter followed by your fasta file. 
+	- reference header format: `>reference_accession reference_tag reference_header_info`
+	- it's important to tag the fasta sequences for the same species or gene segments with the same name or abbreviation in the header section, otherwise the pipeline
+	will generate a consensus genome for every reference where the median coverage of the first alignment exceed the specified threshold (default 5).  
+	- Revica works with segmented viral genomes, just keep the different gene segments separated and tag them in the reference fasta file (Serotype can't be determined for viruses not listed)
 - If you are using Docker on Linux, check these [post-installation steps](https://docs.docker.com/engine/install/linux-postinstall/) (especially cgroup swap limit capabilities support) for configuring Linux to work better with Docker. 
 - By default, Docker has full access to full RAM and CPU resources of the host. However, if you have Docker Desktop installed, go to Settings -> Resources to make sure enough resources (>4 cpus & >4 GB RAM) are allocated to docker containers. 
 - More (or less) RAM and CPU sources can be allocated to each process in the pipeline by modifying the `nextflow.config` file.
@@ -50,25 +49,25 @@ Valid command line arguments:
 - Some Nextflow tips:
 	- if you have Revica downloaded locally, you can run the pipeline using the following command
 	`nextflow run pipeline_dir_path/main.nf`
-	- use `nextflow pull greninger-lab/revica` to download or update to the latest Revica release
+	- use `nextflow pull greninger-lab/revica -r main` to download or update Revica from Github
+	- use `-r` to specify different github revisions, branches, and releases
 	- use `-resume` to resume a run; this requires the `work` directory
 	- use `-profile` to select differernt configurations in the `nextflow.config` file
-	- use `-r` to specify different github revisions, branches, and releases
 	- use `nextflow log <run name> option` to show [information about pipeline execution](https://www.nextflow.io/docs/latest/tracing.html)
 	- use `-with-report` to see [resource usage metrics](https://www.nextflow.io/docs/latest/metrics.html)
 
 
 ## Output notes
-- The names of the output files are prefixed with `base_refid_refsp` where
-	- base: the base name of the input fastq.gz file
+- The names of the output files are prefixed with `base_refid_reftag` where
+	- base: the base name of the input fastq/fastq.gz file
 	- refid: the accession number of the reference
-	- refsp: the abbreviated name of reference species
+	- reftag: the tag/abbreviated name of the reference
 - Consensus genomes are in the `consensus_final` folder.
 - Sorted bam files of trimmed reads to consensus genome are in the `consensus_final_bam_sorted` folder.
 - The references used for consensus genome assembly are in the `ref_genome` folder.
 - Sorted bam files of trimmed reads to their references are in the `map_ref_bam_sorted` folder.
-- Samples with failed assembly are in the `failed_assembly` folder. These samples have less then 5 median coverage to the initial reference. 
-- Statistics are in the `run_summary` folder.
+- Samples with failed assembly and their alignment stats are in the `failed_assembly` folder. 
+- Pipeline run stats are in `run_summary.txt`.
 
 ## Docker
 Pull the docker image (255MB) that has all the dependencies from Docker Hub using the following command
