@@ -352,7 +352,7 @@ process Summary_Generation {
     cd \$process_work_dir
  
     # summary header
-    echo "sample name\traw reads/pairs\tsurviving reads/pairs\treference accession\treference tag\treference header\treference length\t%ref_Coverage\tmedian coverage\tconsensus length\tmapped reads\t%reads on target\tnum Ns\t%N\tserotype" > ${base}_${ref_id}_${ref_tag}_summary.txt
+    echo "sample name\traw reads/pairs\tsurviving reads/pairs\treference accession\treference tag\treference header\treference length\t%ref coverage\tmedian coverage\tconsensus length\tmapped reads\t%reads on target\tnum Ns\t%N\tserotype" > ${base}_${ref_id}_${ref_tag}_summary.txt
 
     # get the number of total reads/pairs and suviving reads/pairs
     num_untrimmed=\$(cat \${outdir_realpath}/trim_stats/${base}_trim_stats.txt | grep "Input Read" | cut -d ":" -f2 | awk '{print \$1}')
@@ -415,7 +415,7 @@ process Final_Processing {
     #!/bin/bash
 
 
-    echo "sample name\traw reads/pairs\tsurviving reads/pairs\treference accession\treference tag\treference header\treference length\t%ref_Coverage\tmedian coverage\tconsensus length\tmapped reads\t%reads on target\tnum Ns\t%N\tserotype" > summary.txt
+    echo "sample name\traw reads/pairs\tsurviving reads/pairs\treference accession\treference tag\treference header\treference length\t%ref ctrimmed_fastqsoverage\tmedian coverage\tconsensus length\tmapped reads\t%reads on target\tnum Ns\t%N\tserotype" > summary.txt
     awk '(NR == 2) || (FNR > 1)' *_summary.txt >> summary.txt 
     head -1 summary.txt > run_summary.txt
     awk 'NR>1' < summary.txt | sort -k1 >> run_summary.txt
