@@ -147,8 +147,14 @@ process Consensus_Generation_SE {
     """
     #!/bin/bash
 
+    # find real absolute path of outdir
+    process_work_dir=\$PWD
+    cd $workflow.launchDir
+    outdir_realpath=\$(realpath ${params.outdir})
+    cd \$process_work_dir
+
     # get trimmed reads
-    cp ${workflow.launchDir}/${params.outdir}/trimmed_fastqs/${base}.trimmed.fastq.gz ${base}.trimmed.fastq.gz
+    cp \${outdir_realpath}/trimmed_fastqs/${base}.trimmed.fastq.gz ${base}.trimmed.fastq.gz
 
     # Map the reads to the reference
     bbmap.sh \\
@@ -339,28 +345,34 @@ process Summary_Generation {
     """
     #!/bin/bash
  
+    # find real absolute path of outdir
+    process_work_dir=\$PWD
+    cd $workflow.launchDir
+    outdir_realpath=\$(realpath ${params.outdir})
+    cd \$process_work_dir
+
     # summary header
     echo "sample name\traw reads/pairs\tsurviving reads/pairs\treference accession\treference tag\treference header\treference length\treference num Ns\t%ref coverage\tmedian coverage\tconsensus length\tmapped reads\t%reads on target\tnum Ns\t%N\tserotype" > ${base}_${ref_id}_${ref_tag}_summary.txt
 
     # get the number of total reads/pairs and suviving reads/pairs
-    num_untrimmed=\$(cat ${workflow.launchDir}/${params.outdir}/trim_stats/${base}_trim_stats.txt | grep "Input Read" | cut -d ":" -f2 | awk '{print \$1}')
-    num_trimmed_pct=\$(cat ${workflow.launchDir}/${params.outdir}/trim_stats/${base}_trim_stats.txt | grep "Input Read" | cut -d ":" -f3 | awk '{print \$1, \$2}')
+    num_untrimmed=\$(cat \${outdir_realpath}/trim_stats/${base}_trim_stats.txt | grep "Input Read" | cut -d ":" -f2 | awk '{print \$1}')
+    num_trimmed_pct=\$(cat \${outdir_realpath}/trim_stats/${base}_trim_stats.txt | grep "Input Read" | cut -d ":" -f3 | awk '{print \$1, \$2}')
     num_trimmed=\$(echo \$num_trimmed_pct | awk '{print \$1}')
 
     # get the reference header info
-    ref_tag=\$(cat ${workflow.launchDir}/${params.outdir}/viral_identification/${base}_${ref_id}_${ref_tag}_vid.txt | cut -f3)
-    ref_header=\$(cat ${workflow.launchDir}/${params.outdir}/viral_identification/${base}_${ref_id}_${ref_tag}_vid.txt | cut -f4)
+    ref_tag=\$(cat \${outdir_realpath}/viral_identification/${base}_${ref_id}_${ref_tag}_vid.txt | cut -f3)
+    ref_header=\$(cat \${outdir_realpath}/viral_identification/${base}_${ref_id}_${ref_tag}_vid.txt | cut -f4)
 
     # get the reference genome (map_all) id, size, coverage
-    ref_length=\$(grep ${ref_id} ${workflow.launchDir}/${params.outdir}/bbmap_covstats_all_ref/${base}_map_all_bbmap_covstats.txt | cut -f3)
-    ref_coverage=\$(grep ${ref_id} ${workflow.launchDir}/${params.outdir}/bbmap_covstats_all_ref/${base}_map_all_bbmap_covstats.txt | cut -f5)
-    median_coverage=\$(grep ${ref_id} ${workflow.launchDir}/${params.outdir}/bbmap_covstats_all_ref/${base}_map_all_bbmap_covstats.txt | cut -f10)
+    ref_length=\$(grep ${ref_id} \${outdir_realpath}/bbmap_covstats_all_ref/${base}_map_all_bbmap_covstats.txt | cut -f3)
+    ref_coverage=\$(grep ${ref_id} \${outdir_realpath}/bbmap_covstats_all_ref/${base}_map_all_bbmap_covstats.txt | cut -f5)
+    median_coverage=\$(grep ${ref_id} \${outdir_realpath}/bbmap_covstats_all_ref/${base}_map_all_bbmap_covstats.txt | cut -f10)
 
     # get the consensus final length
-    consensus_length=\$(awk '/^>/{if (l!="") print l; print; l=0; next}{l+=length(\$0)}END{print l}' ${workflow.launchDir}/${params.outdir}/consensus_final/${base}_${ref_id}_${ref_tag}.consensus_final.fa | awk 'FNR==2{print val,\$1}')
+    consensus_length=\$(awk '/^>/{if (l!="") print l; print; l=0; next}{l+=length(\$0)}END{print l}' \${outdir_realpath}/consensus_final/${base}_${ref_id}_${ref_tag}.consensus_final.fa | awk 'FNR==2{print val,\$1}')
 
     # get the number and the percentage of trimmed reads mapped to the reference genome (map_ref)
-    mapped_reads=\$(cat ${workflow.launchDir}/${params.outdir}/map_consensus_final_stats/${base}_${ref_id}_${ref_tag}_mapf_stats.txt | grep "mapped:" | cut -f3)
+    mapped_reads=\$(cat \${outdir_realpath}/map_consensus_final_stats/${base}_${ref_id}_${ref_tag}_mapf_stats.txt | grep "mapped:" | cut -f3)
     # works for single-end and paired-end reads
     mapped_reads=\$(echo \$mapped_reads | awk '{print \$1+\$2}')
  
@@ -373,16 +385,16 @@ process Summary_Generation {
     fi
 
     # get the number of Ns in the consensus final 
-    num_ns=\$(grep -v "^>" ${workflow.launchDir}/${params.outdir}/consensus_final/${base}_${ref_id}_${ref_tag}.consensus_final.fa | tr -cd N | wc -c | awk 'FNR==1{print val,\$1}')
+    num_ns=\$(grep -v "^>" \${outdir_realpath}/consensus_final/${base}_${ref_id}_${ref_tag}.consensus_final.fa | tr -cd N | wc -c | awk 'FNR==1{print val,\$1}')
 
     # get the number of Ns in the consensus final 
-    ref_num_ns=\$(grep -v "^>" ${workflow.launchDir}/${params.outdir}/ref_genome/${base}_${ref_id}_${ref_tag}.fa | tr -cd N | wc -c | awk 'FNR==1{print val,\$1}')
+    ref_num_ns=\$(grep -v "^>" \${outdir_realpath}/ref_genome/${base}_${ref_id}_${ref_tag}.fa | tr -cd N | wc -c | awk 'FNR==1{print val,\$1}')
 
     # get the percentage of Ns in the consensus final
     percent_n=\$(echo "\$num_ns/\$consensus_length*100" | bc -l | awk 'FNR==1{print val,\$1}')
 
     # get the serotype
-    serotype=\$(awk 'FNR==1{print \$1}' ${workflow.launchDir}/${params.outdir}/serotype/${base}_${ref_id}_${ref_tag}_serotype.txt)
+    serotype=\$(awk 'FNR==1{print \$1}' \${outdir_realpath}/serotype/${base}_${ref_id}_${ref_tag}_serotype.txt)
 
     echo "${base}\t\$num_untrimmed\t\$num_trimmed_pct\t${ref_id}\t\$ref_tag\t\$ref_header\t\$ref_length\t\$ref_num_ns\t\$ref_coverage\t\$median_coverage\t\$consensus_length\t\$mapped_reads\t\$percent_mapped_reads\t\$num_ns\t\$percent_n\t\$serotype" >> ${base}_${ref_id}_${ref_tag}_summary.txt
 
@@ -531,10 +543,16 @@ process Consensus_Generation_PE {
     script:
     """
     #!/bin/bash
-    
+   
+    # find real absolute path of outdir
+    process_work_dir=\$PWD
+    cd $workflow.launchDir
+    outdir_realpath=\$(realpath ${params.outdir})
+    cd \$process_work_dir
+ 
     # get paired trimmed reads
-    cp ${workflow.launchDir}/${params.outdir}/trimmed_fastqs/${base}.R1.paired.trimmed.fastq.gz ${base}.R1.paired.trimmed.fastq.gz
-    cp ${workflow.launchDir}/${params.outdir}/trimmed_fastqs/${base}.R2.paired.trimmed.fastq.gz ${base}.R2.paired.trimmed.fastq.gz
+    cp \${outdir_realpath}/trimmed_fastqs/${base}.R1.paired.trimmed.fastq.gz ${base}.R1.paired.trimmed.fastq.gz
+    cp \${outdir_realpath}/trimmed_fastqs/${base}.R2.paired.trimmed.fastq.gz ${base}.R2.paired.trimmed.fastq.gz
 
     # Map the reads to the reference
     bbmap.sh \\

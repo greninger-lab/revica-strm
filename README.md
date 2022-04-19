@@ -14,19 +14,19 @@ Revica consists of the following processes:
 ## Usage
 Examples:
 
-	nextflow run greninger-lab/revica -r main --reads input_fastq/fastq.gz_dir_path --outdir output_dir_name
+	nextflow run greninger-lab/revica -r main --reads input_fastq/fastq.gz_dir_path --outdir output_dir_path
 
 
 or with Docker
 
 
-	nextflow run greninger-lab/revica -r main --reads input_fastq/fastq.gz_dir_path --outdir output_dir_name -with-docker greningerlab/revica
+	nextflow run greninger-lab/revica -r main --reads input_fastq/fastq.gz_dir_path --outdir output_dir_path -with-docker greningerlab/revica
 	
 Valid command line arguments:
 
 	REQUIRED:
 	--reads				Input fastq or fastq.gz directory path
-	--outdir		        Output directory name
+	--outdir		        Output directory path
 
 	OPTIONAL:
 	--pe				For paired-end reads (default: single-end)

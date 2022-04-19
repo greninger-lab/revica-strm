@@ -13,7 +13,7 @@ Alex L Greninger <agrening@uw.edu>
 UW Medicine | Virology
 Department of Laboratory Medicine and Pathology
 University of Washington
-Updated: April 13, 2022
+Updated: April 18, 2022
 LICENSE: GNU
 ----------------------------------------------------------------------------------------
 */
@@ -28,15 +28,15 @@ def help() {
     
 	Pipeline Usage:
 	Natively
-	nextflow run greninger-lab/revica -r main --reads input_fastq/fastq.gz_dir_path --outdir output_dir_name
+	nextflow run greninger-lab/revica -r main --reads input_fastq/fastq.gz_dir_path --outdir output_dir_path
 	or with Docker:
-	nextflow run greninger-lab/revica -r main --reads input_fastq/fastq.gz_dir_path --outdir output_dir_name -with-docker greningerlab/revica
+	nextflow run greninger-lab/revica -r main --reads input_fastq/fastq.gz_dir_path --outdir output_dir_path -with-docker greningerlab/revica
 
 
     Valid CLI Arguments:
     REQUIRED:
 	--reads			Input fastq or fastq.gz directory path
-	--outdir		Output directory name
+	--outdir		Output directory path
     OPTIONAL:
 	--pe			For paired-end reads (default: single-end)
 	--ref			Overwrite reference file
