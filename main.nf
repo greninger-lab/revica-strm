@@ -28,15 +28,15 @@ def help() {
     
 	Pipeline Usage:
 	Natively
-	nextflow run greninger-lab/revica -r main --reads input_fastq/fastq.gz_dir_path --outdir output_dir_path
+	nextflow run greninger-lab/revica -r main --reads input_fastq/fastq.gz_dir_path --outdir output_dir_name
 	or with Docker:
-	nextflow run greninger-lab/revica -r main --reads input_fastq/fastq.gz_dir_path --outdir output_dir_path -with-docker greningerlab/revica
+	nextflow run greninger-lab/revica -r main --reads input_fastq/fastq.gz_dir_path --outdir output_dir_name -with-docker greningerlab/revica
 
 
     Valid CLI Arguments:
     REQUIRED:
 	--reads			Input fastq or fastq.gz directory path
-	--outdir		Output directory path
+	--outdir		Output directory name
     OPTIONAL:
 	--pe			For paired-end reads (default: single-end)
 	--ref			Overwrite reference file
