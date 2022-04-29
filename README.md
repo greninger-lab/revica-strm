@@ -33,6 +33,7 @@ Valid command line arguments:
 	--ref				Overwrite reference file
 	--m				The median coverage threshold for the initial reference to be considered (default 5)
 	--deduplicate			Deduplicated reads using picard before consensus genome assembly
+	--sample			Subsample reads to a fraction or a number
 	--help				Displays help message
 
 ## Usage notes

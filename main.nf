@@ -13,7 +13,7 @@ Alex L Greninger <agrening@uw.edu>
 UW Medicine | Virology
 Department of Laboratory Medicine and Pathology
 University of Washington
-Updated: April 18, 2022
+Updated: April 26, 2022
 LICENSE: GNU
 ----------------------------------------------------------------------------------------
 */
@@ -42,6 +42,7 @@ def help() {
 	--ref			Overwrite reference file
 	--m			The median coverage threshold for the initial reference to be considered (default 5)
 	--deduplicate		Get rid of duplicated reads before consensus genome assembly
+	--sample		Subsample reads to a fraction or a number
 	--help			Displays help message in terminal
     """
 }
@@ -51,9 +52,10 @@ params.help = false
 params.reads = false
 params.outdir = false
 params.pe = false
-params.deduplicate = false
 params.ref = false
-params.m=5
+params.m = 5
+params.deduplicate = false
+params.sample = false
 
 // Check Nextflow version for enabling DSL2
 nextflow_dsl2_v = '20.07.1'

@@ -1,6 +1,5 @@
 process Trimming_SE {
-    errorStrategy 'retry'
-    maxRetries 1
+    errorStrategy 'ignore'
 
     input:
         file R1// from input_read_ch
@@ -25,16 +24,30 @@ process Trimming_SE {
     if [[ ${R1} == *.fastq ]]
     then
     base=\$(basename ${R1} ".fastq")
-    trimmomatic SE -threads ${task.cpus} ${R1} \$base.trimmed.fastq ILLUMINACLIP:${ADAPTERS}:${SETTING} \
-    LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> \${base}_trim_stats.txt
-    gzip \$base.trimmed.fastq
-    
+    	if [[ ${params.sample} == false ]]
+    	then 
+    	    trimmomatic SE -threads ${task.cpus} ${R1} \$base.trimmed.fastq ILLUMINACLIP:${ADAPTERS}:${SETTING} \
+    	    LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> \${base}_trim_stats.txt
+    	    gzip \$base.trimmed.fastq
+	else
+	    seqtk sample ${R1} ${params.sample} > \${base}_sampled.fastq
+    	    trimmomatic SE -threads ${task.cpus} \${base}_sampled.fastq \$base.trimmed.fastq ILLUMINACLIP:${ADAPTERS}:${SETTING} \
+    	    LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> \${base}_trim_stats.txt
+    	    gzip \$base.trimmed.fastq
+	fi
     elif [[ ${R1} == *.fastq.gz ]] 
     then
     base=\$(basename ${R1} ".fastq.gz")
-    trimmomatic SE -threads ${task.cpus} ${R1} \$base.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${SETTING} \
-    LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> \${base}_trim_stats.txt
-
+	if [[ ${params.sample} == false ]]
+	then
+    	    trimmomatic SE -threads ${task.cpus} ${R1} \$base.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${SETTING} \
+    	    LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> \${base}_trim_stats.txt
+	else
+	    seqtk sample ${R1} ${params.sample} > \${base}_sampled.fastq
+	    gzip \${base}_sampled.fastq
+    	    trimmomatic SE -threads ${task.cpus} \${base}_sampled.fastq.gz \$base.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${SETTING} \
+    	    LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> \${base}_trim_stats.txt
+	fi
     fi
     """
 }
@@ -427,8 +440,7 @@ process Final_Processing {
 }
 
 process Trimming_PE { 
-    errorStrategy 'retry'
-    maxRetries 1
+    //errorStrategy 'ignore'
 
     input:
         tuple val(base), file(R1), file(R2) // from input_read_ch
@@ -451,14 +463,32 @@ process Trimming_PE {
 
     if [[ ${R1} == *.fastq && ${R2} == *.fastq ]]
     then
-    trimmomatic PE -threads ${task.cpus} ${R1} ${R2} ${base}.R1.paired.trimmed.fastq ${base}.R1.unpaired.fastq ${base}.R2.paired.trimmed.fastq ${base}.R2.unpaired.fastq \
-    ILLUMINACLIP:${ADAPTERS}:${SETTING} LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> ${base}_trim_stats.txt
-    gzip *paired*.fastq
-
+	if [[ ${params.sample} == false ]]
+	then
+    	    trimmomatic PE -threads ${task.cpus} ${R1} ${R2} ${base}.R1.paired.trimmed.fastq ${base}.R1.unpaired.fastq ${base}.R2.paired.trimmed.fastq ${base}.R2.unpaired.fastq \
+    	    ILLUMINACLIP:${ADAPTERS}:${SETTING} LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> ${base}_trim_stats.txt
+    	    gzip *paired*.fastq
+	else
+	    seqtk sample -s 100 ${R1} ${params.sample} > ${base}_R1_sampled.fastq
+	    seqtk sample -s 100 ${R2} ${params.sample} > ${base}_R2_sampled.fastq
+    	    trimmomatic PE -threads ${task.cpus} ${base}_R1_sampled.fastq ${base}_R2_sampled.fastq ${base}.R1.paired.trimmed.fastq ${base}.R1.unpaired.fastq ${base}.R2.paired.trimmed.fastq ${base}.R2.unpaired.fastq \
+    	    ILLUMINACLIP:${ADAPTERS}:${SETTING} LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> ${base}_trim_stats.txt
+	    gzip *paired*.fastq
+	fi
     elif [[ ${R1} == *.fastq.gz && ${R2} == *.fastq.gz ]]
     then 
-    trimmomatic PE -threads ${task.cpus} ${R1} ${R2} ${base}.R1.paired.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}.R2.paired.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
-    ILLUMINACLIP:${ADAPTERS}:${SETTING} LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> ${base}_trim_stats.txt
+	if [[ ${params.sample} == false ]]
+	then
+    	    trimmomatic PE -threads ${task.cpus} ${R1} ${R2} ${base}.R1.paired.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}.R2.paired.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
+    	    ILLUMINACLIP:${ADAPTERS}:${SETTING} LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> ${base}_trim_stats.txt
+	else
+	    seqtk sample -s 100 ${R1} ${params.sample} > ${base}_R1_sampled.fastq
+	    seqtk sample -s 100 ${R2} ${params.sample} > ${base}_R2_sampled.fastq 
+	    gzip ${base}_R1_sampled.fastq
+	    gzip ${base}_R2_sampled.fastq
+    	    trimmomatic PE -threads ${task.cpus} ${base}_R1_sampled.fastq.gz ${base}_R2_sampled.fastq.gz ${base}.R1.paired.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}.R2.paired.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
+    	    ILLUMINACLIP:${ADAPTERS}:${SETTING} LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> ${base}_trim_stats.txt
+	fi
     fi
 
     """

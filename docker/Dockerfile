@@ -7,13 +7,14 @@ ARG PICARD_VERSION=2.26.11
 ARG SEQKIT_VERSION=2.1.0
 ARG IVAR_VERSION=1.3.1
 ARG HTSLIB_VERSION=1.15
+ARG SEQTK_VERSION=1.3
 
 ENV PATH=$PATH:/opt/bbmap
 
 COPY java_jar_helper.sh /tmp
 
 RUN apk add --update --no-cache ncurses libbz2 xz zlib bash bc python3 \
-    && apk add --virtual=deps --update --no-cache ncurses-dev musl-dev g++ make zlib-dev bzip2-dev xz-dev autoconf automake wget \
+    && apk add --virtual=deps --update --no-cache ncurses-dev musl-dev g++ make zlib-dev bzip2-dev xz-dev autoconf automake \
     # ---------- 
     # samtools
     && cd /tmp \
@@ -66,6 +67,14 @@ RUN apk add --update --no-cache ncurses libbz2 xz zlib bash bc python3 \
     && make \
     && make install \
     # ---------- 
+    # seqtk
+    && cd /tmp \
+    && wget https://github.com/lh3/seqtk/archive/refs/tags/v${SEQTK_VERSION}.tar.gz \ 
+    && tar xzvf v${SEQTK_VERSION}.tar.gz \ 
+    && cd seqtk-${SEQTK_VERSION} \ 
+    && make \
+    && mv seqtk /usr/local/bin \ 
+    # ----------
     # Clean up
     && rm -rf /var/cache/apk/* /tmp/* \
     && apk del deps
