@@ -440,7 +440,7 @@ process Final_Processing {
 }
 
 process Trimming_PE { 
-    //errorStrategy 'ignore'
+    errorStrategy 'ignore'
 
     input:
         tuple val(base), file(R1), file(R2) // from input_read_ch
