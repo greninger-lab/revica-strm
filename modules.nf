@@ -175,7 +175,7 @@ process Consensus_Generation_SE {
     samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_map_ref.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_map_ref.sam
 
-    if [[ ${params.deduplicate} == true ]]
+    if [[ ${params.dedup} == true ]]
     then
     picard MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt -REMOVE_DUPLICATES true
     # remove pre-deduplicated bam file and rename deduplicated bam file
@@ -588,7 +588,7 @@ process Consensus_Generation_PE {
     samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_map_ref.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_map_ref.sam
 
-    if [[ ${params.deduplicate} == true ]]
+    if [[ ${params.dedup} == true ]]
     then
     picard MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt -REMOVE_DUPLICATES true
     mv ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref_og.sorted.bam
