@@ -5,7 +5,7 @@ if __name__ == "__main__":
     parser.add_argument('-bbmap_covstats', metavar='bbmap_covstats', required=True, type=str, help='bbmap covstats output file')
     parser.add_argument('-b', metavar='sample basename', required=True, type=str, help='sample basename')
     parser.add_argument('-m', metavar='M', type=int, default=3, help='minimum median threshold in bbmap covstats output for a reference to be considered. (Default 3)')
-    parser.add_argument('-min_cov_pct', metavar='minimum covered percent for reference', type=int, default=70, help='minimum covered percent in bbmap covstats output for a reference to be considered. (Default 70)')
+    parser.add_argument('-p', metavar='minimum covered percent for reference', type=int, default=70, help='minimum covered percent in bbmap covstats output for a reference to be considered. (Default 70)')
     args = parser.parse_args()
 
     init_ref_candidates = []
@@ -17,7 +17,7 @@ if __name__ == "__main__":
     for i in rec:
         if len(i) > 0:
             temp = i.split('\t')
-            if int(temp[9]) >= args.m and float(temp[4]) >= args.min_cov_pct:
+            if int(temp[9]) >= args.m and float(temp[4]) >= args.p:
                 init_ref_candidates.append(temp[0])
 
     # create a dictionary of references to be used for consensus calling
