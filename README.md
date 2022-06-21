@@ -1,6 +1,15 @@
 # REVICA
 
-Revica is a reference-based viral consensus genome assembly pipeline written in [Nextflow](https://www.nextflow.io/). For ease of use, Revica can be run in [Docker](https://docs.docker.com/get-docker/). Revica currently supports consensus genome assembly of rhinovirus (RV), seasonal human coronavirus (HCOV), human metapneumovirus (HMPV), human respiratory syncytial virus (HRSV), human parainfluenza virus (HPIV), Measles morbillivirus (MeV), Influenza A virus (IAV), Influenza B virus (IBV), and human adenovirus (HAdV).
+Revica is a reference-based viral consensus genome assembly pipeline written in [Nextflow](https://www.nextflow.io/). For ease of use, Revica can be run in [Docker](https://docs.docker.com/get-docker/). Revica currently supports consensus genome assembly of:
+- Rhinovirus (RV)
+- Seasonal human coronavirus (HCOV)
+- Human metapneumovirus (HMPV)
+- Human respiratory syncytial virus (HRSV)
+- Human parainfluenza virus (HPIV)
+- Measles morbillivirus (MeV)
+- Influenza A virus (IAV)
+- Influenza B virus (IBV)
+- Human adenovirus (HAdV)
 
 ## Methods
 Revica consists of the following processes:
