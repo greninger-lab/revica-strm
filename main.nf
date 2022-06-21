@@ -40,8 +40,9 @@ def help() {
     OPTIONAL:
 	--pe			For paired-end reads (default: single-end)
 	--ref			Overwrite reference file
-	--m			The median coverage threshold for the initial reference to be considered (default 5)
-	--deduplicate		Get rid of duplicated reads before consensus genome assembly
+	--m			The median coverage threshold for the initial reference to be considered (default 3)
+	--p                     The minimum covered percent by the reads for the initial refernce to be considered (default 60)
+	--dedup         	Get rid of duplicated reads before consensus genome assembly
 	--sample		Subsample reads to a fraction or a number
 	--help			Displays help message in terminal
     """
@@ -53,8 +54,9 @@ params.reads = false
 params.outdir = false
 params.pe = false
 params.ref = false
-params.m = 5
-params.deduplicate = false
+params.m = 3
+params.p = 60
+params.dedup = false
 params.sample = false
 
 // Check Nextflow version for enabling DSL2

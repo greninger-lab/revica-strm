@@ -1,6 +1,6 @@
 # REVICA
 
-Revica is a reference-based viral consensus genome assembly pipeline written in [Nextflow](https://www.nextflow.io/). For ease of use, Revica can be run in [Docker](https://docs.docker.com/get-docker/). Revica currently supports consensus genome assembly of rhinovirus (RV), human coronavirus (HCOV), human metapneumovirus (HMPV), human respiratory syncytial virus (HRSV), human parainfluenza virus (HPIV), Measles morbillivirus (MeV), Influenza A virus (IAV), and Influenza B virus (IBV).
+Revica is a reference-based viral consensus genome assembly pipeline written in [Nextflow](https://www.nextflow.io/). For ease of use, Revica can be run in [Docker](https://docs.docker.com/get-docker/). Revica currently supports consensus genome assembly of rhinovirus (RV), seasonal human coronavirus (HCOV), human metapneumovirus (HMPV), human respiratory syncytial virus (HRSV), human parainfluenza virus (HPIV), Measles morbillivirus (MeV), Influenza A virus (IAV), Influenza B virus (IBV), and human adenovirus (HAdV).
 
 ## Methods
 Revica consists of the following processes:
@@ -9,18 +9,24 @@ Revica consists of the following processes:
 - Map trimmed reads to a multifasta reference containing complete genomes of supported viruses using BBMap
 - Identify best reference(s) for consensus calling based on median coverage (if different viruses are present, the best reference for each virus is identified and consensus genome is assembled for each virus)
 - Consensus genome assembly using Samtools and iVar (consensus calling threshold: minimum coverage of 3, minimum base quality of 15, and minimum frequency threshold of 0.6)
-- Determine serotypes by BLASTing to a curated BLAST database. 
+- Determine serotypes (currently only for rhinovirus) by BLASTing to a curated BLAST database. 
 
 ## Usage
+Install `Nextflow` using the following command:
+
+	curl -s https://get.nextflow.io | bash
+
+Install `Docker` using the following command:
+
+	curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
+
 Examples:
 
-	nextflow run greninger-lab/revica -r main --reads input_fastq/fastq.gz_dir_path --outdir output_dir_path
-
+	nextflow run greninger-lab/revica -r main --reads example --outdir output
 
 or with Docker
 
-
-	nextflow run greninger-lab/revica -r main --reads input_fastq/fastq.gz_dir_path --outdir output_dir_path -with-docker greningerlab/revica
+	nextflow run greninger-lab/revica -r main --reads example --outdir output -with-docker greningerlab/revica
 	
 Valid command line arguments:
 
@@ -31,8 +37,9 @@ Valid command line arguments:
 	OPTIONAL:
 	--pe				For paired-end reads (default: single-end)
 	--ref				Overwrite reference file
-	--m				The median coverage threshold for the initial reference to be considered (default 5)
-	--deduplicate			Deduplicated reads using picard before consensus genome assembly
+	--m				The median coverage threshold for the initial reference to be considered (default 3)
+	--p				The minimum covered percent by the reads for the initial refernce to be considered (default 60)
+	--dedup				Deduplicated reads using picard before consensus genome assembly
 	--sample			Subsample reads to a fraction or a number
 	--help				Displays help message
 
@@ -40,7 +47,7 @@ Valid command line arguments:
 - You can use your own reference(s) for consensus genome assembly by specifying the `--ref` parameter followed by your fasta file. 
 	- reference header format: `>reference_accession reference_tag reference_header_info`
 	- it's important to tag the fasta sequences for the same species or gene segments with the same name or abbreviation in the header section, otherwise the pipeline
-	will generate a consensus genome for every reference where the median coverage of the first alignment exceed the specified threshold (default 5).  
+	will generate a consensus genome for every reference where the median coverage of the first alignment exceed the specified threshold (default 3).  
 	- Revica works with segmented viral genomes, just keep the different gene segments separated and tag them in the reference fasta file (Serotype can't be determined for viruses not listed)
 - If you are using Docker on Linux, check these [post-installation steps](https://docs.docker.com/engine/install/linux-postinstall/) (especially cgroup swap limit capabilities support) for configuring Linux to work better with Docker. 
 - By default, Docker has full access to full RAM and CPU resources of the host. However, if you have Docker Desktop installed, go to Settings -> Resources to make sure enough resources (>4 cpus & >4 GB RAM) are allocated to docker containers. 
@@ -68,7 +75,8 @@ Valid command line arguments:
 - The references used for consensus genome assembly are in the `ref_genome` folder.
 - Sorted bam files of trimmed reads to their references are in the `map_ref_bam_sorted` folder.
 - Samples with failed assembly and their alignment stats are in the `failed_assembly` folder. 
-- Pipeline run stats are in `run_summary.txt`.
+- Pipeline run stats are in `run_summary.tsv`.
+- Stats for samples that failed assembly are in `failed_assembly_summary.tsv`.
 
 ## Docker
 Pull the docker image (255MB) that has all the dependencies from Docker Hub using the following command

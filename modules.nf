@@ -14,7 +14,7 @@ process Trimming_SE {
         tuple env(base), file("*.trimmed.fastq.gz") 
 	file("*_trim_stats.txt")
 
-    publishDir "${params.outdir}/trimmed_fastqs", mode: 'copy', pattern:'*.trimmed.fastq*'
+    publishDir "${params.outdir}/trimmed_fastq", mode: 'copy', pattern:'*.trimmed.fastq*'
     publishDir "${params.outdir}/trim_stats", mode: 'copy', pattern:'*_trim_stats.txt'
 
     script:
@@ -106,11 +106,8 @@ process Viral_Identification {
     """
     #!/bin/bash
 
-    # get full reference headers
-    grep ">" ${ref} | tr -d ">"  > ref_header.txt
-
     # identify initial reference
-    python3 $workflow.projectDir/bin/select_reference.py -bbmap_covstats ${base}_map_all_bbmap_covstats.txt -b ${base} -ref_header ref_header.txt -m ${params.m}
+    python3 $workflow.projectDir/bin/select_reference.py -bbmap_covstats ${base}_map_all_bbmap_covstats.txt -b ${base} -m ${params.m} -min_cov_pct ${params.min_cov_pct}
 
     """
 }
@@ -162,30 +159,33 @@ process Consensus_Generation_SE {
 
     # find real absolute path of outdir
     process_work_dir=\$PWD
-    cd $workflow.launchDir
+    cd ${workflow.launchDir}
     outdir_realpath=\$(realpath ${params.outdir})
     cd \$process_work_dir
 
-    # get trimmed reads
-    cp \${outdir_realpath}/trimmed_fastqs/${base}.trimmed.fastq.gz ${base}.trimmed.fastq.gz
-
     # Map the reads to the reference
     bbmap.sh \\
-	in=${base}.trimmed.fastq.gz \\
+	in=\${outdir_realpath}/trimmed_fastq/${base}.trimmed.fastq.gz \\
 	outm=${base}_${ref_id}_${ref_tag}_map_ref.sam \\
 	ref=${base}_${ref_id}_${ref_tag}.fa \\
 	threads=${task.cpus} \\
 	local=true interleaved=false maxindel=80 -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_map_ref_stats.txt 2>&1
 
     # Convert the output sam file to bam file, sort and index the bam file
-    samtools view -S -b -F 4 ${base}_${ref_id}_${ref_tag}_map_ref.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
+    samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_map_ref.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_map_ref.sam
 
     if [[ ${params.deduplicate} == true ]]
     then
     picard MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt -REMOVE_DUPLICATES true
+    # remove pre-deduplicated bam file and rename deduplicated bam file
     mv ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref_og.sorted.bam
     mv ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
+    # convert deduplicated reads in bam to fastq
+    samtools fastq -@ ${task.cpus} -n -0 ${base}.trimmed.fastq.gz ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
+    else
+    # Convert bam of only mapped read (-F 4) to fastq
+    samtools fastq -@ ${task.cpus} -n -0 ${base}.trimmed.fastq.gz ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
     fi
 
     # Calling Consensus
@@ -217,15 +217,8 @@ process Consensus_Generation_SE {
 	ref=${base}_${ref_id}_${ref_tag}.consensus1.fa \\
 	threads=${task.cpus} \\
 	local=true interleaved=false maxindel=80 -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_map1_stats.txt 2>&1
-    samtools view -S -b -F 4 ${base}_${ref_id}_${ref_tag}_map1.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_map1.sorted.bam
+    samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_map1.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_map1.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_map1.sam
-
-    if [[ ${params.deduplicate} == true ]]
-    then
-    picard MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map1.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map1_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt -REMOVE_DUPLICATES true
-    mv ${base}_${ref_id}_${ref_tag}_map1.sorted.bam ${base}_${ref_id}_${ref_tag}_map1_og.sorted.bam
-    mv ${base}_${ref_id}_${ref_tag}_map1_deduplicated.sorted.bam ${base}_${ref_id}_${ref_tag}_map1.sorted.bam
-    fi
 
     # second consensus generation 
     samtools mpileup \\
@@ -249,22 +242,15 @@ process Consensus_Generation_SE {
     tail -n+2 ${base}_${ref_id}_${ref_tag}.consensus2.fa.backup >> ${base}_${ref_id}_${ref_tag}.consensus2.fa
     rm ${base}_${ref_id}_${ref_tag}.consensus2.fa.backup
     
-    # Align reads to final consensus and create bam and sorted bam files 
+    # Align reads to consensus2 and create bam and sorted bam files 
     bbmap.sh \\
 	in=${base}.trimmed.fastq.gz \\
 	outm=${base}_${ref_id}_${ref_tag}_map2.sam \\
 	ref=${base}_${ref_id}_${ref_tag}.consensus2.fa \\
 	threads=${task.cpus} \\
 	local=true interleaved=false maxindel=80 -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_map2_stats.txt 2>&1
-    samtools view -S -b -F 4 ${base}_${ref_id}_${ref_tag}_map2.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_map2.sorted.bam
+    samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_map2.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_map2.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_map2.sam
-
-    if [[ ${params.deduplicate} == true ]]
-    then
-    picard MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map2.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map2_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt -REMOVE_DUPLICATES true
-    mv ${base}_${ref_id}_${ref_tag}_map2.sorted.bam ${base}_${ref_id}_${ref_tag}_map2_og.sorted.bam
-    mv ${base}_${ref_id}_${ref_tag}_map2_deduplicated.sorted.bam ${base}_${ref_id}_${ref_tag}_map2.sorted.bam
-    fi
 
     # Final Consensus Generation
     samtools mpileup \\
@@ -295,15 +281,8 @@ process Consensus_Generation_SE {
 	ref=${base}_${ref_id}_${ref_tag}.consensus_final.fa \\
 	threads=${task.cpus} \\
 	local=true interleaved=false maxindel=80 -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_mapf_stats.txt 2>&1
-    samtools view -S -b -F 4 ${base}_${ref_id}_${ref_tag}_mapf.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam
+    samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_mapf.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_mapf.sam
-
-    if [[ ${params.deduplicate} == true ]]
-    then
-    picard MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam -O ${base}_${ref_id}_${ref_tag}_mapf_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt -REMOVE_DUPLICATES true
-    mv ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam ${base}_${ref_id}_${ref_tag}_mapf_og.sorted.bam
-    mv ${base}_${ref_id}_${ref_tag}_mapf_deduplicated.sorted.bam ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam
-    fi
 
     """
 }
@@ -347,12 +326,12 @@ process Serotyping {
 process Summary_Generation {
     errorStrategy 'retry'
     maxRetries 1
-
+    
     input:
         tuple val(base), val(ref_id), val(ref_tag)
 
     output:
-	file("${base}_${ref_id}_${ref_tag}_summary.txt")
+	file("${base}_${ref_id}_${ref_tag}_summary.tsv")
 
     script:
     """
@@ -365,7 +344,7 @@ process Summary_Generation {
     cd \$process_work_dir
 
     # summary header
-    echo "sample name\traw reads/pairs\tsurviving reads/pairs\treference accession\treference tag\treference header\treference length\treference num Ns\t%ref coverage\tmedian coverage\tconsensus length\tmapped reads\t%reads on target\tnum Ns\t%N\tserotype" > ${base}_${ref_id}_${ref_tag}_summary.txt
+    echo "sample name\traw reads/pairs\tsurviving reads/pairs\treference accession\treference tag\treference header\treference length\treference num Ns\t%ref coverage\tmedian coverage\tconsensus length\tmapped reads\t%reads on target\tnum Ns\t%N\tserotype" > ${base}_${ref_id}_${ref_tag}_summary.tsv
 
     # get the number of total reads/pairs and suviving reads/pairs
     num_untrimmed=\$(cat \${outdir_realpath}/trim_stats/${base}_trim_stats.txt | grep "Input Read" | cut -d ":" -f2 | awk '{print \$1}')
@@ -409,7 +388,7 @@ process Summary_Generation {
     # get the serotype
     serotype=\$(awk 'FNR==1{print \$1}' \${outdir_realpath}/serotype/${base}_${ref_id}_${ref_tag}_serotype.txt)
 
-    echo "${base}\t\$num_untrimmed\t\$num_trimmed_pct\t${ref_id}\t\$ref_tag\t\$ref_header\t\$ref_length\t\$ref_num_ns\t\$ref_coverage\t\$median_coverage\t\$consensus_length\t\$mapped_reads\t\$percent_mapped_reads\t\$num_ns\t\$percent_n\t\$serotype" >> ${base}_${ref_id}_${ref_tag}_summary.txt
+    echo "${base}\t\$num_untrimmed\t\$num_trimmed_pct\t${ref_id}\t\$ref_tag\t\$ref_header\t\$ref_length\t\$ref_num_ns\t\$ref_coverage\t\$median_coverage\t\$consensus_length\t\$mapped_reads\t\$percent_mapped_reads\t\$num_ns\t\$percent_n\t\$serotype" >> ${base}_${ref_id}_${ref_tag}_summary.tsv
 
     """
 }
@@ -419,23 +398,39 @@ process Final_Processing {
     maxRetries 1
 
     input:
-	file("*_summary.txt")
+	file("*_summary.tsv")
 
     output: 
-	file("run_summary.txt")
+	file("run_summary.tsv")
+	file("failed_assembly_summary.tsv") optional true
 
-    publishDir "${params.outdir}", mode: 'copy', pattern:'run_summary.txt'
+
+    publishDir "${params.outdir}", mode: 'copy', pattern:'run_summary.tsv'
+    publishDir "${params.outdir}", mode: 'copy', pattern:'failed_assembly_summary.tsv'
 
     script:
     """
     #!/bin/bash
 
+    # generate a summary on samples that pass median coverage threshold and have a consensus genome generated.
+    echo "sample name\traw reads/pairs\tsurviving reads/pairs\treference accession\treference tag\treference header\treference length\treference num Ns\t%ref coverage\tmedian coverage\tconsensus length\tmapped reads\t%reads on target\tnum Ns\t%N\tserotype" > summary.tsv
+    awk '(NR == 2) || (FNR > 1)' *_summary.tsv >> summary.tsv 
+    head -1 summary.tsv > run_summary.tsv
+    awk 'NR>1' < summary.tsv | sort -k1 >> run_summary.tsv
 
-    echo "sample name\traw reads/pairs\tsurviving reads/pairs\treference accession\treference tag\treference header\treference length\treference num Ns\t%ref coverage\tmedian coverage\tconsensus length\tmapped reads\t%reads on target\tnum Ns\t%N\tserotype" > summary.txt
-    awk '(NR == 2) || (FNR > 1)' *_summary.txt >> summary.txt 
-    head -1 summary.txt > run_summary.txt
-    awk 'NR>1' < summary.txt | sort -k1 >> run_summary.txt
+    # find real absolute path of outdir
+    process_work_dir=\$PWD
+    cd $workflow.launchDir
+    outdir_realpath=\$(realpath ${params.outdir})
+    cd \$process_work_dir
 
+    # summary stats for failed assembly
+    if [ -n "\$(ls -A \${outdir_realpath}/failed_assembly 2>/dev/null)" ]
+    then
+	cp \${outdir_realpath}/failed_assembly/*_failed_assembly.txt .
+	cat *_failed_assembly.txt | awk 'NR==1 || NR % 2 == 0' > failed_assembly_summary.tsv
+    fi
+	
     """
 }
 
@@ -454,7 +449,7 @@ process Trimming_PE {
         tuple val(base), file("${base}.R1.paired.trimmed.fastq.gz"), file("${base}.R2.paired.trimmed.fastq.gz")
 	file("*_trim_stats.txt")
 
-    publishDir "${params.outdir}/trimmed_fastqs", mode: 'copy', pattern:'*.paired.trimmed.fastq.gz'
+    publishDir "${params.outdir}/trimmed_fastq", mode: 'copy', pattern:'*.paired.trimmed.fastq.gz'
     publishDir "${params.outdir}/trim_stats", mode: 'copy', pattern:'*_trim_stats.txt'
 
     script:
@@ -579,22 +574,18 @@ process Consensus_Generation_PE {
     cd $workflow.launchDir
     outdir_realpath=\$(realpath ${params.outdir})
     cd \$process_work_dir
- 
-    # get paired trimmed reads
-    cp \${outdir_realpath}/trimmed_fastqs/${base}.R1.paired.trimmed.fastq.gz ${base}.R1.paired.trimmed.fastq.gz
-    cp \${outdir_realpath}/trimmed_fastqs/${base}.R2.paired.trimmed.fastq.gz ${base}.R2.paired.trimmed.fastq.gz
 
     # Map the reads to the reference
     bbmap.sh \\
-	in=${base}.R1.paired.trimmed.fastq.gz \\
-	in2=${base}.R2.paired.trimmed.fastq.gz \\
+	in=\${outdir_realpath}/trimmed_fastq/${base}.R1.paired.trimmed.fastq.gz \\
+	in2=\${outdir_realpath}/trimmed_fastq/${base}.R2.paired.trimmed.fastq.gz \\
 	outm=${base}_${ref_id}_${ref_tag}_map_ref.sam \\
 	ref=${base}_${ref_id}_${ref_tag}.fa \\
 	threads=${task.cpus} \\
 	local=true interleaved=false maxindel=80 -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_map_ref_stats.txt 2>&1
 
     # Convert the output sam file to bam file, sort and index the bam file
-    samtools view -S -b -F 4 ${base}_${ref_id}_${ref_tag}_map_ref.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
+    samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_map_ref.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_map_ref.sam
 
     if [[ ${params.deduplicate} == true ]]
@@ -602,6 +593,11 @@ process Consensus_Generation_PE {
     picard MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt -REMOVE_DUPLICATES true
     mv ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref_og.sorted.bam
     mv ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
+    # convert deduplicated reads in bam to fastq
+    samtools collate -@ ${task.cpus} -O ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam | samtools fastq -@ ${task.cpus} -1 ${base}.R1.paired.trimmed.fastq.gz -2 ${base}.R2.paired.trimmed.fastq.gz -0 /dev/null -s /dev/null -n 
+    else
+    # convert mapped reads from bam to fastq
+    samtools collate -@ ${task.cpus} -O ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam | samtools fastq -@ ${task.cpus} -1 ${base}.R1.paired.trimmed.fastq.gz -2 ${base}.R2.paired.trimmed.fastq.gz -0 /dev/null -s /dev/null -n 
     fi
 
     # Calling Consensus
@@ -633,15 +629,8 @@ process Consensus_Generation_PE {
 	ref=${base}_${ref_id}_${ref_tag}.consensus1.fa \\
 	threads=${task.cpus} \\
 	local=true interleaved=false maxindel=80 -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_map1_stats.txt 2>&1
-    samtools view -S -b -F 4 ${base}_${ref_id}_${ref_tag}_map1.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_map1.sorted.bam
+    samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_map1.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_map1.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_map1.sam
-
-    if [[ ${params.deduplicate} == true ]]
-    then
-    picard MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map1.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map1_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt -REMOVE_DUPLICATES true
-    mv ${base}_${ref_id}_${ref_tag}_map1.sorted.bam ${base}_${ref_id}_${ref_tag}_map1_og.sorted.bam
-    mv ${base}_${ref_id}_${ref_tag}_map1_deduplicated.sorted.bam ${base}_${ref_id}_${ref_tag}_map1.sorted.bam
-    fi
 
     # second consensus generation 
     samtools mpileup \\
@@ -664,7 +653,7 @@ process Consensus_Generation_PE {
     tail -n+2 ${base}_${ref_id}_${ref_tag}.consensus2.fa.backup >> ${base}_${ref_id}_${ref_tag}.consensus2.fa
     rm ${base}_${ref_id}_${ref_tag}.consensus2.fa.backup
 
-    # Align reads to final consensus and create bam and sorted bam files 
+    # Align reads to consensus2 and create bam and sorted bam files 
     bbmap.sh \\
 	in=${base}.R1.paired.trimmed.fastq.gz \\
 	in2=${base}.R2.paired.trimmed.fastq.gz \\
@@ -672,15 +661,8 @@ process Consensus_Generation_PE {
 	ref=${base}_${ref_id}_${ref_tag}.consensus2.fa \\
 	threads=${task.cpus} \\
 	local=true interleaved=false maxindel=80 -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_map2_stats.txt 2>&1
-    samtools view -S -b -F 4 ${base}_${ref_id}_${ref_tag}_map2.sam | samtools sort -@ {$task.cpus} - > ${base}_${ref_id}_${ref_tag}_map2.sorted.bam
+    samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_map2.sam | samtools sort -@ {$task.cpus} - > ${base}_${ref_id}_${ref_tag}_map2.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_map2.sam
-
-    if [[ ${params.deduplicate} == true ]]
-    then
-    picard MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map2.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map2_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt -REMOVE_DUPLICATES true
-    mv ${base}_${ref_id}_${ref_tag}_map2.sorted.bam ${base}_${ref_id}_${ref_tag}_map2_og.sorted.bam
-    mv ${base}_${ref_id}_${ref_tag}_map2_deduplicated.sorted.bam ${base}_${ref_id}_${ref_tag}_map2.sorted.bam
-    fi
 
     # Final Consensus Generation
     samtools mpileup \\
@@ -711,15 +693,8 @@ process Consensus_Generation_PE {
 	ref=${base}_${ref_id}_${ref_tag}.consensus_final.fa \\
 	threads=${task.cpus} \\
 	local=true interleaved=false maxindel=80 -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_mapf_stats.txt 2>&1
-    samtools view -S -b -F 4 ${base}_${ref_id}_${ref_tag}_mapf.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam
+    samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_mapf.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_mapf.sam
-
-    if [[ ${params.deduplicate} == true ]]
-    then
-    picard MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam -O ${base}_${ref_id}_${ref_tag}_mapf_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt -REMOVE_DUPLICATES true
-    mv ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam ${base}_${ref_id}_${ref_tag}_mapf_og.sorted.bam
-    mv ${base}_${ref_id}_${ref_tag}_mapf_deduplicated.sorted.bam ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam
-    fi
 
     """
 }
