@@ -107,7 +107,7 @@ process Viral_Identification {
     #!/bin/bash
 
     # identify initial reference
-    python3 $workflow.projectDir/bin/select_reference.py -bbmap_covstats ${base}_map_all_bbmap_covstats.txt -b ${base} -m ${params.m} -min_cov_pct ${params.min_cov_pct}
+    python3 $workflow.projectDir/bin/select_reference.py -bbmap_covstats ${base}_map_all_bbmap_covstats.txt -b ${base} -m ${params.m} -p ${params.p}
 
     """
 }
