@@ -13,7 +13,7 @@ Alex L Greninger <agrening@uw.edu>
 UW Medicine | Virology
 Department of Laboratory Medicine and Pathology
 University of Washington
-Updated: April 26, 2022
+Updated: July 11, 2022
 LICENSE: GNU
 ----------------------------------------------------------------------------------------
 */
@@ -44,6 +44,7 @@ def help() {
 	--p                     The minimum covered percent by the reads for the initial refernce to be considered (default 60)
 	--dedup         	Get rid of duplicated reads before consensus genome assembly
 	--sample		Subsample reads to a fraction or a number
+        --mpxv                  generate consensus genome for monkeypox virus (mpxv)
 	--help			Displays help message in terminal
     """
 }
@@ -58,6 +59,7 @@ params.m = 3
 params.p = 60
 params.dedup = false
 params.sample = false
+params.mpxv = false
 
 // Check Nextflow version for enabling DSL2
 nextflow_dsl2_v = '20.07.1'
@@ -91,8 +93,10 @@ if (params.outdir == false) {
 }
 
 // Setup MULTIFASTA Reference file path for OPTIONAL-override of set file path.
-if(params.ref != false) {
+if (params.ref != false) {
     ref = file(params.ref)
+} else if (params.mpxv != false) {
+    ref = file("${baseDir}/ref/NC_063383.fa")
 } else {
     ref = file("${baseDir}/ref/ref.fa")
 }
@@ -105,7 +109,11 @@ params.SETTING = "2:30:10:1:true"
 params.LEADING = "3"
 params.TRAILING = "3"
 params.SWINDOW = "4:20"
-params.MINLEN = "35"
+if (params.mpxv != false) {
+    params.MINLEN = "100"
+} else {
+    params.MINLEN = "35"
+}
 
 // Setup Blast database for serotyping
 // All BLAST db files for respiratory viruses recognized by this pipeline including:

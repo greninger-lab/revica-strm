@@ -61,9 +61,9 @@ process Aligning_SE {
 	file ref
 
     output:
-	tuple val(base), file("${base}_map_all_bbmap_covstats.txt")
+	tuple val(base), file("${base}_map_all_bbmap_covstats.tsv")
 
-    publishDir "${params.outdir}/bbmap_covstats_all_ref", mode: 'copy', pattern:'*_map_all_bbmap_covstats.txt'
+    publishDir "${params.outdir}/bbmap_covstats_all_ref", mode: 'copy', pattern:'*_map_all_bbmap_covstats.tsv'
     
     script:
 
@@ -76,13 +76,13 @@ process Aligning_SE {
         outm=${base}_map_all.sam \\
         ref=${ref} \\
         threads=${task.cpus} \\
-        covstats=${base}_map_all_bbmap_covstats.txt \\
+        covstats=${base}_map_all_bbmap_covstats.tsv \\
         local=true interleaved=false maxindel=80 -Xmx${task.memory.giga}g > ${base}_map_all_stats.txt 2>&1
 
     # sort bbmap_out.txt based on median_fold (column 10) in descending order 
-    head -1 ${base}_map_all_bbmap_covstats.txt > ${base}_map_all_bbmap_covstats.temp.txt
-    awk 'NR>1' < ${base}_map_all_bbmap_covstats.txt | sort -t \$'\t' -nrk10 >> ${base}_map_all_bbmap_covstats.temp.txt
-    mv ${base}_map_all_bbmap_covstats.temp.txt ${base}_map_all_bbmap_covstats.txt
+    head -1 ${base}_map_all_bbmap_covstats.tsv > ${base}_map_all_bbmap_covstats.temp.txt
+    awk 'NR>1' < ${base}_map_all_bbmap_covstats.tsv | sort -t \$'\t' -nrk10 >> ${base}_map_all_bbmap_covstats.temp.txt
+    mv ${base}_map_all_bbmap_covstats.temp.txt ${base}_map_all_bbmap_covstats.tsv
 
     """
 }
@@ -92,22 +92,22 @@ process Viral_Identification {
     maxRetries 1
 
     input:
-	tuple val(base), file("${base}_map_all_bbmap_covstats.txt")
+	tuple val(base), file("${base}_map_all_bbmap_covstats.tsv")
 	file ref
 	
     output:
         file("*vid.txt") optional true
-	file("*_failed_assembly.txt") optional true
+	file("*_failed_assembly.tsv") optional true
 
     publishDir "${params.outdir}/viral_identification", mode: 'copy', pattern:'*vid.txt'
-    publishDir "${params.outdir}/failed_assembly", mode: 'copy', pattern:'*_failed_assembly.txt'
+    publishDir "${params.outdir}/failed_assembly", mode: 'copy', pattern:'*_failed_assembly.tsv'
 
     script:
     """
     #!/bin/bash
 
     # identify initial reference
-    python3 $workflow.projectDir/bin/select_reference.py -bbmap_covstats ${base}_map_all_bbmap_covstats.txt -b ${base} -m ${params.m} -p ${params.p}
+    python3 $workflow.projectDir/bin/select_reference.py -bbmap_covstats ${base}_map_all_bbmap_covstats.tsv -b ${base} -m ${params.m} -p ${params.p}
 
     """
 }
@@ -169,7 +169,7 @@ process Consensus_Generation_SE {
 	outm=${base}_${ref_id}_${ref_tag}_map_ref.sam \\
 	ref=${base}_${ref_id}_${ref_tag}.fa \\
 	threads=${task.cpus} \\
-	local=true interleaved=false maxindel=80 -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_map_ref_stats.txt 2>&1
+	local=true interleaved=false maxindel=80 ambiguous=random -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_map_ref_stats.txt 2>&1
 
     # Convert the output sam file to bam file, sort and index the bam file
     samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_map_ref.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
@@ -216,7 +216,7 @@ process Consensus_Generation_SE {
 	outm=${base}_${ref_id}_${ref_tag}_map1.sam \\
 	ref=${base}_${ref_id}_${ref_tag}.consensus1.fa \\
 	threads=${task.cpus} \\
-	local=true interleaved=false maxindel=80 -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_map1_stats.txt 2>&1
+	local=true interleaved=false maxindel=80 ambiguous=random -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_map1_stats.txt 2>&1
     samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_map1.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_map1.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_map1.sam
 
@@ -248,7 +248,7 @@ process Consensus_Generation_SE {
 	outm=${base}_${ref_id}_${ref_tag}_map2.sam \\
 	ref=${base}_${ref_id}_${ref_tag}.consensus2.fa \\
 	threads=${task.cpus} \\
-	local=true interleaved=false maxindel=80 -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_map2_stats.txt 2>&1
+	local=true interleaved=false maxindel=80 ambiguous=random -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_map2_stats.txt 2>&1
     samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_map2.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_map2.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_map2.sam
 
@@ -280,7 +280,7 @@ process Consensus_Generation_SE {
 	outm=${base}_${ref_id}_${ref_tag}_mapf.sam \\
 	ref=${base}_${ref_id}_${ref_tag}.consensus_final.fa \\
 	threads=${task.cpus} \\
-	local=true interleaved=false maxindel=80 -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_mapf_stats.txt 2>&1
+	local=true interleaved=false maxindel=80 ambiguous=random -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_mapf_stats.txt 2>&1
     samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_mapf.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_mapf.sam
 
@@ -356,9 +356,9 @@ process Summary_Generation {
     ref_header=\$(cat \${outdir_realpath}/viral_identification/${base}_${ref_id}_${ref_tag}_vid.txt | cut -f4)
 
     # get the reference genome (map_all) id, size, coverage
-    ref_length=\$(grep ${ref_id} \${outdir_realpath}/bbmap_covstats_all_ref/${base}_map_all_bbmap_covstats.txt | cut -f3)
-    ref_coverage=\$(grep ${ref_id} \${outdir_realpath}/bbmap_covstats_all_ref/${base}_map_all_bbmap_covstats.txt | cut -f5)
-    median_coverage=\$(grep ${ref_id} \${outdir_realpath}/bbmap_covstats_all_ref/${base}_map_all_bbmap_covstats.txt | cut -f10)
+    ref_length=\$(grep ${ref_id} \${outdir_realpath}/bbmap_covstats_all_ref/${base}_map_all_bbmap_covstats.tsv | cut -f3)
+    ref_coverage=\$(grep ${ref_id} \${outdir_realpath}/bbmap_covstats_all_ref/${base}_map_all_bbmap_covstats.tsv | cut -f5)
+    median_coverage=\$(grep ${ref_id} \${outdir_realpath}/bbmap_covstats_all_ref/${base}_map_all_bbmap_covstats.tsv | cut -f10)
 
     # get the consensus final length
     consensus_length=\$(awk '/^>/{if (l!="") print l; print; l=0; next}{l+=length(\$0)}END{print l}' \${outdir_realpath}/consensus_final/${base}_${ref_id}_${ref_tag}.consensus_final.fa | awk 'FNR==2{print val,\$1}')
@@ -427,8 +427,8 @@ process Final_Processing {
     # summary stats for failed assembly
     if [ -n "\$(ls -A \${outdir_realpath}/failed_assembly 2>/dev/null)" ]
     then
-	cp \${outdir_realpath}/failed_assembly/*_failed_assembly.txt .
-	cat *_failed_assembly.txt | awk 'NR==1 || NR % 2 == 0' > failed_assembly_summary.tsv
+	cp \${outdir_realpath}/failed_assembly/*_failed_assembly.tsv .
+	cat *_failed_assembly.tsv | awk 'NR==1 || NR % 2 == 0' > failed_assembly_summary.tsv
     fi
 	
     """
@@ -498,9 +498,9 @@ process Aligning_PE {
         file ref
 
     output:
-	tuple val(base), file("${base}_map_all_bbmap_covstats.txt")
+	tuple val(base), file("${base}_map_all_bbmap_covstats.tsv")
 
-    publishDir "${params.outdir}/bbmap_covstats_all_ref", mode: 'copy', pattern:'*_map_all_bbmap_covstats.txt'
+    publishDir "${params.outdir}/bbmap_covstats_all_ref", mode: 'copy', pattern:'*_map_all_bbmap_covstats.tsv'
     
     script:
 
@@ -514,13 +514,13 @@ process Aligning_PE {
         outm=${base}_map_all.sam \\
         ref=${ref} \\
         threads=${task.cpus} \\
-        covstats=${base}_map_all_bbmap_covstats.txt \\
+        covstats=${base}_map_all_bbmap_covstats.tsv \\
         local=true interleaved=false maxindel=80 -Xmx${task.memory.giga}g > ${base}_map_all_stats.txt 2>&1
 
     # sort bbmap_out.txt based on median_fold (column 10) in descending order 
-    head -1 ${base}_map_all_bbmap_covstats.txt > ${base}_map_all_bbmap_covstats.temp.txt
-    awk 'NR>1' < ${base}_map_all_bbmap_covstats.txt | sort -t \$'\t' -nrk10 >> ${base}_map_all_bbmap_covstats.temp.txt
-    mv ${base}_map_all_bbmap_covstats.temp.txt ${base}_map_all_bbmap_covstats.txt
+    head -1 ${base}_map_all_bbmap_covstats.tsv > ${base}_map_all_bbmap_covstats.temp.txt
+    awk 'NR>1' < ${base}_map_all_bbmap_covstats.tsv | sort -t \$'\t' -nrk10 >> ${base}_map_all_bbmap_covstats.temp.txt
+    mv ${base}_map_all_bbmap_covstats.temp.txt ${base}_map_all_bbmap_covstats.tsv
 
     """
 }
@@ -582,7 +582,7 @@ process Consensus_Generation_PE {
 	outm=${base}_${ref_id}_${ref_tag}_map_ref.sam \\
 	ref=${base}_${ref_id}_${ref_tag}.fa \\
 	threads=${task.cpus} \\
-	local=true interleaved=false maxindel=80 -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_map_ref_stats.txt 2>&1
+	local=true interleaved=false maxindel=80 ambiguous=random -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_map_ref_stats.txt 2>&1
 
     # Convert the output sam file to bam file, sort and index the bam file
     samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_map_ref.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
@@ -628,7 +628,7 @@ process Consensus_Generation_PE {
 	outm=${base}_${ref_id}_${ref_tag}_map1.sam \\
 	ref=${base}_${ref_id}_${ref_tag}.consensus1.fa \\
 	threads=${task.cpus} \\
-	local=true interleaved=false maxindel=80 -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_map1_stats.txt 2>&1
+	local=true interleaved=false maxindel=80 ambiguous=random -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_map1_stats.txt 2>&1
     samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_map1.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_map1.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_map1.sam
 
@@ -660,7 +660,7 @@ process Consensus_Generation_PE {
 	outm=${base}_${ref_id}_${ref_tag}_map2.sam \\
 	ref=${base}_${ref_id}_${ref_tag}.consensus2.fa \\
 	threads=${task.cpus} \\
-	local=true interleaved=false maxindel=80 -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_map2_stats.txt 2>&1
+	local=true interleaved=false maxindel=80 ambiguous=random -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_map2_stats.txt 2>&1
     samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_map2.sam | samtools sort -@ {$task.cpus} - > ${base}_${ref_id}_${ref_tag}_map2.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_map2.sam
 
@@ -692,7 +692,7 @@ process Consensus_Generation_PE {
 	outm=${base}_${ref_id}_${ref_tag}_mapf.sam \\
 	ref=${base}_${ref_id}_${ref_tag}.consensus_final.fa \\
 	threads=${task.cpus} \\
-	local=true interleaved=false maxindel=80 -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_mapf_stats.txt 2>&1
+	local=true interleaved=false maxindel=80 ambiguous=random -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_mapf_stats.txt 2>&1
     samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_mapf.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_mapf.sam
 

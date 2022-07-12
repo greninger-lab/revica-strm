@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     # no reference selected, output reference with highest covered percent and read distribution info
     else:
-        output_file_name = args.b + '_failed_assembly.txt'
+        output_file_name = args.b + '_failed_assembly.tsv'
         output_file = open(output_file_name, 'w')
 
         mapped_ref = []
