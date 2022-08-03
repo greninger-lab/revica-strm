@@ -1,2 +1,0 @@
-sample name	raw reads/pairs	surviving reads/pairs	reference accession	reference tag	reference header	reference length	reference num Ns	%ref coverage	median coverage	consensus length	mapped reads	%reads on target	num Ns	%N	serotype
-example	750066	672047 (89.60%)	KY369892.1	RV	Rhinovirus A101 strain SC1004, complete genome	7043	 0	100.0000	241	 7045	17446	 2.59594939044441832100	 0	 0	RV-A101
