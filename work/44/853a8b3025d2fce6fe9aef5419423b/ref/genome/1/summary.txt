@@ -1,0 +1,13 @@
+#Summary
+#Generated on	Wed Jul 13 16:14:58 PDT 2022
+#Version	5
+chroms	1
+bases	46673
+defined	30666
+undefined	16007
+contigs	1
+scaffolds	1
+interpad	300
+source	/Users/greningerlab/AS/revica/work/44/853a8b3025d2fce6fe9aef5419423b/example_KF923898.1_HCOV.consensus_final.fa
+bytes	31210
+last modified	1657754098632

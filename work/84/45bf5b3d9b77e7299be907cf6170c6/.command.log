@@ -1,0 +1,21 @@
+[bam_sort_core] merging from 0 files and 8 in-memory blocks...
+[M::bam2fq_mainloop] discarded 0 singletons
+[M::bam2fq_mainloop] processed 17449 reads
+[mpileup] 1 samples in 1 input files
+Minimum Quality: 15
+Threshold: 0.6
+Minimum depth: 3
+Regions with depth less than minimum depth covered by: N
+[bam_sort_core] merging from 0 files and 8 in-memory blocks...
+[mpileup] 1 samples in 1 input files
+Minimum Quality: 15
+Threshold: 0.6
+Minimum depth: 3
+Regions with depth less than minimum depth covered by: N
+[bam_sort_core] merging from 0 files and 8 in-memory blocks...
+[mpileup] 1 samples in 1 input files
+Minimum Quality: 15
+Threshold: 0.6
+Minimum depth: 3
+Regions with depth less than minimum depth covered by: N
+[bam_sort_core] merging from 0 files and 8 in-memory blocks...

@@ -1,6 +1,7 @@
 # REVICA
 
 Revica is a reference-based viral consensus genome assembly pipeline written in [Nextflow](https://www.nextflow.io/). For ease of use, Revica can be run in [Docker](https://docs.docker.com/get-docker/). Revica currently supports consensus genome assembly of:
+- **Monkeypox virus (MpxV)**
 - Rhinovirus (RV)
 - Seasonal human coronavirus (HCOV)
 - Human metapneumovirus (HMPV)
@@ -50,6 +51,7 @@ Valid command line arguments:
 	--p				The minimum covered percent by the reads for the initial refernce to be considered (default 60)
 	--dedup				Deduplicated reads using picard before consensus genome assembly
 	--sample			Subsample reads to a fraction or a number
+	--mpxv				Consensus genome assembly for Monkeypox virus using reference NC_063383.1
 	--help				Displays help message
 
 ## Usage notes

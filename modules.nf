@@ -1,14 +1,12 @@
 process Trimming_SE {
-    errorStrategy 'ignore'
+    // errorStrategy 'ignore'
+    errorStrategy 'retry'
+    maxRetries 1
+
 
     input:
         file R1// from input_read_ch
         file ADAPTERS
-        val MINLEN
-        val SETTING
-        val LEADING
-        val TRAILING
-        val SWINDOW
 
     output:
         tuple env(base), file("*.trimmed.fastq.gz") 
@@ -26,13 +24,13 @@ process Trimming_SE {
     base=\$(basename ${R1} ".fastq")
     	if [[ ${params.sample} == false ]]
     	then 
-    	    trimmomatic SE -threads ${task.cpus} ${R1} \$base.trimmed.fastq ILLUMINACLIP:${ADAPTERS}:${SETTING} \
-    	    LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> \${base}_trim_stats.txt
+    	    trimmomatic SE -threads ${task.cpus} ${R1} \$base.trimmed.fastq ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
+    	    LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> \${base}_trim_stats.txt
     	    gzip \$base.trimmed.fastq
 	else
 	    seqtk sample ${R1} ${params.sample} > \${base}_sampled.fastq
-    	    trimmomatic SE -threads ${task.cpus} \${base}_sampled.fastq \$base.trimmed.fastq ILLUMINACLIP:${ADAPTERS}:${SETTING} \
-    	    LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> \${base}_trim_stats.txt
+    	    trimmomatic SE -threads ${task.cpus} \${base}_sampled.fastq \$base.trimmed.fastq ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
+    	    LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> \${base}_trim_stats.txt
     	    gzip \$base.trimmed.fastq
 	fi
     elif [[ ${R1} == *.fastq.gz ]] 
@@ -40,13 +38,13 @@ process Trimming_SE {
     base=\$(basename ${R1} ".fastq.gz")
 	if [[ ${params.sample} == false ]]
 	then
-    	    trimmomatic SE -threads ${task.cpus} ${R1} \$base.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${SETTING} \
-    	    LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> \${base}_trim_stats.txt
+    	    trimmomatic SE -threads ${task.cpus} ${R1} \$base.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
+    	    LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> \${base}_trim_stats.txt
 	else
 	    seqtk sample ${R1} ${params.sample} > \${base}_sampled.fastq
 	    gzip \${base}_sampled.fastq
-    	    trimmomatic SE -threads ${task.cpus} \${base}_sampled.fastq.gz \$base.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${SETTING} \
-    	    LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> \${base}_trim_stats.txt
+    	    trimmomatic SE -threads ${task.cpus} \${base}_sampled.fastq.gz \${base}.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
+    	    LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> \${base}_trim_stats.txt
 	fi
     fi
     """
@@ -440,11 +438,7 @@ process Trimming_PE {
     input:
         tuple val(base), file(R1), file(R2) // from input_read_ch
         file ADAPTERS
-        val MINLEN
-        val SETTING
-        val LEADING
-        val TRAILING
-        val SWINDOW
+
     output: 
         tuple val(base), file("${base}.R1.paired.trimmed.fastq.gz"), file("${base}.R2.paired.trimmed.fastq.gz")
 	file("*_trim_stats.txt")
@@ -461,13 +455,13 @@ process Trimming_PE {
 	if [[ ${params.sample} == false ]]
 	then
     	    trimmomatic PE -threads ${task.cpus} ${R1} ${R2} ${base}.R1.paired.trimmed.fastq ${base}.R1.unpaired.fastq ${base}.R2.paired.trimmed.fastq ${base}.R2.unpaired.fastq \
-    	    ILLUMINACLIP:${ADAPTERS}:${SETTING} LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> ${base}_trim_stats.txt
+    	    ILLUMINACLIP:${ADAPTERS}:${params.SETTING} LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> ${base}_trim_stats.txt
     	    gzip *paired*.fastq
 	else
 	    seqtk sample -s 100 ${R1} ${params.sample} > ${base}_R1_sampled.fastq
 	    seqtk sample -s 100 ${R2} ${params.sample} > ${base}_R2_sampled.fastq
     	    trimmomatic PE -threads ${task.cpus} ${base}_R1_sampled.fastq ${base}_R2_sampled.fastq ${base}.R1.paired.trimmed.fastq ${base}.R1.unpaired.fastq ${base}.R2.paired.trimmed.fastq ${base}.R2.unpaired.fastq \
-    	    ILLUMINACLIP:${ADAPTERS}:${SETTING} LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> ${base}_trim_stats.txt
+    	    ILLUMINACLIP:${ADAPTERS}:${params.SETTING} LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> ${base}_trim_stats.txt
 	    gzip *paired*.fastq
 	fi
     elif [[ ${R1} == *.fastq.gz && ${R2} == *.fastq.gz ]]
@@ -475,14 +469,14 @@ process Trimming_PE {
 	if [[ ${params.sample} == false ]]
 	then
     	    trimmomatic PE -threads ${task.cpus} ${R1} ${R2} ${base}.R1.paired.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}.R2.paired.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
-    	    ILLUMINACLIP:${ADAPTERS}:${SETTING} LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> ${base}_trim_stats.txt
+    	    ILLUMINACLIP:${ADAPTERS}:${params.SETTING} LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> ${base}_trim_stats.txt
 	else
 	    seqtk sample -s 100 ${R1} ${params.sample} > ${base}_R1_sampled.fastq
 	    seqtk sample -s 100 ${R2} ${params.sample} > ${base}_R2_sampled.fastq 
 	    gzip ${base}_R1_sampled.fastq
 	    gzip ${base}_R2_sampled.fastq
     	    trimmomatic PE -threads ${task.cpus} ${base}_R1_sampled.fastq.gz ${base}_R2_sampled.fastq.gz ${base}.R1.paired.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}.R2.paired.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
-    	    ILLUMINACLIP:${ADAPTERS}:${SETTING} LEADING:${LEADING} TRAILING:${TRAILING} SLIDINGWINDOW:${SWINDOW} MINLEN:${MINLEN} &> ${base}_trim_stats.txt
+    	    ILLUMINACLIP:${ADAPTERS}:${params.SETTING} LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> ${base}_trim_stats.txt
 	fi
     fi
 

@@ -44,15 +44,14 @@ def help() {
 	--p                     The minimum covered percent by the reads for the initial refernce to be considered (default 60)
 	--dedup         	Get rid of duplicated reads before consensus genome assembly
 	--sample		Subsample reads to a fraction or a number
-        --mpxv                  generate consensus genome for monkeypox virus (mpxv)
+        --mpxv                  Generate consensus genome for monkeypox virus using NC_063383 as reference
 	--help			Displays help message in terminal
     """
 }
 
 // Setup command-line parameters
-params.help = false
-params.reads = false
-params.outdir = false
+params.reads = null
+params.outdir = null
 params.pe = false
 params.ref = false
 params.m = 3
@@ -60,6 +59,18 @@ params.p = 60
 params.dedup = false
 params.sample = false
 params.mpxv = false
+params.help = false
+
+//Trimmomatic Settings
+params.SETTING = "2:30:10:1:true"
+params.LEADING = "3"
+params.TRAILING = "3"
+params.SWINDOW = "4:20"
+if (params.mpxv != false) {
+    params.MINLEN = "120"
+} else {
+    params.MINLEN = "35"
+}
 
 // Check Nextflow version for enabling DSL2
 nextflow_dsl2_v = '20.07.1'
@@ -101,34 +112,18 @@ if (params.ref != false) {
     ref = file("${baseDir}/ref/ref.fa")
 }
 
-// Adapters file path
+// Trimmomatic adapters file path
 ADAPTERS = file("${baseDir}/adapters/adapters.fa")
 
-//Trimmomatic Settings
-params.SETTING = "2:30:10:1:true"
-params.LEADING = "3"
-params.TRAILING = "3"
-params.SWINDOW = "4:20"
-if (params.mpxv != false) {
-    params.MINLEN = "100"
-} else {
-    params.MINLEN = "35"
-}
-
-// Setup Blast database for serotyping
-// All BLAST db files for respiratory viruses recognized by this pipeline including:
-// rhinovirus
-// human coronavirus 229E, OC43, NL63, HKU1
-// human respiratory syncytial virus A, B
-// human metapneumovirus A1, A2, B1, B2 
-BLAST_DB_ALL_1 = file("${baseDir}/blast_db/all_ref.fasta")
-BLAST_DB_ALL_2 = file("${baseDir}/blast_db/all_ref.fasta.ndb")
-BLAST_DB_ALL_3 = file("${baseDir}/blast_db/all_ref.fasta.nhr")
-BLAST_DB_ALL_4 = file("${baseDir}/blast_db/all_ref.fasta.nin")
-BLAST_DB_ALL_5 = file("${baseDir}/blast_db/all_ref.fasta.not")
-BLAST_DB_ALL_6 = file("${baseDir}/blast_db/all_ref.fasta.nsq")
-BLAST_DB_ALL_7 = file("${baseDir}/blast_db/all_ref.fasta.ntf")    
-BLAST_DB_ALL_8 = file("${baseDir}/blast_db/all_ref.fasta.nto")  
+// Setup Blast database for rhinovirus serotyping
+BLAST_DB_ALL_1 = file("${baseDir}/blast_db/VP1_164_annotated_nospaces.fasta")
+BLAST_DB_ALL_2 = file("${baseDir}/blast_db/VP1_164_annotated_nospaces.fasta.ndb")
+BLAST_DB_ALL_3 = file("${baseDir}/blast_db/VP1_164_annotated_nospaces.fasta.nhr")
+BLAST_DB_ALL_4 = file("${baseDir}/blast_db/VP1_164_annotated_nospaces.fasta.nin")
+BLAST_DB_ALL_5 = file("${baseDir}/blast_db/VP1_164_annotated_nospaces.fasta.not")
+BLAST_DB_ALL_6 = file("${baseDir}/blast_db/VP1_164_annotated_nospaces.fasta.nsq")
+BLAST_DB_ALL_7 = file("${baseDir}/blast_db/VP1_164_annotated_nospaces.fasta.ntf")    
+BLAST_DB_ALL_8 = file("${baseDir}/blast_db/VP1_164_annotated_nospaces.fasta.nto")  
 
 // Setup pipeline header
 def header() {
@@ -201,12 +196,7 @@ workflow {
 
 	Trimming_SE (
             input_read_ch, 
-            ADAPTERS,
-            params.MINLEN,
-            params.SETTING, 
-            params.LEADING,
-            params.TRAILING,
-            params.SWINDOW
+            ADAPTERS
         )
 
         Aligning_SE (
@@ -248,12 +238,7 @@ workflow {
 	
 	Trimming_PE (
 	    input_read_ch, 
-            ADAPTERS,
-            params.MINLEN,
-            params.SETTING, 
-            params.LEADING,
-            params.TRAILING,
-            params.SWINDOW
+            ADAPTERS
 	)
 
         Aligning_PE (
