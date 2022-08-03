@@ -1,1 +1,0 @@
-2022-07-13 16:14:11	57.4s	lonely_magritte	OK	0f72857845d48a1a985d0de48884a516	130d7ada-aa2f-499d-ad1f-9d97fbf0854b	nextflow run main.nf --reads example --outdir /Users/greningerlab/Downloads/revica_test -N aseree@uw.edu
