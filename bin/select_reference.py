@@ -2,10 +2,12 @@ import argparse
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Find the accession number associated with the highest bbmap median_fold for each virus.')
-    parser.add_argument('-bbmap_covstats', metavar='bbmap_covstats', required=True, type=str, help='bbmap covstats output file')
-    parser.add_argument('-b', metavar='sample basename', required=True, type=str, help='sample basename')
-    parser.add_argument('-m', metavar='M', type=int, default=3, help='minimum median threshold in bbmap covstats output for a reference to be considered. (Default 3)')
-    parser.add_argument('-p', metavar='minimum covered percent for reference', type=int, default=70, help='minimum covered percent in bbmap covstats output for a reference to be considered. (Default 70)')
+    parser.add_argument('-bbmap_covstats', required=True, type=str, help='bbmap covstats output file')
+    parser.add_argument('-b', required=True, type=str, help='sample basename')
+    parser.add_argument('-reads_num', required=True, type=str, help='number of input reads')
+    parser.add_argument('-mapped_reads', required=True, type=str, help='number of mapped reads')
+    parser.add_argument('-m', type=int, default=3, help='minimum median threshold in bbmap covstats output for a reference to be considered. (Default 3)')
+    parser.add_argument('-p', type=int, default=70, help='minimum covered percent in bbmap covstats output for a reference to be considered. (Default 70)')
     args = parser.parse_args()
 
     init_ref_candidates = []
@@ -55,7 +57,7 @@ if __name__ == "__main__":
 
         # loop index is for: reference id, average coverage, covered percent, plus reads, minus reads, median coverage
         ref_best_cov_loop_index = [0,1,4,6,7,9]
-        ref_best_cov_stats = [args.b]
+        ref_best_cov_stats = [args.b, args.reads_num, args.mapped_reads]
 
         # if there are any mapped reads
         if len(mapped_ref) > 0:
@@ -88,7 +90,7 @@ if __name__ == "__main__":
         for i in ref_best_cov_stats:
             output_text = output_text + str(i) + "\t"
 
-        header = "sample_name\tref_best_cov\taverage_coverage\tcovered_percent\tplus_reads\tminus_reads\tmedian_coverage\treads_distribution"
+        header = "sample_name\treads_used\tmapped_reads\tref_best_cov\taverage_coverage\tcovered_percent\tplus_reads\tminus_reads\tmedian_coverage\treads_distribution"
         output_file.write(header)
         output_file.write('\n')
         output_file.write(output_text)

@@ -59,7 +59,7 @@ process Aligning_SE {
 	file ref
 
     output:
-	tuple val(base), file("${base}_map_all_bbmap_covstats.tsv")
+	tuple val(base), file("${base}_map_all_bbmap_covstats.tsv"), file("${base}_map_all_stats.txt")
 
     publishDir "${params.outdir}/bbmap_covstats_all_ref", mode: 'copy', pattern:'*_map_all_bbmap_covstats.tsv'
     
@@ -90,7 +90,7 @@ process Viral_Identification {
     maxRetries 1
 
     input:
-	tuple val(base), file("${base}_map_all_bbmap_covstats.tsv")
+	tuple val(base), file("${base}_map_all_bbmap_covstats.tsv"), file("${base}_map_all_stats.txt")
 	file ref
 	
     output:
@@ -104,8 +104,14 @@ process Viral_Identification {
     """
     #!/bin/bash
 
+    # get total input reads for mapping
+    reads_used=\$(grep "Reads Used:" ${base}_map_all_stats.txt | cut -f2)
+
+    # get mapped reads
+    mapped_reads=\$(grep "Mapped reads:" ${base}_map_all_stats.txt | cut -f2)
+    
     # identify initial reference
-    python3 $workflow.projectDir/bin/select_reference.py -bbmap_covstats ${base}_map_all_bbmap_covstats.tsv -b ${base} -m ${params.m} -p ${params.p}
+    python3 $workflow.projectDir/bin/select_reference.py -bbmap_covstats ${base}_map_all_bbmap_covstats.tsv -b ${base} -reads_num \${reads_used} -mapped_reads \${mapped_reads} -m ${params.m} -p ${params.p}
 
     """
 }
@@ -195,7 +201,7 @@ process Consensus_Generation_SE {
         --min-BQ 15 \\
         --output ${base}_${ref_id}_${ref_tag}_1.mpileup \\
         ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
-    cat ${base}_${ref_id}_${ref_tag}_1.mpileup | ivar consensus -q 15 -t 0.6 -m 3 -n N -p ${base}_${ref_id}_${ref_tag}.consensus1
+    cat ${base}_${ref_id}_${ref_tag}_1.mpileup | ivar consensus ${params.ivar_consensus_args} -n N -p ${base}_${ref_id}_${ref_tag}.consensus1
 
     # Get rid of leading and trailing repeated Ns and ns
     seqkit -is replace -p "^n+|n+\$" -r "" ${base}_${ref_id}_${ref_tag}.consensus1.fa > ${base}_${ref_id}_${ref_tag}.consensus1.temp.fa
@@ -227,7 +233,7 @@ process Consensus_Generation_SE {
         --min-BQ 15 \\
         --output ${base}_${ref_id}_${ref_tag}_2.mpileup \\
         ${base}_${ref_id}_${ref_tag}_map1.sorted.bam
-    cat ${base}_${ref_id}_${ref_tag}_2.mpileup | ivar consensus -q 15 -t 0.6 -m 3 -n N -p ${base}_${ref_id}_${ref_tag}.consensus2
+    cat ${base}_${ref_id}_${ref_tag}_2.mpileup | ivar consensus ${params.ivar_consensus_args} -n N -p ${base}_${ref_id}_${ref_tag}.consensus2
 
     # Get rid of repeated Ns and ns
     seqkit -is replace -p "^n+|n+\$" -r "" ${base}_${ref_id}_${ref_tag}.consensus2.fa > ${base}_${ref_id}_${ref_tag}.consensus2.temp.fa
@@ -259,7 +265,7 @@ process Consensus_Generation_SE {
         --min-BQ 15 \\
         --output ${base}_${ref_id}_${ref_tag}_final.mpileup \\
         ${base}_${ref_id}_${ref_tag}_map2.sorted.bam
-    cat ${base}_${ref_id}_${ref_tag}_final.mpileup | ivar consensus -q 15 -t 0.6 -m 3 -n N -p ${base}_${ref_id}_${ref_tag}.consensus_final
+    cat ${base}_${ref_id}_${ref_tag}_final.mpileup | ivar consensus ${params.ivar_consensus_args} -n N -p ${base}_${ref_id}_${ref_tag}.consensus_final
 
     # Get rid of repeated Ns and ns
     seqkit -is replace -p "^n+|n+\$" -r "" ${base}_${ref_id}_${ref_tag}.consensus_final.fa > ${base}_${ref_id}_${ref_tag}.consensus_final.temp.fa
@@ -492,7 +498,7 @@ process Aligning_PE {
         file ref
 
     output:
-	tuple val(base), file("${base}_map_all_bbmap_covstats.tsv")
+	tuple val(base), file("${base}_map_all_bbmap_covstats.tsv"), file("${base}_map_all_stats.txt")
 
     publishDir "${params.outdir}/bbmap_covstats_all_ref", mode: 'copy', pattern:'*_map_all_bbmap_covstats.tsv'
     
@@ -603,7 +609,7 @@ process Consensus_Generation_PE {
         --min-BQ 15 \\
         --output ${base}_${ref_id}_${ref_tag}_1.mpileup \\
         ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
-    cat ${base}_${ref_id}_${ref_tag}_1.mpileup | ivar consensus -q 15 -t 0.6 -m 3 -n N -p ${base}_${ref_id}_${ref_tag}.consensus1
+    cat ${base}_${ref_id}_${ref_tag}_1.mpileup | ivar consensus ${params.ivar_consensus_args} -n N -p ${base}_${ref_id}_${ref_tag}.consensus1
 
     # Get rid of leading and trailing repeated Ns and ns
     seqkit -is replace -p "^n+|n+\$" -r "" ${base}_${ref_id}_${ref_tag}.consensus1.fa > ${base}_${ref_id}_${ref_tag}.consensus1.temp.fa
@@ -635,7 +641,7 @@ process Consensus_Generation_PE {
         --min-BQ 15 \\
         --output ${base}_${ref_id}_${ref_tag}_2.mpileup \\
         ${base}_${ref_id}_${ref_tag}_map1.sorted.bam
-    cat ${base}_${ref_id}_${ref_tag}_2.mpileup | ivar consensus -q 15 -t 0.6 -m 3 -n N -p ${base}_${ref_id}_${ref_tag}.consensus2
+    cat ${base}_${ref_id}_${ref_tag}_2.mpileup | ivar consensus ${params.ivar_consensus_args} -n N -p ${base}_${ref_id}_${ref_tag}.consensus2
 
     # Get rid of repeated Ns and ns
     seqkit -is replace -p "^n+|n+\$" -r "" ${base}_${ref_id}_${ref_tag}.consensus2.fa > ${base}_${ref_id}_${ref_tag}.consensus2.temp.fa
@@ -667,7 +673,7 @@ process Consensus_Generation_PE {
         --min-BQ 15 \\
         --output ${base}_${ref_id}_${ref_tag}_final.mpileup \\
         ${base}_${ref_id}_${ref_tag}_map2.sorted.bam
-    cat ${base}_${ref_id}_${ref_tag}_final.mpileup | ivar consensus -q 15 -t 0.6 -m 3 -n N -p ${base}_${ref_id}_${ref_tag}.consensus_final
+    cat ${base}_${ref_id}_${ref_tag}_final.mpileup | ivar consensus ${params.ivar_consensus_args} -n N -p ${base}_${ref_id}_${ref_tag}.consensus_final
 
     # Get rid of repeated Ns and ns
     seqkit -is replace -p "^n+|n+\$" -r "" ${base}_${ref_id}_${ref_tag}.consensus_final.fa > ${base}_${ref_id}_${ref_tag}.consensus_final.temp.fa

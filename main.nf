@@ -68,8 +68,10 @@ params.TRAILING = "3"
 params.SWINDOW = "4:20"
 if (params.mpxv != false) {
     params.MINLEN = "120"
+    params.ivar_consensus_args = '-q 15 -t 0.6 -m 5'
 } else {
     params.MINLEN = "35"
+    params.ivar_consensus_args = '-q 15 -t 0.6 -m 3'
 }
 
 // Check Nextflow version for enabling DSL2
