@@ -24,14 +24,13 @@ process Trimming_SE {
     base=\$(basename ${R1} ".fastq")
     	if [[ ${params.sample} == false ]]
     	then 
-    	    trimmomatic SE -threads ${task.cpus} ${R1} \$base.trimmed.fastq ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
+            gzip ${R1} 
+    	    trimmomatic SE -threads ${task.cpus} ${R1}.gz \$base.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
     	    LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> \${base}_trim_stats.txt
-    	    gzip \$base.trimmed.fastq
 	else
-	    seqtk sample ${R1} ${params.sample} > \${base}_sampled.fastq
-    	    trimmomatic SE -threads ${task.cpus} \${base}_sampled.fastq \$base.trimmed.fastq ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
+	    seqtk sample ${R1} ${params.sample} | gzip > \${base}_sampled.fastq.gz
+    	    trimmomatic SE -threads ${task.cpus} \${base}_sampled.fastq.gz \$base.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
     	    LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> \${base}_trim_stats.txt
-    	    gzip \$base.trimmed.fastq
 	fi
     elif [[ ${R1} == *.fastq.gz ]] 
     then
@@ -41,8 +40,7 @@ process Trimming_SE {
     	    trimmomatic SE -threads ${task.cpus} ${R1} \$base.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
     	    LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> \${base}_trim_stats.txt
 	else
-	    seqtk sample ${R1} ${params.sample} > \${base}_sampled.fastq
-	    gzip \${base}_sampled.fastq
+	    seqtk sample ${R1} ${params.sample} | gzip > \${base}_sampled.fastq.gz
     	    trimmomatic SE -threads ${task.cpus} \${base}_sampled.fastq.gz \${base}.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
     	    LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> \${base}_trim_stats.txt
 	fi
@@ -149,6 +147,7 @@ process Consensus_Generation_SE {
 	tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.fa") 
 
     output:
+        tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.consensus_final.fa"), file("${base}_${ref_id}_${ref_tag}_mapf.sorted.bam")
 	tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.consensus_final.fa")
 	tuple file("*.txt"), file("*.fa"), file("*bam*") 
 
@@ -177,11 +176,12 @@ process Consensus_Generation_SE {
 
     # Convert the output sam file to bam file, sort and index the bam file
     samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_map_ref.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
+    samtools index -@ ${task.cpus} ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_map_ref.sam
 
     if [[ ${params.dedup} == true ]]
     then
-    picard MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt -REMOVE_DUPLICATES true
+    picard MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt --ASSUME_SORTED true --VALIDATION_STRINGENCY LENIENT --REMOVE_DUPLICATES true
     # remove pre-deduplicated bam file and rename deduplicated bam file
     mv ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref_og.sorted.bam
     mv ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
@@ -201,7 +201,7 @@ process Consensus_Generation_SE {
         --min-BQ 15 \\
         --output ${base}_${ref_id}_${ref_tag}_1.mpileup \\
         ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
-    cat ${base}_${ref_id}_${ref_tag}_1.mpileup | ivar consensus ${params.ivar_consensus_args} -n N -p ${base}_${ref_id}_${ref_tag}.consensus1
+    cat ${base}_${ref_id}_${ref_tag}_1.mpileup | ivar consensus -q ${params.q} -t ${params.t} -m ${params.d} -n N -p ${base}_${ref_id}_${ref_tag}.consensus1
 
     # Get rid of leading and trailing repeated Ns and ns
     seqkit -is replace -p "^n+|n+\$" -r "" ${base}_${ref_id}_${ref_tag}.consensus1.fa > ${base}_${ref_id}_${ref_tag}.consensus1.temp.fa
@@ -233,7 +233,7 @@ process Consensus_Generation_SE {
         --min-BQ 15 \\
         --output ${base}_${ref_id}_${ref_tag}_2.mpileup \\
         ${base}_${ref_id}_${ref_tag}_map1.sorted.bam
-    cat ${base}_${ref_id}_${ref_tag}_2.mpileup | ivar consensus ${params.ivar_consensus_args} -n N -p ${base}_${ref_id}_${ref_tag}.consensus2
+    cat ${base}_${ref_id}_${ref_tag}_2.mpileup | ivar consensus -q ${params.q} -t ${params.t} -m ${params.d} -n N -p ${base}_${ref_id}_${ref_tag}.consensus2
 
     # Get rid of repeated Ns and ns
     seqkit -is replace -p "^n+|n+\$" -r "" ${base}_${ref_id}_${ref_tag}.consensus2.fa > ${base}_${ref_id}_${ref_tag}.consensus2.temp.fa
@@ -265,7 +265,7 @@ process Consensus_Generation_SE {
         --min-BQ 15 \\
         --output ${base}_${ref_id}_${ref_tag}_final.mpileup \\
         ${base}_${ref_id}_${ref_tag}_map2.sorted.bam
-    cat ${base}_${ref_id}_${ref_tag}_final.mpileup | ivar consensus ${params.ivar_consensus_args} -n N -p ${base}_${ref_id}_${ref_tag}.consensus_final
+    cat ${base}_${ref_id}_${ref_tag}_final.mpileup | ivar consensus -q ${params.q} -t ${params.t} -m ${params.d} -n N -p ${base}_${ref_id}_${ref_tag}.consensus_final
 
     # Get rid of repeated Ns and ns
     seqkit -is replace -p "^n+|n+\$" -r "" ${base}_${ref_id}_${ref_tag}.consensus_final.fa > ${base}_${ref_id}_${ref_tag}.consensus_final.temp.fa
@@ -291,6 +291,58 @@ process Consensus_Generation_SE {
     """
 }
 
+process VCF_Generation {
+    container 'quay.io/biocontainers/bcftools:1.15.1--h0ea216a_0'
+    errorStrategy 'retry'
+    maxRetries 1
+
+    input:
+        tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.consensus_final.fa"), file("${base}_${ref_id}_${ref_tag}_mapf.sorted.bam")
+
+    output:
+        tuple val(base), val(ref_id), val(ref_tag), file("*.gz"), file("*.tbi"), file("*stats.txt")
+        tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.consensus_final.fa")
+
+
+    publishDir "${params.outdir}/bcftools_vcf", mode: 'copy', pattern:'*.vcf.gz'
+    publishDir "${params.outdir}/bcftools_vcf", mode: 'copy', pattern:'*.tbi'        
+    publishDir "${params.outdir}/bcftools_vcf", mode: 'copy', pattern:'*stats.txt'        
+
+    script:
+
+    """
+    echo "${base}" > sample_name.list
+
+    bcftools mpileup \\
+        --fasta-ref ${base}_${ref_id}_${ref_tag}.consensus_final.fa \\
+        --ignore-overlaps \\
+        --count-orphans \\
+        --no-BAQ \\
+        --max-depth 0 \\
+        --min-BQ 20 \\
+        --annotate FORMAT/AD,FORMAT/ADF,FORMAT/ADR,FORMAT/DP,FORMAT/SP,INFO/AD,INFO/ADF,INFO/ADR \\
+        ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam \\
+        | bcftools call \\
+            --output-type v \\
+            --ploidy 1 \\
+            --keep-alts \\
+            --keep-masked-ref \\
+            --multiallelic-caller \\
+            --variants-only \\
+        | bcftools reheader \\
+            --samples sample_name.list \\
+        | bcftools view \\
+            --output-file ${base}.vcf.gz \\
+            --output-type z \\
+            --include 'INFO/DP>=10'
+
+    tabix -p vcf -f ${base}.vcf.gz
+
+    bcftools stats ${base}.vcf.gz > ${base}.bcftools_stats.txt
+
+    """
+
+}
 process Serotyping {
     container 'bschiffthaler/ncbi-blast:latest'
     errorStrategy 'retry'
@@ -460,15 +512,14 @@ process Trimming_PE {
     then
 	if [[ ${params.sample} == false ]]
 	then
-    	    trimmomatic PE -threads ${task.cpus} ${R1} ${R2} ${base}.R1.paired.trimmed.fastq ${base}.R1.unpaired.fastq ${base}.R2.paired.trimmed.fastq ${base}.R2.unpaired.fastq \
+            gzip ${R1} && gzip ${R2}
+    	    trimmomatic PE -threads ${task.cpus} ${R1}.gz ${R2}.gz ${base}.R1.paired.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}.R2.paired.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
     	    ILLUMINACLIP:${ADAPTERS}:${params.SETTING} LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> ${base}_trim_stats.txt
-    	    gzip *paired*.fastq
 	else
-	    seqtk sample -s 100 ${R1} ${params.sample} > ${base}_R1_sampled.fastq
-	    seqtk sample -s 100 ${R2} ${params.sample} > ${base}_R2_sampled.fastq
-    	    trimmomatic PE -threads ${task.cpus} ${base}_R1_sampled.fastq ${base}_R2_sampled.fastq ${base}.R1.paired.trimmed.fastq ${base}.R1.unpaired.fastq ${base}.R2.paired.trimmed.fastq ${base}.R2.unpaired.fastq \
+	    seqtk sample -s 100 ${R1} ${params.sample} | gzip > ${base}_R1_sampled.fastq.gz
+	    seqtk sample -s 100 ${R2} ${params.sample} | gzip > ${base}_R2_sampled.fastq.gz
+    	    trimmomatic PE -threads ${task.cpus} ${base}_R1_sampled.fastq.gz ${base}_R2_sampled.fastq.gz ${base}.R1.paired.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}.R2.paired.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
     	    ILLUMINACLIP:${ADAPTERS}:${params.SETTING} LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> ${base}_trim_stats.txt
-	    gzip *paired*.fastq
 	fi
     elif [[ ${R1} == *.fastq.gz && ${R2} == *.fastq.gz ]]
     then 
@@ -477,10 +528,8 @@ process Trimming_PE {
     	    trimmomatic PE -threads ${task.cpus} ${R1} ${R2} ${base}.R1.paired.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}.R2.paired.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
     	    ILLUMINACLIP:${ADAPTERS}:${params.SETTING} LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> ${base}_trim_stats.txt
 	else
-	    seqtk sample -s 100 ${R1} ${params.sample} > ${base}_R1_sampled.fastq
-	    seqtk sample -s 100 ${R2} ${params.sample} > ${base}_R2_sampled.fastq 
-	    gzip ${base}_R1_sampled.fastq
-	    gzip ${base}_R2_sampled.fastq
+	    seqtk sample -s 100 ${R1} ${params.sample} | gzip > ${base}_R1_sampled.fastq.gz
+	    seqtk sample -s 100 ${R2} ${params.sample} | gzip > ${base}_R2_sampled.fastq.gz
     	    trimmomatic PE -threads ${task.cpus} ${base}_R1_sampled.fastq.gz ${base}_R2_sampled.fastq.gz ${base}.R1.paired.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}.R2.paired.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
     	    ILLUMINACLIP:${ADAPTERS}:${params.SETTING} LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> ${base}_trim_stats.txt
 	fi
@@ -557,7 +606,8 @@ process Consensus_Generation_PE {
     input:
 	tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.fa") 
     output:
-	tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.consensus_final.fa")
+	tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.consensus_final.fa"), file("${base}_${ref_id}_${ref_tag}_mapf.sorted.bam")
+        tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.consensus_final.fa")
 	tuple file("*.txt"), file("*.fa"), file("*bam*") 
 
     publishDir "${params.outdir}/map_consensus_final_stats", mode: 'copy', pattern: '*_mapf_stats.txt'
@@ -586,11 +636,12 @@ process Consensus_Generation_PE {
 
     # Convert the output sam file to bam file, sort and index the bam file
     samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_map_ref.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
+    samtools index -@ ${task.cpus} ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_map_ref.sam
 
     if [[ ${params.dedup} == true ]]
     then
-    picard MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt -REMOVE_DUPLICATES true
+    picard MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt --ASSUME_SORTED true --VALIDATION_STRINGENCY LENIENT --REMOVE_DUPLICATES true
     mv ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref_og.sorted.bam
     mv ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
     # convert deduplicated reads in bam to fastq
@@ -609,7 +660,7 @@ process Consensus_Generation_PE {
         --min-BQ 15 \\
         --output ${base}_${ref_id}_${ref_tag}_1.mpileup \\
         ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
-    cat ${base}_${ref_id}_${ref_tag}_1.mpileup | ivar consensus ${params.ivar_consensus_args} -n N -p ${base}_${ref_id}_${ref_tag}.consensus1
+    cat ${base}_${ref_id}_${ref_tag}_1.mpileup | ivar consensus -q ${params.q} -t ${params.t} -m ${params.d} -n N -p ${base}_${ref_id}_${ref_tag}.consensus1
 
     # Get rid of leading and trailing repeated Ns and ns
     seqkit -is replace -p "^n+|n+\$" -r "" ${base}_${ref_id}_${ref_tag}.consensus1.fa > ${base}_${ref_id}_${ref_tag}.consensus1.temp.fa
@@ -641,7 +692,7 @@ process Consensus_Generation_PE {
         --min-BQ 15 \\
         --output ${base}_${ref_id}_${ref_tag}_2.mpileup \\
         ${base}_${ref_id}_${ref_tag}_map1.sorted.bam
-    cat ${base}_${ref_id}_${ref_tag}_2.mpileup | ivar consensus ${params.ivar_consensus_args} -n N -p ${base}_${ref_id}_${ref_tag}.consensus2
+    cat ${base}_${ref_id}_${ref_tag}_2.mpileup | ivar consensus -q ${params.q} -t ${params.t} -m ${params.d} -n N -p ${base}_${ref_id}_${ref_tag}.consensus2
 
     # Get rid of repeated Ns and ns
     seqkit -is replace -p "^n+|n+\$" -r "" ${base}_${ref_id}_${ref_tag}.consensus2.fa > ${base}_${ref_id}_${ref_tag}.consensus2.temp.fa
@@ -673,7 +724,7 @@ process Consensus_Generation_PE {
         --min-BQ 15 \\
         --output ${base}_${ref_id}_${ref_tag}_final.mpileup \\
         ${base}_${ref_id}_${ref_tag}_map2.sorted.bam
-    cat ${base}_${ref_id}_${ref_tag}_final.mpileup | ivar consensus ${params.ivar_consensus_args} -n N -p ${base}_${ref_id}_${ref_tag}.consensus_final
+    cat ${base}_${ref_id}_${ref_tag}_final.mpileup | ivar consensus -q ${params.q} -t ${params.t} -m ${params.d} -n N -p ${base}_${ref_id}_${ref_tag}.consensus_final
 
     # Get rid of repeated Ns and ns
     seqkit -is replace -p "^n+|n+\$" -r "" ${base}_${ref_id}_${ref_tag}.consensus_final.fa > ${base}_${ref_id}_${ref_tag}.consensus_final.temp.fa

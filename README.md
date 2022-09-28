@@ -19,6 +19,7 @@ Revica consists of the following processes:
 - Map trimmed reads to a multifasta reference containing complete genomes of supported viruses using BBMap
 - Identify best reference(s) for consensus calling based on median coverage (if different viruses are present, the best reference for each virus is identified and consensus genome is assembled for each virus)
 - Consensus genome assembly using Samtools and iVar (consensus calling threshold: minimum coverage of 3, minimum base quality of 15, and minimum frequency threshold of 0.6)
+- Generate VCF using BCFTools
 - Determine serotypes (currently only for rhinovirus) by BLASTing to a curated BLAST database. 
 
 ## Usage
@@ -47,11 +48,14 @@ Valid command line arguments:
 	OPTIONAL:
 	--pe				For paired-end reads (default: single-end)
 	--ref				Overwrite reference file
-	--m				The median coverage threshold for the initial reference to be considered (default 3)
-	--p				The minimum covered percent by the reads for the initial refernce to be considered (default 60)
 	--dedup				Deduplicated reads using picard before consensus genome assembly
 	--sample			Subsample reads to a fraction or a number
-	--mpxv				Consensus genome assembly for Monkeypox virus using reference NC_063383.1
+	--m				The median coverage threshold for the initial reference to be considered (default: 0)
+	--p				The minimum covered percent by the reads for the initial refernce to be considered (default: 0)
+        --q				Minimum base quality score threshold for iVar consensus to count base. (Default: 20)
+        --t				Minimum frequency threshold(0 - 1) for iVar call consensus. (Default: 0.6)
+        --d				Minimum depth for iVar to call consensus. (Default: 5)
+	--mpxv				Consensus genome assembly for Monkeypox virus using reference ON563414.3
 	--help				Displays help message
 
 ## Usage notes

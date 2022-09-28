@@ -2,7 +2,7 @@
 
 /*
 ========================================================================================
-                    		   REVICA v1.2
+                    		   REVICA v1.2.2
 ========================================================================================
 Github Repo:
 https://github.com/greninger-lab/revica
@@ -13,12 +13,12 @@ Alex L Greninger <agrening@uw.edu>
 UW Medicine | Virology
 Department of Laboratory Medicine and Pathology
 University of Washington
-Updated: July 11, 2022
+Updated: Septemper 29, 2022
 LICENSE: GNU
 ----------------------------------------------------------------------------------------
 */
 // Pipeline version
-version = '1.2'
+version = '1.2.2'
 // Setup pipeline help msg
 def help() {
     log.info"""
@@ -40,11 +40,14 @@ def help() {
     OPTIONAL:
 	--pe			For paired-end reads (default: single-end)
 	--ref			Overwrite reference file
-	--m			The median coverage threshold for the initial reference to be considered (default 3)
-	--p                     The minimum covered percent by the reads for the initial refernce to be considered (default 60)
 	--dedup         	Get rid of duplicated reads before consensus genome assembly
 	--sample		Subsample reads to a fraction or a number
-        --mpxv                  Generate consensus genome for monkeypox virus using NC_063383 as reference
+	--m			The median coverage threshold for the initial reference to be considered (default: 0)
+	--p                     The minimum covered percent by the reads for the initial refernce to be considered (default: 0)
+        --q                     Minimum base quality score threshold for iVar consensus to count base. (Default: 20)
+        --t                     Minimum frequency threshold(0 - 1) for iVar call consensus. (Default: 0.6)
+        --d                     Minimum depth for iVar to call consensus. (Default: 5)
+        --mpxv                  Generate consensus genome for monkeypox virus using ON563414.3 as reference
 	--help			Displays help message in terminal
     """
 }
@@ -54,10 +57,13 @@ params.reads = null
 params.outdir = null
 params.pe = false
 params.ref = false
-params.m = 3
-params.p = 60
 params.dedup = false
 params.sample = false
+params.m = 0
+params.p = 0
+params.q = 20
+params.t = 0.6
+params.d = 5
 params.mpxv = false
 params.help = false
 
@@ -66,13 +72,7 @@ params.SETTING = "2:30:10:1:true"
 params.LEADING = "3"
 params.TRAILING = "3"
 params.SWINDOW = "4:20"
-if (params.mpxv != false) {
-    params.MINLEN = "120"
-    params.ivar_consensus_args = '-q 15 -t 0.6 -m 5'
-} else {
-    params.MINLEN = "35"
-    params.ivar_consensus_args = '-q 15 -t 0.6 -m 3'
-}
+params.MINLEN = 35
 
 // Check Nextflow version for enabling DSL2
 nextflow_dsl2_v = '20.07.1'
@@ -94,13 +94,13 @@ if (params.help == true || (params.reads == false && params.outdir == false)){
 }
 
 // if INPUT not set
-if (params.reads == false) {
+if (params.reads == null) {
     println(color+"Please provide input fastq.gz path with --reads") 
     exit(1)
 }
 
 // if OUTDIR not set
-if (params.outdir == false) {
+if (params.outdir == null) {
     println(color+"Please provide output directory path with --outdir") 
     exit(1)
 }
@@ -109,7 +109,7 @@ if (params.outdir == false) {
 if (params.ref != false) {
     ref = file(params.ref)
 } else if (params.mpxv != false) {
-    ref = file("${baseDir}/ref/NC_063383.fa")
+    ref = file("${baseDir}/ref/ON563414.fa")
 } else {
     ref = file("${baseDir}/ref/ref.fa")
 }
@@ -166,6 +166,7 @@ include { Consensus_Generation_Prep_SE } from './modules.nf'
 include { Consensus_Generation_Prep_PE } from './modules.nf'
 include { Consensus_Generation_SE } from './modules.nf'
 include { Consensus_Generation_PE } from './modules.nf'
+include { VCF_Generation } from './modules.nf'
 include { Serotyping } from './modules.nf'
 include { Summary_Generation } from './modules.nf'
 include { Final_Processing } from './modules.nf'
@@ -216,10 +217,16 @@ workflow {
 	    ref
 	)
 
-        Consensus_Generation_SE (Consensus_Generation_Prep_SE.out[0])
+        Consensus_Generation_SE (
+            Consensus_Generation_Prep_SE.out[0]
+        )
+
+        VCF_Generaation (
+            Consensus_Generation_SE.out[0]
+        )
 
 	Serotyping (
-	    Consensus_Generation_SE.out[0],
+	    Consensus_Generation_SE.out[1],
 	    BLAST_DB_ALL_1,
 	    BLAST_DB_ALL_2,
 	    BLAST_DB_ALL_3,
@@ -234,7 +241,9 @@ workflow {
 	    Serotyping.out[0]
 	)
 
-        Final_Processing (Summary_Generation.out[0].collect())
+        Final_Processing (
+            Summary_Generation.out[0].collect()
+        )
 
     } else { 
 	
@@ -258,10 +267,16 @@ workflow {
 	    ref
 	)
 
-        Consensus_Generation_PE (Consensus_Generation_Prep_PE.out[0])
+        Consensus_Generation_PE (
+            Consensus_Generation_Prep_PE.out[0]
+        )
+
+        VCF_Generation (
+            Consensus_Generation_PE.out[0]
+        )
 
 	Serotyping (
-	    Consensus_Generation_PE.out[0],
+	    Consensus_Generation_PE.out[1],
 	    BLAST_DB_ALL_1,
 	    BLAST_DB_ALL_2,
 	    BLAST_DB_ALL_3,
@@ -276,7 +291,9 @@ workflow {
 	    Serotyping.out[0]
 	)
 
-        Final_Processing (Summary_Generation.out[0].collect())
+        Final_Processing (
+            Summary_Generation.out[0].collect()
+        )
 
     }
 }
