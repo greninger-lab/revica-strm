@@ -52,9 +52,9 @@ Valid command line arguments:
 	--sample			Subsample reads to a fraction or a number
 	--m				The median coverage threshold for the initial reference to be considered (default: 0)
 	--p				The minimum covered percent by the reads for the initial refernce to be considered (default: 0)
-        --q				Minimum base quality score threshold for iVar consensus to count base. (Default: 20)
-        --t				Minimum frequency threshold(0 - 1) for iVar call consensus. (Default: 0.6)
-        --d				Minimum depth for iVar to call consensus. (Default: 5)
+	--q				Minimum base quality score threshold for iVar consensus to count base. (Default: 20)
+	--t				Minimum frequency threshold(0 - 1) for iVar call consensus. (Default: 0.6)
+	--d				Minimum depth for iVar to call consensus. (Default: 5)
 	--mpxv				Consensus genome assembly for Monkeypox virus using reference ON563414.3
 	--help				Displays help message
 
