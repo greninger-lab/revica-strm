@@ -47,7 +47,6 @@ def help() {
         --q                     Minimum base quality score threshold for iVar consensus to count base. (Default: 20)
         --t                     Minimum frequency threshold(0 - 1) for iVar call consensus. (Default: 0.6)
         --d                     Minimum depth for iVar to call consensus. (Default: 5)
-        --mpxv                  Generate consensus genome for monkeypox virus using ON563414.3 as reference
 	--help			Displays help message in terminal
     """
 }
@@ -64,7 +63,6 @@ params.p = 0
 params.q = 20
 params.t = 0.6
 params.d = 5
-params.mpxv = false
 params.help = false
 
 //Trimmomatic Settings
@@ -108,8 +106,6 @@ if (params.outdir == null) {
 // Setup MULTIFASTA Reference file path for OPTIONAL-override of set file path.
 if (params.ref != false) {
     ref = file(params.ref)
-} else if (params.mpxv != false) {
-    ref = file("${baseDir}/ref/ON563414.fa")
 } else {
     ref = file("${baseDir}/ref/ref.fa")
 }

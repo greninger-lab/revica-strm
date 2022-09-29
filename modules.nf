@@ -147,14 +147,16 @@ process Consensus_Generation_SE {
 	tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.fa") 
 
     output:
-        tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.consensus_final.fa"), file("${base}_${ref_id}_${ref_tag}_mapf.sorted.bam")
+        tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.fa"), file("${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam")
 	tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.consensus_final.fa")
-	tuple file("*.txt"), file("*.fa"), file("*bam*") 
+	tuple file("*.txt"), file("*.fa"), file("*bam*"), file("*.bai") 
 
-    publishDir "${params.outdir}/map_consensus_final_stats", mode: 'copy', pattern: '*_mapf_stats.txt'
     publishDir "${params.outdir}/map_ref_bam_sorted", mode: 'copy', pattern: '*_map_ref.sorted.bam'
+    publishDir "${params.outdir}/map_ref_bam_sorted", mode: 'copy', pattern: '*_map_ref.sorted.bam.bai'
     publishDir "${params.outdir}/consensus_final", mode: 'copy', pattern:'*.consensus_final.fa' 
     publishDir "${params.outdir}/consensus_final_bam_sorted", mode: 'copy', pattern:'*_mapf.sorted.bam' 
+    publishDir "${params.outdir}/consensus_final_bam_sorted", mode: 'copy', pattern:'*_mapf.sorted.bam.bai' 
+    publishDir "${params.outdir}/map_consensus_final_stats", mode: 'copy', pattern: '*_mapf_stats.txt'
 
     script:
     """
@@ -181,7 +183,7 @@ process Consensus_Generation_SE {
 
     if [[ ${params.dedup} == true ]]
     then
-    picard MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt --ASSUME_SORTED true --VALIDATION_STRINGENCY LENIENT --REMOVE_DUPLICATES true
+    java -Xmx2g -jar \$PICARD MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt --ASSUME_SORTED true --VALIDATION_STRINGENCY LENIENT --REMOVE_DUPLICATES true
     # remove pre-deduplicated bam file and rename deduplicated bam file
     mv ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref_og.sorted.bam
     mv ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
@@ -198,21 +200,15 @@ process Consensus_Generation_SE {
         --no-BAQ \\
         --max-depth 50000 \\
         --fasta-ref ${base}_${ref_id}_${ref_tag}.fa \\
-        --min-BQ 15 \\
+        --min-BQ 20 \\
         --output ${base}_${ref_id}_${ref_tag}_1.mpileup \\
         ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
-    cat ${base}_${ref_id}_${ref_tag}_1.mpileup | ivar consensus -q ${params.q} -t ${params.t} -m ${params.d} -n N -p ${base}_${ref_id}_${ref_tag}.consensus1
+    cat ${base}_${ref_id}_${ref_tag}_1.mpileup | ivar consensus -q ${params.q} -t ${params.t} -m ${params.d} -n N -p ${base}_${ref_id}_${ref_tag}.consensus1 -i ${base}_${ref_id}_${ref_tag}.consensus1
 
     # Get rid of leading and trailing repeated Ns and ns
     seqkit -is replace -p "^n+|n+\$" -r "" ${base}_${ref_id}_${ref_tag}.consensus1.fa > ${base}_${ref_id}_${ref_tag}.consensus1.temp.fa
     cp ${base}_${ref_id}_${ref_tag}.consensus1.temp.fa ${base}_${ref_id}_${ref_tag}.consensus1.fa
     rm ${base}_${ref_id}_${ref_tag}.consensus1.temp.fa
-
-    # Modify first consensus header
-    cp ${base}_${ref_id}_${ref_tag}.consensus1.fa ${base}_${ref_id}_${ref_tag}.consensus1.fa.backup
-    echo '>${base}_${ref_id}_${ref_tag}.consensus1' > ${base}_${ref_id}_${ref_tag}.consensus1.fa
-    tail -n+2 ${base}_${ref_id}_${ref_tag}.consensus1.fa.backup >> ${base}_${ref_id}_${ref_tag}.consensus1.fa
-    rm ${base}_${ref_id}_${ref_tag}.consensus1.fa.backup
  
     # Map reads to consensus1 and create bam and sorted bam files
     bbmap.sh \\
@@ -230,21 +226,15 @@ process Consensus_Generation_SE {
         --no-BAQ \\
         --max-depth 50000 \\
         --fasta-ref ${base}_${ref_id}_${ref_tag}.consensus1.fa \\
-        --min-BQ 15 \\
+        --min-BQ 20 \\
         --output ${base}_${ref_id}_${ref_tag}_2.mpileup \\
         ${base}_${ref_id}_${ref_tag}_map1.sorted.bam
-    cat ${base}_${ref_id}_${ref_tag}_2.mpileup | ivar consensus -q ${params.q} -t ${params.t} -m ${params.d} -n N -p ${base}_${ref_id}_${ref_tag}.consensus2
+    cat ${base}_${ref_id}_${ref_tag}_2.mpileup | ivar consensus -q ${params.q} -t ${params.t} -m ${params.d} -n N -p ${base}_${ref_id}_${ref_tag}.consensus2 -i ${base}_${ref_id}_${ref_tag}.consensus2
 
     # Get rid of repeated Ns and ns
     seqkit -is replace -p "^n+|n+\$" -r "" ${base}_${ref_id}_${ref_tag}.consensus2.fa > ${base}_${ref_id}_${ref_tag}.consensus2.temp.fa
     cp ${base}_${ref_id}_${ref_tag}.consensus2.temp.fa ${base}_${ref_id}_${ref_tag}.consensus2.fa
     rm ${base}_${ref_id}_${ref_tag}.consensus2.temp.fa
-
-    # Modify second consensus header
-    cp ${base}_${ref_id}_${ref_tag}.consensus2.fa ${base}_${ref_id}_${ref_tag}.consensus2.fa.backup
-    echo '>${base}_${ref_id}_${ref_tag}.consensus2' > ${base}_${ref_id}_${ref_tag}.consensus2.fa
-    tail -n+2 ${base}_${ref_id}_${ref_tag}.consensus2.fa.backup >> ${base}_${ref_id}_${ref_tag}.consensus2.fa
-    rm ${base}_${ref_id}_${ref_tag}.consensus2.fa.backup
     
     # Align reads to consensus2 and create bam and sorted bam files 
     bbmap.sh \\
@@ -262,21 +252,15 @@ process Consensus_Generation_SE {
         --no-BAQ \\
         --max-depth 50000 \\
         --fasta-ref ${base}_${ref_id}_${ref_tag}.consensus2.fa \\
-        --min-BQ 15 \\
+        --min-BQ 20 \\
         --output ${base}_${ref_id}_${ref_tag}_final.mpileup \\
         ${base}_${ref_id}_${ref_tag}_map2.sorted.bam
-    cat ${base}_${ref_id}_${ref_tag}_final.mpileup | ivar consensus -q ${params.q} -t ${params.t} -m ${params.d} -n N -p ${base}_${ref_id}_${ref_tag}.consensus_final
+    cat ${base}_${ref_id}_${ref_tag}_final.mpileup | ivar consensus -q ${params.q} -t ${params.t} -m ${params.d} -n N -p ${base}_${ref_id}_${ref_tag}.consensus_final -i ${base}_${ref_id}_${ref_tag}.consensus_final
 
     # Get rid of repeated Ns and ns
     seqkit -is replace -p "^n+|n+\$" -r "" ${base}_${ref_id}_${ref_tag}.consensus_final.fa > ${base}_${ref_id}_${ref_tag}.consensus_final.temp.fa
     cp ${base}_${ref_id}_${ref_tag}.consensus_final.temp.fa ${base}_${ref_id}_${ref_tag}.consensus_final.fa
     rm ${base}_${ref_id}_${ref_tag}.consensus_final.temp.fa
-
-    # Modify final consensus header
-    cp ${base}_${ref_id}_${ref_tag}.consensus_final.fa ${base}_${ref_id}_${ref_tag}.consensus_final.fa.backup
-    echo '>${base}_${ref_id}_${ref_tag}' > ${base}_${ref_id}_${ref_tag}.consensus_final.fa
-    tail -n+2 ${base}_${ref_id}_${ref_tag}.consensus_final.fa.backup >> ${base}_${ref_id}_${ref_tag}.consensus_final.fa
-    rm ${base}_${ref_id}_${ref_tag}.consensus_final.fa.backup
  
     # Align reads to final consensus and create bam and sorted bam files 
     bbmap.sh \\
@@ -286,23 +270,21 @@ process Consensus_Generation_SE {
 	threads=${task.cpus} \\
 	local=true interleaved=false maxindel=80 ambiguous=random -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_mapf_stats.txt 2>&1
     samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_mapf.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam
+    samtools index -@ ${task.cpus} ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_mapf.sam
 
     """
 }
 
 process VCF_Generation {
-    container 'quay.io/biocontainers/bcftools:1.15.1--h0ea216a_0'
     errorStrategy 'retry'
     maxRetries 1
 
     input:
-        tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.consensus_final.fa"), file("${base}_${ref_id}_${ref_tag}_mapf.sorted.bam")
+        tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.fa"), file("${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam")
 
     output:
         tuple val(base), val(ref_id), val(ref_tag), file("*.gz"), file("*.tbi"), file("*stats.txt")
-        tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.consensus_final.fa")
-
 
     publishDir "${params.outdir}/bcftools_vcf", mode: 'copy', pattern:'*.vcf.gz'
     publishDir "${params.outdir}/bcftools_vcf", mode: 'copy', pattern:'*.tbi'        
@@ -314,14 +296,14 @@ process VCF_Generation {
     echo "${base}" > sample_name.list
 
     bcftools mpileup \\
-        --fasta-ref ${base}_${ref_id}_${ref_tag}.consensus_final.fa \\
+        --fasta-ref ${base}_${ref_id}_${ref_tag}.fa \\
         --ignore-overlaps \\
         --count-orphans \\
         --no-BAQ \\
         --max-depth 0 \\
         --min-BQ 20 \\
         --annotate FORMAT/AD,FORMAT/ADF,FORMAT/ADR,FORMAT/DP,FORMAT/SP,INFO/AD,INFO/ADF,INFO/ADR \\
-        ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam \\
+        ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam \\
         | bcftools call \\
             --output-type v \\
             --ploidy 1 \\
@@ -606,14 +588,16 @@ process Consensus_Generation_PE {
     input:
 	tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.fa") 
     output:
-	tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.consensus_final.fa"), file("${base}_${ref_id}_${ref_tag}_mapf.sorted.bam")
+	tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.fa"), file("${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam")
         tuple val(base), val(ref_id), val(ref_tag), file("${base}_${ref_id}_${ref_tag}.consensus_final.fa")
-	tuple file("*.txt"), file("*.fa"), file("*bam*") 
+	tuple file("*.txt"), file("*.fa"), file("*bam*"), file("*.bai") 
 
-    publishDir "${params.outdir}/map_consensus_final_stats", mode: 'copy', pattern: '*_mapf_stats.txt'
     publishDir "${params.outdir}/map_ref_bam_sorted", mode: 'copy', pattern: '*_map_ref.sorted.bam'
+    publishDir "${params.outdir}/map_ref_bam_sorted", mode: 'copy', pattern: '*_map_ref.sorted.bam.bai'
     publishDir "${params.outdir}/consensus_final", mode: 'copy', pattern:'*.consensus_final.fa' 
     publishDir "${params.outdir}/consensus_final_bam_sorted", mode: 'copy', pattern:'*_mapf.sorted.bam' 
+    publishDir "${params.outdir}/consensus_final_bam_sorted", mode: 'copy', pattern:'*_mapf.sorted.bam.bai' 
+    publishDir "${params.outdir}/map_consensus_final_stats", mode: 'copy', pattern: '*_mapf_stats.txt'
 
     script:
     """
@@ -641,7 +625,7 @@ process Consensus_Generation_PE {
 
     if [[ ${params.dedup} == true ]]
     then
-    picard MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt --ASSUME_SORTED true --VALIDATION_STRINGENCY LENIENT --REMOVE_DUPLICATES true
+    java -Xmx2g -jar \$PICARD MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt --ASSUME_SORTED true --VALIDATION_STRINGENCY LENIENT --REMOVE_DUPLICATES true
     mv ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref_og.sorted.bam
     mv ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
     # convert deduplicated reads in bam to fastq
@@ -657,20 +641,14 @@ process Consensus_Generation_PE {
         --no-BAQ \\
         --max-depth 50000 \\
         --fasta-ref ${base}_${ref_id}_${ref_tag}.fa \\
-        --min-BQ 15 \\
+        --min-BQ 20 \\
         --output ${base}_${ref_id}_${ref_tag}_1.mpileup \\
         ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
-    cat ${base}_${ref_id}_${ref_tag}_1.mpileup | ivar consensus -q ${params.q} -t ${params.t} -m ${params.d} -n N -p ${base}_${ref_id}_${ref_tag}.consensus1
+    cat ${base}_${ref_id}_${ref_tag}_1.mpileup | ivar consensus -q ${params.q} -t ${params.t} -m ${params.d} -n N -p ${base}_${ref_id}_${ref_tag}.consensus1 -i ${base}_${ref_id}_${ref_tag}.consensus1
 
     # Get rid of leading and trailing repeated Ns and ns
     seqkit -is replace -p "^n+|n+\$" -r "" ${base}_${ref_id}_${ref_tag}.consensus1.fa > ${base}_${ref_id}_${ref_tag}.consensus1.temp.fa
     mv ${base}_${ref_id}_${ref_tag}.consensus1.temp.fa ${base}_${ref_id}_${ref_tag}.consensus1.fa
- 
-    # Modify first consensus header
-    cp ${base}_${ref_id}_${ref_tag}.consensus1.fa ${base}_${ref_id}_${ref_tag}.consensus1.fa.backup
-    echo '>${base}_${ref_id}_${ref_tag}.consensus1' > ${base}_${ref_id}_${ref_tag}.consensus1.fa
-    tail -n+2 ${base}_${ref_id}_${ref_tag}.consensus1.fa.backup >> ${base}_${ref_id}_${ref_tag}.consensus1.fa
-    rm ${base}_${ref_id}_${ref_tag}.consensus1.fa.backup
 
     # Map reads to consensus1 and create bam and sorted bam files
     bbmap.sh \\
@@ -689,20 +667,14 @@ process Consensus_Generation_PE {
         --no-BAQ \\
         --max-depth 50000 \\
         --fasta-ref ${base}_${ref_id}_${ref_tag}.consensus1.fa \\
-        --min-BQ 15 \\
+        --min-BQ 20 \\
         --output ${base}_${ref_id}_${ref_tag}_2.mpileup \\
         ${base}_${ref_id}_${ref_tag}_map1.sorted.bam
-    cat ${base}_${ref_id}_${ref_tag}_2.mpileup | ivar consensus -q ${params.q} -t ${params.t} -m ${params.d} -n N -p ${base}_${ref_id}_${ref_tag}.consensus2
+    cat ${base}_${ref_id}_${ref_tag}_2.mpileup | ivar consensus -q ${params.q} -t ${params.t} -m ${params.d} -n N -p ${base}_${ref_id}_${ref_tag}.consensus2 -i ${base}_${ref_id}_${ref_tag}.consensus2
 
     # Get rid of repeated Ns and ns
     seqkit -is replace -p "^n+|n+\$" -r "" ${base}_${ref_id}_${ref_tag}.consensus2.fa > ${base}_${ref_id}_${ref_tag}.consensus2.temp.fa
     mv ${base}_${ref_id}_${ref_tag}.consensus2.temp.fa ${base}_${ref_id}_${ref_tag}.consensus2.fa
-    
-    # Modify second consensus header
-    cp ${base}_${ref_id}_${ref_tag}.consensus2.fa ${base}_${ref_id}_${ref_tag}.consensus2.fa.backup
-    echo '>${base}_${ref_id}_${ref_tag}.consensus2' > ${base}_${ref_id}_${ref_tag}.consensus2.fa
-    tail -n+2 ${base}_${ref_id}_${ref_tag}.consensus2.fa.backup >> ${base}_${ref_id}_${ref_tag}.consensus2.fa
-    rm ${base}_${ref_id}_${ref_tag}.consensus2.fa.backup
 
     # Align reads to consensus2 and create bam and sorted bam files 
     bbmap.sh \\
@@ -721,20 +693,14 @@ process Consensus_Generation_PE {
         --no-BAQ \\
         --max-depth 50000 \\
         --fasta-ref ${base}_${ref_id}_${ref_tag}.consensus2.fa \\
-        --min-BQ 15 \\
+        --min-BQ 20 \\
         --output ${base}_${ref_id}_${ref_tag}_final.mpileup \\
         ${base}_${ref_id}_${ref_tag}_map2.sorted.bam
-    cat ${base}_${ref_id}_${ref_tag}_final.mpileup | ivar consensus -q ${params.q} -t ${params.t} -m ${params.d} -n N -p ${base}_${ref_id}_${ref_tag}.consensus_final
+    cat ${base}_${ref_id}_${ref_tag}_final.mpileup | ivar consensus -q ${params.q} -t ${params.t} -m ${params.d} -n N -p ${base}_${ref_id}_${ref_tag}.consensus_final -i ${base}_${ref_id}_${ref_tag}.consensus_final
 
     # Get rid of repeated Ns and ns
     seqkit -is replace -p "^n+|n+\$" -r "" ${base}_${ref_id}_${ref_tag}.consensus_final.fa > ${base}_${ref_id}_${ref_tag}.consensus_final.temp.fa
     mv ${base}_${ref_id}_${ref_tag}.consensus_final.temp.fa ${base}_${ref_id}_${ref_tag}.consensus_final.fa
- 
-    # Modify final consensus header
-    cp ${base}_${ref_id}_${ref_tag}.consensus_final.fa ${base}_${ref_id}_${ref_tag}.consensus_final.fa.backup
-    echo '>${base}_${ref_id}_${ref_tag}' > ${base}_${ref_id}_${ref_tag}.consensus_final.fa
-    tail -n+2 ${base}_${ref_id}_${ref_tag}.consensus_final.fa.backup >> ${base}_${ref_id}_${ref_tag}.consensus_final.fa
-    rm ${base}_${ref_id}_${ref_tag}.consensus_final.fa.backup
 
     # Align reads to final consensus and create bam and sorted bam files 
     bbmap.sh \\
@@ -745,6 +711,7 @@ process Consensus_Generation_PE {
 	threads=${task.cpus} \\
 	local=true interleaved=false maxindel=80 ambiguous=random -Xmx${task.memory.giga}g > ${base}_${ref_id}_${ref_tag}_mapf_stats.txt 2>&1
     samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_mapf.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam
+    samtools index -@ ${task.cpus} ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_mapf.sam
 
     """

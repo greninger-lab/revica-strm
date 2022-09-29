@@ -1,6 +1,7 @@
 FROM openjdk:8-jdk-alpine
 
 ARG SAMTOOLS_VERSION=1.15 
+ARG BCFTOOLS_VERSION=1.15
 ARG TRIMMOMATIC_VERSION=0.39
 ARG BBMAP_VERSION=38.96
 ARG PICARD_VERSION=2.26.11
@@ -10,6 +11,7 @@ ARG HTSLIB_VERSION=1.15
 ARG SEQTK_VERSION=1.3
 
 ENV PATH=$PATH:/opt/bbmap
+ENV PICARD=/usr/local/bin/picard.jar
 
 COPY java_jar_helper.sh /tmp
 
@@ -21,6 +23,15 @@ RUN apk add --update --no-cache ncurses libbz2 xz zlib bash bc python3 \
     && wget https://github.com/samtools/samtools/releases/download/${SAMTOOLS_VERSION}/samtools-${SAMTOOLS_VERSION}.tar.bz2 \
     && tar xjvf samtools-${SAMTOOLS_VERSION}.tar.bz2 \
     && cd samtools-${SAMTOOLS_VERSION} \
+    && ./configure \
+    && make \
+    && make install \
+    # ---------- 
+    # bcftools
+    && cd /tmp \
+    && wget https://github.com/samtools/bcftools/releases/download/${BCFTOOLS_VERSION}/bcftools-${BCFTOOLS_VERSION}.tar.bz2 \
+    && tar xjvf bcftools-${BCFTOOLS_VERSION}.tar.bz2 \
+    && cd bcftools-${BCFTOOLS_VERSION} \
     && ./configure \
     && make \
     && make install \
@@ -41,8 +52,7 @@ RUN apk add --update --no-cache ncurses libbz2 xz zlib bash bc python3 \
     # picard
     && cd /tmp \
     && wget https://github.com/broadinstitute/picard/releases/download/${PICARD_VERSION}/picard.jar \
-    && cat java_jar_helper.sh picard.jar > /usr/local/bin/picard \
-    && chmod +x /usr/local/bin/picard \
+    && mv picard.jar /usr/local/bin \
     # ---------- 
     # seqkit
     && cd /tmp \
@@ -79,5 +89,4 @@ RUN apk add --update --no-cache ncurses libbz2 xz zlib bash bc python3 \
     && rm -rf /var/cache/apk/* /tmp/* \
     && apk del deps
    
-
 CMD ["bash"]

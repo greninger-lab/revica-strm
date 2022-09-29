@@ -1,7 +1,6 @@
 # REVICA
 
-Revica is a reference-based viral consensus genome assembly pipeline written in [Nextflow](https://www.nextflow.io/). For ease of use, Revica can be run in [Docker](https://docs.docker.com/get-docker/). Revica currently supports consensus genome assembly of:
-- **Monkeypox virus (MpxV)**
+Revica is a reference-based viral consensus genome assembly pipeline for some of the most common respiratory viruses. Revica is written in [Nextflow](https://www.nextflow.io/) and can be run in [Docker](https://docs.docker.com/get-docker/). Revica currently supports consensus genome assembly of:
 - Rhinovirus (RV)
 - Seasonal human coronavirus (HCOV)
 - Human metapneumovirus (HMPV)
@@ -12,15 +11,8 @@ Revica is a reference-based viral consensus genome assembly pipeline written in 
 - Influenza B virus (IBV)
 - Human adenovirus (HAdV)
 
-## Methods
-Revica consists of the following processes:
-
-- Trim reads with Trimmomatic
-- Map trimmed reads to a multifasta reference containing complete genomes of supported viruses using BBMap
-- Identify best reference(s) for consensus calling based on median coverage (if different viruses are present, the best reference for each virus is identified and consensus genome is assembled for each virus)
-- Consensus genome assembly using Samtools and iVar (consensus calling threshold: minimum coverage of 3, minimum base quality of 15, and minimum frequency threshold of 0.6)
-- Generate VCF using BCFTools
-- Determine serotypes (currently only for rhinovirus) by BLASTing to a curated BLAST database. 
+## Workflow
+![Workflow](revica_workflow.png)
 
 ## Usage
 Install `Nextflow` using the following command:
@@ -55,7 +47,6 @@ Valid command line arguments:
 	--q				Minimum base quality score threshold for iVar consensus to count base. (Default: 20)
 	--t				Minimum frequency threshold(0 - 1) for iVar call consensus. (Default: 0.6)
 	--d				Minimum depth for iVar to call consensus. (Default: 5)
-	--mpxv				Consensus genome assembly for Monkeypox virus using reference ON563414.3
 	--help				Displays help message
 
 ## Usage notes
@@ -94,15 +85,9 @@ Valid command line arguments:
 - Stats for samples that failed assembly are in `failed_assembly_summary.tsv`.
 
 ## Docker
-Pull the docker image (255MB) that has all the dependencies from Docker Hub using the following command
+Pull the docker image (269MB) that has all the dependencies from Docker Hub using the following command
 
 	docker pull greningerlab/revica
-
-Or build the docker image by navigating to the `docker` directory and run the following command
-
-	docker build -t greningerlab/revica .
-
-(You can specify any name after `-t` argument using the format `name:tag`)
 
 To run the docker image interactively, run the following command
 
@@ -112,5 +97,3 @@ To run the docker image interactively, run the following command
 
 ## Contact
 For bug reports please email aseree@uw.edu or raise an issue on Github.
-
-
