@@ -1,9 +1,0 @@
-2022-10-04 15:15:28	-	loving_galileo	-	119f46f79e1db373152fef26bca854be	2a3feb56-b942-4bca-8f77-0e6d95cb12ea	nextflow run main.nf --reads example --outdir test_output -with-docker greningerlab/revica
-2022-10-04 15:16:35	-	determined_kalman	-	119f46f79e1db373152fef26bca854be	2928b35d-3456-4eb5-b6a5-53b2f5a242a8	nextflow run main.nf --reads example --outdir test_output -with-docker greningerlab/revica
-2022-10-04 15:18:10	-	agitated_keller	-	119f46f79e1db373152fef26bca854be	a2ec57a7-5bc1-4828-aafd-c6c4de7ec091	nextflow run main.nf --reads example --outdir output
-2022-10-04 15:23:08	-	cheesy_hawking	-	119f46f79e1db373152fef26bca854be	c47b41f2-b6bd-4ada-ab22-6b1249e2b0ce	nextflow run main.nf --reads example --outdir /Users/greningerlab/Downloads/testtest -with-docker greningerlab/revica
-2022-10-04 15:25:34	1m 16s	cranky_easley	ERR	4c7605a2d7e446cc0fc2f276c485cf87	212aa008-4dca-44fc-88f5-077fe26b14ee	nextflow run main.nf --reads example --outdir /Users/greningerlab/Downloads/testtest -with-docker greningerlab/revica
-2022-10-04 15:27:57	3m 45s	backstabbing_carlsson	ERR	4c7605a2d7e446cc0fc2f276c485cf87	c40c70f0-87ee-4ec5-97be-bda0e8366fb4	nextflow run main.nf --reads example --outdir test -with-docker greningerlab/revica
-2022-10-04 15:50:08	4.3s	sick_shirley	ERR	4c7605a2d7e446cc0fc2f276c485cf87	90fbf607-ff16-41df-a240-e1a38b2eb3e8	nextflow run main.nf --reads example --outdir test -with-docker greningerlab/revica
-2022-10-04 15:50:16	2m 28s	fabulous_booth	ERR	4c7605a2d7e446cc0fc2f276c485cf87	90fbf607-ff16-41df-a240-e1a38b2eb3e8	nextflow run main.nf --reads example --outdir test -with-docker greningerlab/revica -resume
-2022-10-04 15:55:41	1m 47s	elated_golick	OK	2ae3677a9d0e360df28436a65f66c5d7	90fbf607-ff16-41df-a240-e1a38b2eb3e8	nextflow run main.nf --reads example --outdir test -with-docker greningerlab/revica -resume
