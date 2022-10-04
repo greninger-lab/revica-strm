@@ -1,0 +1,1 @@
+example	NC_007380.1	fluA_NS1	Influenza A virus (A/Korea/426/1968(H2N2)) segment 8, complete sequence

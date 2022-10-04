@@ -42,7 +42,7 @@ def help() {
 	--ref			Overwrite reference file
 	--dedup         	Get rid of duplicated reads before consensus genome assembly
 	--sample		Subsample reads to a fraction or a number
-	--m			The median coverage threshold for the initial reference to be considered (default: 0)
+	--m			The median coverage threshold for the initial reference to be considered (default: 3)
 	--p                     The minimum covered percent by the reads for the initial refernce to be considered (default: 0)
         --q                     Minimum base quality score threshold for iVar consensus to count base. (Default: 20)
         --t                     Minimum frequency threshold(0 - 1) for iVar call consensus. (Default: 0.6)
@@ -58,7 +58,7 @@ params.pe = false
 params.ref = false
 params.dedup = false
 params.sample = false
-params.m = 0
+params.m = 3
 params.p = 0
 params.q = 20
 params.t = 0.6
@@ -217,7 +217,7 @@ workflow {
             Consensus_Generation_Prep_SE.out[0]
         )
 
-        VCF_Generaation (
+        VCF_Generation (
             Consensus_Generation_SE.out[0]
         )
 

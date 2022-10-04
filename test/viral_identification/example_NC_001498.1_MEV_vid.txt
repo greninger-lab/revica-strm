@@ -1,0 +1,1 @@
+example	NC_001498.1	MEV	Measles virus, complete genome

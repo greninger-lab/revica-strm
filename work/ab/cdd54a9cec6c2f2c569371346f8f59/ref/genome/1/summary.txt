@@ -1,0 +1,13 @@
+#Summary
+#Generated on	Tue Oct 04 22:57:17 GMT 2022
+#Version	5
+chroms	1
+bases	23044
+defined	7042
+undefined	16002
+contigs	1
+scaffolds	1
+interpad	300
+source	/Users/greningerlab/AS/revica/work/ab/cdd54a9cec6c2f2c569371346f8f59/example_KY369892.1_RV.consensus_final.fa
+bytes	7201
+last modified	1664924237000

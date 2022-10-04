@@ -1,0 +1,62 @@
+java -ea -Xmx8g -Xms8g -cp /opt/bbmap/current/ align2.BBMap build=1 overwrite=true fastareadlen=500 in=example.trimmed.fastq.gz outm=example_KY369892.1_RV_map1.sam ref=example_KY369892.1_RV.consensus1.fa threads=8 local=true interleaved=false maxindel=80 ambiguous=random -Xmx8g
+Executing align2.BBMap [build=1, overwrite=true, fastareadlen=500, in=example.trimmed.fastq.gz, outm=example_KY369892.1_RV_map1.sam, ref=example_KY369892.1_RV.consensus1.fa, threads=8, local=true, interleaved=false, maxindel=80, ambiguous=random, -Xmx8g]
+Version 38.96
+
+Set threads to 8
+Set INTERLEAVED to false
+Choosing a site randomly for ambiguous mappings.
+NOTE:	Deleting contents of ref/genome/1 because reference is specified and overwrite=true
+NOTE:	Deleting contents of ref/index/1 because reference is specified and overwrite=true
+Writing reference.
+Executing dna.FastaToChromArrays2 [example_KY369892.1_RV.consensus1.fa, 1, writeinthread=false, genscaffoldinfo=true, retain, waitforwriting=false, gz=true, maxlen=536670912, writechroms=true, minscaf=1, midpad=300, startpad=8000, stoppad=8000, nodisk=false]
+
+Set genScaffoldInfo=true
+Writing chunk 1
+Set genome to 1
+
+Loaded Reference:	0.011 seconds.
+Loading index for chunk 1-1, build 1
+No index available; generating from reference genome: /Users/greningerlab/AS/revica/work/ab/cdd54a9cec6c2f2c569371346f8f59/ref/index/1/chr1_index_k13_c16_b1.block
+Indexing threads started for block 0-1
+Indexing threads finished for block 0-1
+Generated Index:	0.938 seconds.
+Analyzed Index:   	2.115 seconds.
+Started output stream:	0.095 seconds.
+Cleared Memory:    	0.418 seconds.
+Processing reads in single-ended mode.
+Started read stream.
+Started 8 mapping threads.
+Detecting finished threads: 0, 1, 2, 3, 4, 5, 6, 7
+
+   ------------------   Results   ------------------   
+
+Genome:                	1
+Key Length:            	13
+Max Indel:             	80
+Minimum Score Ratio:  	0.56
+Mapping Mode:         	normal
+Reads Used:           	17449	(2257050 bases)
+
+Mapping:          	2.596 seconds.
+Reads/sec:       	6722.24
+kBases/sec:      	869.53
+
+
+Read 1 data:      	pct reads	num reads 	pct bases	   num bases
+
+mapped:          	 99.9828% 	    17446 	 99.9836% 	     2256680
+unambiguous:     	 99.9828% 	    17446 	 99.9836% 	     2256680
+ambiguous:       	  0.0000% 	        0 	  0.0000% 	           0
+low-Q discards:  	  0.0000% 	        0 	  0.0000% 	           0
+
+perfect best site:	 67.1729% 	    11721 	 63.5769% 	     1434963
+semiperfect site:	 69.3736% 	    12105 	 65.8837% 	     1487029
+
+Match Rate:      	      NA 	       NA 	 97.2238% 	     2196757
+Error Rate:      	 20.1845% 	     3522 	  0.3983% 	        9000
+Sub Rate:        	 19.6401% 	     3427 	  0.2619% 	        5917
+Del Rate:        	  1.1003% 	      192 	  0.1241% 	        2804
+Ins Rate:        	  0.5616% 	       98 	  0.0123% 	         279
+N Rate:          	 20.1100% 	     3509 	  2.3778% 	       53727
+
+Total time:     	6.323 seconds.

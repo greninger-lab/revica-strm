@@ -1,0 +1,124 @@
+# This file was produced by bcftools stats (1.15+htslib-1.15) and can be plotted using plot-vcfstats.
+# The command line was:	bcftools stats  example.vcf.gz
+#
+# Definition of sets:
+# ID	[2]id	[3]tab-separated file names
+ID	0	example.vcf.gz
+# SN, Summary numbers:
+#   number of records   .. number of data rows in the VCF
+#   number of no-ALTs   .. reference-only sites, ALT is either "." or identical to REF
+#   number of SNPs      .. number of rows with a SNP
+#   number of MNPs      .. number of rows with a MNP, such as CC>TT
+#   number of indels    .. number of rows with an indel
+#   number of others    .. number of rows with other type, for example a symbolic allele or
+#                          a complex substitution, such as ACT>TCGA
+#   number of multiallelic sites     .. number of rows with multiple alternate alleles
+#   number of multiallelic SNP sites .. number of rows with multiple alternate alleles, all SNPs
+# 
+#   Note that rows containing multiple types will be counted multiple times, in each
+#   counter. For example, a row with a SNP and an indel increments both the SNP and
+#   the indel counter.
+# 
+# SN	[2]id	[3]key	[4]value
+SN	0	number of samples:	1
+SN	0	number of records:	80
+SN	0	number of no-ALTs:	0
+SN	0	number of SNPs:	79
+SN	0	number of MNPs:	0
+SN	0	number of indels:	1
+SN	0	number of others:	0
+SN	0	number of multiallelic sites:	10
+SN	0	number of multiallelic SNP sites:	10
+# TSTV, transitions/transversions:
+# TSTV	[2]id	[3]ts	[4]tv	[5]ts/tv	[6]ts (1st ALT)	[7]tv (1st ALT)	[8]ts/tv (1st ALT)
+TSTV	0	71	12	5.92	70	5	14.00
+# SiS, Singleton stats:
+# SiS	[2]id	[3]allele count	[4]number of SNPs	[5]number of transitions	[6]number of transversions	[7]number of indels	[8]repeat-consistent	[9]repeat-inconsistent	[10]not applicable
+SiS	0	1	75	70	5	1	0	0	1
+# AF, Stats by non-reference allele frequency:
+# AF	[2]id	[3]allele frequency	[4]number of SNPs	[5]number of transitions	[6]number of transversions	[7]number of indels	[8]repeat-consistent	[9]repeat-inconsistent	[10]not applicable
+AF	0	0.000000	83	71	12	1	0	0	1
+# QUAL, Stats by quality
+# QUAL	[2]id	[3]Quality	[4]number of SNPs	[5]number of transitions (1st ALT)	[6]number of transversions (1st ALT)	[7]number of indels
+QUAL	0	218.4	1	1	0	0
+QUAL	0	225.4	57	53	4	0
+QUAL	0	228.2	1	0	1	0
+QUAL	0	228.3	6	6	0	1
+QUAL	0	228.4	10	10	0	0
+# IDD, InDel distribution:
+# IDD	[2]id	[3]length (deletions negative)	[4]number of sites	[5]number of genotypes	[6]mean VAF
+IDD	0	2	1	0	.
+# ST, Substitution types:
+# ST	[2]id	[3]type	[4]count
+ST	0	A>C	1
+ST	0	A>G	13
+ST	0	A>T	2
+ST	0	C>A	4
+ST	0	C>G	0
+ST	0	C>T	18
+ST	0	G>A	17
+ST	0	G>C	0
+ST	0	G>T	4
+ST	0	T>A	1
+ST	0	T>C	23
+ST	0	T>G	0
+# DP, Depth distribution
+# DP	[2]id	[3]bin	[4]number of genotypes	[5]fraction of genotypes (%)	[6]number of sites	[7]fraction of sites (%)
+DP	0	15	0	0.000000	1	1.250000
+DP	0	16	0	0.000000	1	1.250000
+DP	0	18	0	0.000000	1	1.250000
+DP	0	23	0	0.000000	1	1.250000
+DP	0	24	0	0.000000	1	1.250000
+DP	0	25	0	0.000000	2	2.500000
+DP	0	26	0	0.000000	1	1.250000
+DP	0	27	0	0.000000	1	1.250000
+DP	0	28	0	0.000000	1	1.250000
+DP	0	33	0	0.000000	1	1.250000
+DP	0	35	0	0.000000	1	1.250000
+DP	0	40	0	0.000000	1	1.250000
+DP	0	43	0	0.000000	1	1.250000
+DP	0	45	0	0.000000	1	1.250000
+DP	0	46	0	0.000000	2	2.500000
+DP	0	48	0	0.000000	2	2.500000
+DP	0	49	0	0.000000	1	1.250000
+DP	0	50	0	0.000000	1	1.250000
+DP	0	51	0	0.000000	1	1.250000
+DP	0	52	0	0.000000	1	1.250000
+DP	0	53	0	0.000000	1	1.250000
+DP	0	56	0	0.000000	1	1.250000
+DP	0	57	0	0.000000	1	1.250000
+DP	0	60	0	0.000000	1	1.250000
+DP	0	63	0	0.000000	1	1.250000
+DP	0	64	0	0.000000	1	1.250000
+DP	0	65	0	0.000000	1	1.250000
+DP	0	66	0	0.000000	2	2.500000
+DP	0	68	0	0.000000	1	1.250000
+DP	0	69	0	0.000000	1	1.250000
+DP	0	71	0	0.000000	2	2.500000
+DP	0	73	0	0.000000	2	2.500000
+DP	0	74	0	0.000000	1	1.250000
+DP	0	77	0	0.000000	3	3.750000
+DP	0	79	0	0.000000	2	2.500000
+DP	0	81	0	0.000000	1	1.250000
+DP	0	82	0	0.000000	1	1.250000
+DP	0	83	0	0.000000	1	1.250000
+DP	0	85	0	0.000000	1	1.250000
+DP	0	88	0	0.000000	1	1.250000
+DP	0	89	0	0.000000	1	1.250000
+DP	0	91	0	0.000000	1	1.250000
+DP	0	94	0	0.000000	2	2.500000
+DP	0	95	0	0.000000	1	1.250000
+DP	0	96	0	0.000000	2	2.500000
+DP	0	97	0	0.000000	2	2.500000
+DP	0	98	0	0.000000	1	1.250000
+DP	0	99	0	0.000000	3	3.750000
+DP	0	100	0	0.000000	2	2.500000
+DP	0	101	0	0.000000	1	1.250000
+DP	0	102	0	0.000000	1	1.250000
+DP	0	103	0	0.000000	2	2.500000
+DP	0	104	0	0.000000	4	5.000000
+DP	0	106	0	0.000000	1	1.250000
+DP	0	108	0	0.000000	1	1.250000
+DP	0	109	0	0.000000	1	1.250000
+DP	0	110	0	0.000000	1	1.250000
+DP	0	113	0	0.000000	4	5.000000

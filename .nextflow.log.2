@@ -1,0 +1,154 @@
+Oct-04 15:50:07.664 [main] DEBUG nextflow.cli.Launcher - $> nextflow run main.nf --reads example --outdir test -with-docker greningerlab/revica
+Oct-04 15:50:07.731 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 22.04.5
+Oct-04 15:50:07.749 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /Users/greningerlab/AS/revica/nextflow.config
+Oct-04 15:50:07.749 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /Users/greningerlab/AS/revica/nextflow.config
+Oct-04 15:50:07.768 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `standard`
+Oct-04 15:50:08.454 [main] DEBUG nextflow.config.ConfigBuilder - Enabling execution in Docker container as requested by cli option `-with-docker greningerlab/revica`
+Oct-04 15:50:08.460 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 from script declararion
+Oct-04 15:50:08.476 [main] INFO  nextflow.cli.CmdRun - Launching `main.nf` [sick_shirley] DSL2 - revision: 4c7605a2d7
+Oct-04 15:50:08.489 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; plugins-dir=/Users/greningerlab/.nextflow/plugins; core-plugins: nf-amazon@1.7.2,nf-azure@0.13.2,nf-console@1.0.3,nf-ga4gh@1.0.3,nf-google@1.1.4,nf-sqldb@0.4.0,nf-tower@1.4.0
+Oct-04 15:50:08.490 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Oct-04 15:50:08.499 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Oct-04 15:50:08.500 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Oct-04 15:50:08.503 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.4.1 in 'deployment' mode
+Oct-04 15:50:08.512 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Oct-04 15:50:08.565 [main] DEBUG nextflow.Session - Session uuid: 90fbf607-ff16-41df-a240-e1a38b2eb3e8
+Oct-04 15:50:08.565 [main] DEBUG nextflow.Session - Run name: sick_shirley
+Oct-04 15:50:08.565 [main] DEBUG nextflow.Session - Executor pool size: 20
+Oct-04 15:50:08.774 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 22.04.5 build 5708
+  Created: 15-07-2022 16:09 UTC (09:09 PDT)
+  System: Mac OS X 12.5
+  Runtime: Groovy 3.0.10 on OpenJDK 64-Bit Server VM 11.0.13+7-b1751.21
+  Encoding: UTF-8 (UTF-8)
+  Process: 5329@Jaydees.local [127.0.0.1]
+  CPUs: 20 - Mem: 72 GB (15.2 GB) - Swap: 0 (0)
+Oct-04 15:50:08.786 [main] DEBUG nextflow.Session - Work-dir: /Users/greningerlab/AS/revica/work [Mac OS X]
+Oct-04 15:50:08.798 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Oct-04 15:50:08.807 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+Oct-04 15:50:08.826 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+Oct-04 15:50:08.835 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 21; maxThreads: 1000
+Oct-04 15:50:08.910 [main] DEBUG nextflow.Session - Session start invoked
+Oct-04 15:50:09.408 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Oct-04 15:50:09.434 [main] INFO  nextflow.Nextflow - ________________________________________________________________________________
+Oct-04 15:50:09.435 [main] INFO  nextflow.Nextflow -                              REVICA :  v1.2.2
+Oct-04 15:50:09.435 [main] INFO  nextflow.Nextflow - ________________________________________________________________________________
+Oct-04 15:50:09.437 [main] INFO  nextflow.Nextflow - Nextflow run name             : sick_shirley
+Revica directory              : /Users/greningerlab/AS/revica
+Configuration profile         : standard
+Launch directory              : /Users/greningerlab/AS/revica
+Input directory               : example
+Sequence type                 : Single-End
+Output directory              : test
+Work directory                : /Users/greningerlab/AS/revica/work
+Trimmomatic adapters          : /Users/greningerlab/AS/revica/adapters/adapters.fa
+Trimmomatic min read length   : 35
+Trimmomatic setting           : 2:30:10:1:true
+Trimmomatic sliding Window    : 4:20
+Trimmomatic leading           : 3
+Trimmomatic trailing          : 3
+Oct-04 15:50:09.438 [main] INFO  nextflow.Nextflow - ________________________________________________________________________________
+Oct-04 15:50:10.346 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:Trimming_SE` matches process Trimming_SE
+Oct-04 15:50:10.352 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-04 15:50:10.352 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-04 15:50:10.356 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+Oct-04 15:50:10.362 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=20; memory=72 GB; capacity=20; pollInterval=100ms; dumpInterval=5m
+Oct-04 15:50:10.454 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:Aligning_SE` matches process Aligning_SE
+Oct-04 15:50:10.455 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-04 15:50:10.455 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-04 15:50:10.461 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:Viral_Identification` matches process Viral_Identification
+Oct-04 15:50:10.462 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-04 15:50:10.462 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-04 15:50:10.468 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:Consensus_Generation_Prep_SE` matches process Consensus_Generation_Prep_SE
+Oct-04 15:50:10.469 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-04 15:50:10.469 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-04 15:50:10.481 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:Consensus_Generation_SE` matches process Consensus_Generation_SE
+Oct-04 15:50:10.483 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-04 15:50:10.483 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-04 15:50:10.489 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:VCF_Generation` matches process VCF_Generation
+Oct-04 15:50:10.490 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-04 15:50:10.490 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-04 15:50:10.497 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:Serotyping` matches process Serotyping
+Oct-04 15:50:10.498 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-04 15:50:10.498 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-04 15:50:10.506 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:Summary_Generation` matches process Summary_Generation
+Oct-04 15:50:10.508 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-04 15:50:10.508 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-04 15:50:10.520 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:Final_Processing` matches process Final_Processing
+Oct-04 15:50:10.521 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-04 15:50:10.521 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-04 15:50:10.524 [main] DEBUG nextflow.Session - Workflow process names [dsl2]: Final_Processing, Aligning_SE, Consensus_Generation_Prep_SE, Aligning_PE, Summary_Generation, Consensus_Generation_Prep_PE, Viral_Identification, VCF_Generation, Consensus_Generation_SE, Trimming_SE, Consensus_Generation_PE, Serotyping, Trimming_PE
+Oct-04 15:50:10.525 [main] DEBUG nextflow.Session - Ignite dataflow network (10)
+Oct-04 15:50:10.533 [PathVisitor-1] DEBUG nextflow.file.PathVisitor - files for syntax: glob; folder: example/; pattern: *{.fastq.gz,.fastq}; options: [:]
+Oct-04 15:50:10.535 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > Trimming_SE
+Oct-04 15:50:10.535 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > Aligning_SE
+Oct-04 15:50:10.537 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > Viral_Identification
+Oct-04 15:50:10.538 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > Consensus_Generation_Prep_SE
+Oct-04 15:50:10.540 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > Consensus_Generation_SE
+Oct-04 15:50:10.542 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > VCF_Generation
+Oct-04 15:50:10.544 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > Serotyping
+Oct-04 15:50:10.545 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > Summary_Generation
+Oct-04 15:50:10.545 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > Final_Processing
+Oct-04 15:50:10.546 [main] DEBUG nextflow.script.ScriptRunner - > Await termination 
+Oct-04 15:50:10.547 [main] DEBUG nextflow.Session - Session await
+Oct-04 15:50:10.759 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Oct-04 15:50:10.764 [Task submitter] INFO  nextflow.Session - [2d/a77b90] Submitted process > Trimming_SE (1)
+Oct-04 15:50:12.070 [SIGINT handler] DEBUG nextflow.Session - Session aborted -- Cause: SIGINT
+Oct-04 15:50:12.081 [SIGINT handler] DEBUG nextflow.Session - The following nodes are still active:
+[process] Aligning_SE
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: -
+  port 1: (value) bound ; channel: ref
+  port 2: (cntrl) -     ; channel: $
+
+[process] Viral_Identification
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: -
+  port 1: (value) bound ; channel: ref
+  port 2: (cntrl) -     ; channel: $
+
+[process] Consensus_Generation_Prep_SE
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: *_vid.txt
+  port 1: (value) bound ; channel: ref
+  port 2: (cntrl) -     ; channel: $
+
+[process] Consensus_Generation_SE
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: -
+  port 1: (cntrl) -     ; channel: $
+
+[process] VCF_Generation
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: -
+  port 1: (cntrl) -     ; channel: $
+
+[process] Serotyping
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: -
+  port 1: (value) bound ; channel: BLASTDB_ALL_1
+  port 2: (value) bound ; channel: BLASTDB_ALL_2
+  port 3: (value) bound ; channel: BLASTDB_ALL_3
+  port 4: (value) bound ; channel: BLASTDB_ALL_4
+  port 5: (value) bound ; channel: BLASTDB_ALL_5
+  port 6: (value) bound ; channel: BLASTDB_ALL_6
+  port 7: (value) bound ; channel: BLASTDB_ALL_7
+  port 8: (value) bound ; channel: BLASTDB_ALL_8
+  port 9: (cntrl) -     ; channel: $
+
+[process] Summary_Generation
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: -
+  port 1: (cntrl) -     ; channel: $
+
+[process] Final_Processing
+  status=ACTIVE
+  port 0: (value) OPEN  ; channel: *_summary.tsv
+  port 1: (cntrl) -     ; channel: $
+
+Oct-04 15:50:12.083 [main] DEBUG nextflow.Session - Session await > all process finished
+Oct-04 15:50:12.083 [main] DEBUG nextflow.Session - Session await > all barriers passed
+Oct-04 15:50:12.087 [main] WARN  n.processor.TaskPollingMonitor - Killing running tasks (1)
+Oct-04 15:50:12.109 [main] DEBUG nextflow.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=0; failedCount=0; ignoredCount=0; cachedCount=0; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=1; succeedDuration=0ms; failedDuration=0ms; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=1; peakCpus=2; peakMemory=2 GB; ]
+Oct-04 15:50:12.291 [main] DEBUG nextflow.cache.CacheDB - Closing CacheDB done
+Oct-04 15:50:12.308 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye

@@ -1,0 +1,75 @@
+java -ea -Xmx8g -Xms8g -cp /opt/bbmap/current/ align2.BBMap build=1 overwrite=true fastareadlen=500 in=example.trimmed.fastq.gz outm=example_map_all.sam ref=ref.fa threads=8 covstats=example_map_all_bbmap_covstats.tsv local=true interleaved=false maxindel=80 -Xmx8g
+Executing align2.BBMap [build=1, overwrite=true, fastareadlen=500, in=example.trimmed.fastq.gz, outm=example_map_all.sam, ref=ref.fa, threads=8, covstats=example_map_all_bbmap_covstats.tsv, local=true, interleaved=false, maxindel=80, -Xmx8g]
+Version 38.96
+
+Set threads to 8
+Set INTERLEAVED to false
+Retaining first best site only for ambiguous mappings.
+Writing reference.
+Executing dna.FastaToChromArrays2 [ref.fa, 1, writeinthread=false, genscaffoldinfo=true, retain, waitforwriting=false, gz=true, maxlen=536670912, writechroms=true, minscaf=1, midpad=300, startpad=8000, stoppad=8000, nodisk=false]
+
+Set genScaffoldInfo=true
+Writing chunk 1
+Set genome to 1
+
+Loaded Reference:	0.023 seconds.
+Loading index for chunk 1-1, build 1
+No index available; generating from reference genome: /Users/greningerlab/AS/revica/work/f5/b2de5eb1da1f19b72437a8dfe270dc/ref/index/1/chr1_index_k13_c6_b1.block
+Indexing threads started for block 0-1
+Indexing threads finished for block 0-1
+Generated Index:	4.542 seconds.
+Finished Writing:	2.028 seconds.
+Analyzed Index:   	2.024 seconds.
+Started output stream:	0.061 seconds.
+Cleared Memory:    	0.285 seconds.
+Processing reads in single-ended mode.
+Started read stream.
+Started 8 mapping threads.
+Detecting finished threads: 0, 1, 2, 3, 4, 5, 6, 7
+
+   ------------------   Results   ------------------   
+
+Genome:                	1
+Key Length:            	13
+Max Indel:             	80
+Minimum Score Ratio:  	0.56
+Mapping Mode:         	normal
+Reads Used:           	672047	(63037692 bases)
+
+Mapping:          	7.270 seconds.
+Reads/sec:       	92441.29
+kBases/sec:      	8670.95
+
+
+Read 1 data:      	pct reads	num reads 	pct bases	   num bases
+
+mapped:          	  5.4734% 	    36784 	  6.1429% 	     3872325
+unambiguous:     	  0.8117% 	     5455 	  0.7226% 	      455515
+ambiguous:       	  4.6617% 	    31329 	  5.4203% 	     3416810
+low-Q discards:  	  0.0000% 	        0 	  0.0000% 	           0
+
+perfect best site:	  2.4165% 	    16240 	  2.0700% 	     1304865
+semiperfect site:	  2.5393% 	    17065 	  2.1778% 	     1372816
+
+Match Rate:      	      NA 	       NA 	 96.2498% 	     3730568
+Error Rate:      	 30.5953% 	    17324 	  0.9864% 	       38234
+Sub Rate:        	 30.2439% 	    17125 	  0.8758% 	       33945
+Del Rate:        	  0.5899% 	      334 	  0.0929% 	        3599
+Ins Rate:        	  0.4503% 	      255 	  0.0178% 	         690
+N Rate:          	 11.6137% 	     6576 	  2.7638% 	      107122
+
+Reads:                               	672047
+Mapped reads:                        	36784
+Mapped bases:                        	3802016
+Ref scaffolds:                       	1768
+Ref bases:                           	19265047
+
+Percent mapped:                      	5.473
+Percent proper pairs:                	0.000
+Average coverage:                    	0.197
+Average coverage with deletions:     	0.200
+Standard deviation:                    	8.729
+Percent scaffolds with any coverage: 	2.26
+Percent of reference bases covered:  	0.44
+
+Total time:     	16.721 seconds.
