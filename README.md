@@ -25,11 +25,11 @@ Install `Docker` using the following command:
 
 Examples:
 
-	nextflow run greninger-lab/revica -r main --reads example --outdir output
+	nextflow run greninger-lab/revica -r main -latest --reads example --outdir output
 
 or with Docker
 
-	nextflow run greninger-lab/revica -r main --reads example --outdir output -with-docker greningerlab/revica
+	nextflow run greninger-lab/revica -r main -latest --reads example --outdir output -with-docker greningerlab/revica
 	
 Valid command line arguments:
 

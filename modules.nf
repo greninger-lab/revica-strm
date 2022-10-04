@@ -183,10 +183,12 @@ process Consensus_Generation_SE {
 
     if [[ ${params.dedup} == true ]]
     then
-    java -Xmx2g -jar \$PICARD MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt --ASSUME_SORTED true --VALIDATION_STRINGENCY LENIENT --REMOVE_DUPLICATES true
+    java -Xmx${task.memory.giga}g -jar \$PICARD MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt --ASSUME_SORTED true --VALIDATION_STRINGENCY LENIENT --REMOVE_DUPLICATES true
     # remove pre-deduplicated bam file and rename deduplicated bam file
     mv ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref_og.sorted.bam
+    samtools sort -@ ${task.cpus} -T ${base}_map_ref_deduplicated -o ${base}_map_ref_deduplicated.sorted.bam ${base}_map_ref_deduplicated.bam
     mv ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
+    samtools index -@ ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
     # convert deduplicated reads in bam to fastq
     samtools fastq -@ ${task.cpus} -n -0 ${base}.trimmed.fastq.gz ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
     else
@@ -625,9 +627,11 @@ process Consensus_Generation_PE {
 
     if [[ ${params.dedup} == true ]]
     then
-    java -Xmx2g -jar \$PICARD MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt --ASSUME_SORTED true --VALIDATION_STRINGENCY LENIENT --REMOVE_DUPLICATES true
+    java -Xmx${task.memory.giga}g -jar \$PICARD MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt --ASSUME_SORTED true --VALIDATION_STRINGENCY LENIENT --REMOVE_DUPLICATES true
     mv ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref_og.sorted.bam
+    samtools sort -@ ${task.cpus} -T ${base}_map_ref_deduplicated -o ${base}_map_ref_deduplicated.sorted.bam ${base}_map_ref_deduplicated.bam
     mv ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
+    samtools index -@ ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
     # convert deduplicated reads in bam to fastq
     samtools collate -@ ${task.cpus} -O ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam | samtools fastq -@ ${task.cpus} -1 ${base}.R1.paired.trimmed.fastq.gz -2 ${base}.R2.paired.trimmed.fastq.gz -0 /dev/null -s /dev/null -n 
     else
@@ -713,6 +717,5 @@ process Consensus_Generation_PE {
     samtools view -S -b -@ ${task.cpus} -F 4 ${base}_${ref_id}_${ref_tag}_mapf.sam | samtools sort -@ ${task.cpus} - > ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam
     samtools index -@ ${task.cpus} ${base}_${ref_id}_${ref_tag}_mapf.sorted.bam
     rm ${base}_${ref_id}_${ref_tag}_mapf.sam
-
     """
 }

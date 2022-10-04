@@ -28,9 +28,9 @@ def help() {
     
 	Pipeline Usage:
 	Natively
-	nextflow run greninger-lab/revica -r main --reads input_fastq/fastq.gz_dir_path --outdir output_dir_path
+	nextflow run greninger-lab/revica -r main -latest --reads input_fastq/fastq.gz_dir_path --outdir output_dir_path
 	or with Docker:
-	nextflow run greninger-lab/revica -r main --reads input_fastq/fastq.gz_dir_path --outdir output_dir_path -with-docker greningerlab/revica
+	nextflow run greninger-lab/revica -r main -latest --reads input_fastq/fastq.gz_dir_path --outdir output_dir_path -with-docker greningerlab/revica
 
 
     Valid CLI Arguments:
