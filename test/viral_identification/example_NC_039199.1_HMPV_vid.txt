@@ -1,1 +1,0 @@
-example	NC_039199.1	HMPV	Human metapneumovirus isolate 00-1, complete genome

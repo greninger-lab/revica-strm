@@ -1,1 +1,0 @@
-example	NC_007375.1	fluA_PB1	Influenza A virus (A/Korea/426/1968(H2N2)) segment 2, complete sequence
