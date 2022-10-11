@@ -1,6 +1,7 @@
 # REVICA
 
 Revica is a reference-based viral consensus genome assembly pipeline for some of the most common respiratory viruses. Revica is written in [Nextflow](https://www.nextflow.io/) and can be run in [Docker](https://docs.docker.com/get-docker/). Revica currently supports consensus genome assembly of:
+- Enterovirus A-D (EV)
 - Rhinovirus (RV)
 - Seasonal human coronavirus (HCOV)
 - Human metapneumovirus (HMPV)
@@ -15,13 +16,9 @@ Revica is a reference-based viral consensus genome assembly pipeline for some of
 ![Workflow](revica_workflow.png)
 
 ## Usage
-Install `Nextflow` using the following command:
+Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation) (`>=21.10.3`)
 
-	curl -s https://get.nextflow.io | bash
-
-Install `Docker` using the following command:
-
-	curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
+Install [`Docker`](https://docs.docker.com/engine/installation/)
 
 Examples:
 
