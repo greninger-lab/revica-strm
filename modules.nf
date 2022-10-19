@@ -186,7 +186,7 @@ process Consensus_Generation_SE {
     java -Xmx${task.memory.giga}g -jar \$PICARD MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt --ASSUME_SORTED true --VALIDATION_STRINGENCY LENIENT --REMOVE_DUPLICATES true
     # remove pre-deduplicated bam file and rename deduplicated bam file
     mv ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref_og.sorted.bam
-    samtools sort -@ ${task.cpus} -T ${base}_map_ref_deduplicated -o ${base}_map_ref_deduplicated.sorted.bam ${base}_map_ref_deduplicated.bam
+    samtools sort -@ ${task.cpus} -T ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated -o ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.bam
     mv ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
     samtools index -@ ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
     # convert deduplicated reads in bam to fastq
@@ -629,7 +629,7 @@ process Consensus_Generation_PE {
     then
     java -Xmx${task.memory.giga}g -jar \$PICARD MarkDuplicates -I ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam -O ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.bam -M ${base}_${ref_id}_${ref_tag}_picard_output.txt --ASSUME_SORTED true --VALIDATION_STRINGENCY LENIENT --REMOVE_DUPLICATES true
     mv ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref_og.sorted.bam
-    samtools sort -@ ${task.cpus} -T ${base}_map_ref_deduplicated -o ${base}_map_ref_deduplicated.sorted.bam ${base}_map_ref_deduplicated.bam
+    samtools sort -@ ${task.cpus} -T ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated -o ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.bam
     mv ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
     samtools index -@ ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
     # convert deduplicated reads in bam to fastq
