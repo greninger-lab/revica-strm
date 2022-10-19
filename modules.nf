@@ -25,11 +25,11 @@ process Trimming_SE {
     	if [[ ${params.sample} == false ]]
     	then 
             gzip ${R1} 
-    	    trimmomatic SE -threads ${task.cpus} ${R1}.gz \$base.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
+    	    trimmomatic SE -threads ${task.cpus} ${R1}.gz \${base}.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
     	    LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> \${base}_trim_stats.txt
 	else
 	    seqtk sample ${R1} ${params.sample} | gzip > \${base}_sampled.fastq.gz
-    	    trimmomatic SE -threads ${task.cpus} \${base}_sampled.fastq.gz \$base.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
+    	    trimmomatic SE -threads ${task.cpus} \${base}_sampled.fastq.gz \${base}.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
     	    LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> \${base}_trim_stats.txt
 	fi
     elif [[ ${R1} == *.fastq.gz ]] 
@@ -37,7 +37,7 @@ process Trimming_SE {
     base=\$(basename ${R1} ".fastq.gz")
 	if [[ ${params.sample} == false ]]
 	then
-    	    trimmomatic SE -threads ${task.cpus} ${R1} \$base.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
+    	    trimmomatic SE -threads ${task.cpus} ${R1} \${base}.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
     	    LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> \${base}_trim_stats.txt
 	else
 	    seqtk sample ${R1} ${params.sample} | gzip > \${base}_sampled.fastq.gz
