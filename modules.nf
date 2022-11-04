@@ -12,7 +12,7 @@ process Trimming_SE {
         tuple env(base), file("*.trimmed.fastq.gz") 
 	file("*_trim_stats.txt")
 
-    publishDir "${params.outdir}/trimmed_fastq", mode: 'copy', pattern:'*.trimmed.fastq*'
+    publishDir "${params.outdir}/trimmed_fastq", mode: 'copy', pattern:'*.trimmed.fastq.gz'
     publishDir "${params.outdir}/trim_stats", mode: 'copy', pattern:'*_trim_stats.txt'
 
     script:
@@ -25,11 +25,11 @@ process Trimming_SE {
     	if [[ ${params.sample} == false ]]
     	then 
             gzip ${R1} 
-    	    trimmomatic SE -threads ${task.cpus} ${R1}.gz \${base}.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
+    	    java -Xmx${task.memory.giga}g -jar \$TRIMMOMATIC SE -threads ${task.cpus} ${R1}.gz \${base}.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
     	    LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> \${base}_trim_stats.txt
 	else
 	    seqtk sample ${R1} ${params.sample} | gzip > \${base}_sampled.fastq.gz
-    	    trimmomatic SE -threads ${task.cpus} \${base}_sampled.fastq.gz \${base}.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
+    	    java -Xmx${task.memory.giga}g -jar \$TRIMMOMATIC SE -threads ${task.cpus} \${base}_sampled.fastq.gz \${base}.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
     	    LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> \${base}_trim_stats.txt
 	fi
     elif [[ ${R1} == *.fastq.gz ]] 
@@ -37,11 +37,11 @@ process Trimming_SE {
     base=\$(basename ${R1} ".fastq.gz")
 	if [[ ${params.sample} == false ]]
 	then
-    	    trimmomatic SE -threads ${task.cpus} ${R1} \${base}.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
+    	    java -Xmx${task.memory.giga}g -jar \$TRIMMOMATIC SE -threads ${task.cpus} ${R1} \${base}.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
     	    LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> \${base}_trim_stats.txt
 	else
 	    seqtk sample ${R1} ${params.sample} | gzip > \${base}_sampled.fastq.gz
-    	    trimmomatic SE -threads ${task.cpus} \${base}_sampled.fastq.gz \${base}.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
+    	    java -Xmx${task.memory.giga}g -jar \$TRIMMOMATIC SE -threads ${task.cpus} \${base}_sampled.fastq.gz \${base}.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
     	    LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> \${base}_trim_stats.txt
 	fi
     fi
@@ -482,7 +482,7 @@ process Trimming_PE {
         file ADAPTERS
 
     output: 
-        tuple val(base), file("${base}.R1.paired.trimmed.fastq.gz"), file("${base}.R2.paired.trimmed.fastq.gz")
+        tuple val(base), file("${base}_R1.trimmed.fastq.gz"), file("${base}_R2.trimmed.fastq.gz")
 	file("*_trim_stats.txt")
 
     publishDir "${params.outdir}/trimmed_fastq", mode: 'copy', pattern:'*.paired.trimmed.fastq.gz'
@@ -497,24 +497,24 @@ process Trimming_PE {
 	if [[ ${params.sample} == false ]]
 	then
             gzip ${R1} && gzip ${R2}
-    	    trimmomatic PE -threads ${task.cpus} ${R1}.gz ${R2}.gz ${base}.R1.paired.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}.R2.paired.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
+    	    java -Xmx${task.memory.giga}g -jar \$TRIMMOMATIC PE -threads ${task.cpus} ${R1}.gz ${R2}.gz ${base}_R1.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}_R2.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
     	    ILLUMINACLIP:${ADAPTERS}:${params.SETTING} LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> ${base}_trim_stats.txt
 	else
 	    seqtk sample -s 100 ${R1} ${params.sample} | gzip > ${base}_R1_sampled.fastq.gz
 	    seqtk sample -s 100 ${R2} ${params.sample} | gzip > ${base}_R2_sampled.fastq.gz
-    	    trimmomatic PE -threads ${task.cpus} ${base}_R1_sampled.fastq.gz ${base}_R2_sampled.fastq.gz ${base}.R1.paired.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}.R2.paired.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
+    	    java -Xmx${task.memory.giga}g -jar \$TRIMMOMATIC PE -threads ${task.cpus} ${base}_R1_sampled.fastq.gz ${base}_R2_sampled.fastq.gz ${base}_R1.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}_R2.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
     	    ILLUMINACLIP:${ADAPTERS}:${params.SETTING} LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> ${base}_trim_stats.txt
 	fi
     elif [[ ${R1} == *.fastq.gz && ${R2} == *.fastq.gz ]]
     then 
 	if [[ ${params.sample} == false ]]
 	then
-    	    trimmomatic PE -threads ${task.cpus} ${R1} ${R2} ${base}.R1.paired.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}.R2.paired.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
+    	    java -Xmx${task.memory.giga}g -jar \$TRIMMOMATIC PE -threads ${task.cpus} ${R1} ${R2} ${base}_R1.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}_R2.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
     	    ILLUMINACLIP:${ADAPTERS}:${params.SETTING} LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> ${base}_trim_stats.txt
 	else
 	    seqtk sample -s 100 ${R1} ${params.sample} | gzip > ${base}_R1_sampled.fastq.gz
 	    seqtk sample -s 100 ${R2} ${params.sample} | gzip > ${base}_R2_sampled.fastq.gz
-    	    trimmomatic PE -threads ${task.cpus} ${base}_R1_sampled.fastq.gz ${base}_R2_sampled.fastq.gz ${base}.R1.paired.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}.R2.paired.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
+    	    java -Xmx${task.memory.giga}g -jar \$TRIMMOMATIC PE -threads ${task.cpus} ${base}_R1_sampled.fastq.gz ${base}_R2_sampled.fastq.gz ${base}_R1.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}_R2.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
     	    ILLUMINACLIP:${ADAPTERS}:${params.SETTING} LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> ${base}_trim_stats.txt
 	fi
     fi
@@ -527,7 +527,7 @@ process Aligning_PE {
     maxRetries 1
 
     input: 
-        tuple val(base), file("${base}.R1.paired.trimmed.fastq.gz"), file("${base}.R2.paired.trimmed.fastq.gz")
+        tuple val(base), file("${base}_R1.trimmed.fastq.gz"), file("${base}_R2.trimmed.fastq.gz")
         file ref
 
     output:
@@ -542,8 +542,8 @@ process Aligning_PE {
 
     # Map to the multifasta reference
     bbmap.sh \\
-        in=${base}.R1.paired.trimmed.fastq.gz \\
-	in2=${base}.R2.paired.trimmed.fastq.gz \\
+        in=${base}_R1.trimmed.fastq.gz \\
+	in2=${base}_R2.trimmed.fastq.gz \\
         outm=${base}_map_all.sam \\
         ref=${ref} \\
         threads=${task.cpus} \\
@@ -613,8 +613,8 @@ process Consensus_Generation_PE {
 
     # Map the reads to the reference
     bbmap.sh \\
-	in=\${outdir_realpath}/trimmed_fastq/${base}.R1.paired.trimmed.fastq.gz \\
-	in2=\${outdir_realpath}/trimmed_fastq/${base}.R2.paired.trimmed.fastq.gz \\
+	in=\${outdir_realpath}/trimmed_fastq/${base}_R1.trimmed.fastq.gz \\
+	in2=\${outdir_realpath}/trimmed_fastq/${base}_R2.trimmed.fastq.gz \\
 	outm=${base}_${ref_id}_${ref_tag}_map_ref.sam \\
 	ref=${base}_${ref_id}_${ref_tag}.fa \\
 	threads=${task.cpus} \\
@@ -633,10 +633,10 @@ process Consensus_Generation_PE {
     mv ${base}_${ref_id}_${ref_tag}_map_ref_deduplicated.sorted.bam ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
     samtools index -@ ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam
     # convert deduplicated reads in bam to fastq
-    samtools collate -@ ${task.cpus} -O ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam | samtools fastq -@ ${task.cpus} -1 ${base}.R1.paired.trimmed.fastq.gz -2 ${base}.R2.paired.trimmed.fastq.gz -0 /dev/null -s /dev/null -n 
+    samtools collate -@ ${task.cpus} -O ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam | samtools fastq -@ ${task.cpus} -1 ${base}_R1.trimmed.fastq.gz -2 ${base}_R2.trimmed.fastq.gz -0 /dev/null -s /dev/null -n 
     else
     # convert mapped reads from bam to fastq
-    samtools collate -@ ${task.cpus} -O ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam | samtools fastq -@ ${task.cpus} -1 ${base}.R1.paired.trimmed.fastq.gz -2 ${base}.R2.paired.trimmed.fastq.gz -0 /dev/null -s /dev/null -n 
+    samtools collate -@ ${task.cpus} -O ${base}_${ref_id}_${ref_tag}_map_ref.sorted.bam | samtools fastq -@ ${task.cpus} -1 ${base}_R1.trimmed.fastq.gz -2 ${base}_R2.trimmed.fastq.gz -0 /dev/null -s /dev/null -n 
     fi
 
     # Calling Consensus
@@ -656,8 +656,8 @@ process Consensus_Generation_PE {
 
     # Map reads to consensus1 and create bam and sorted bam files
     bbmap.sh \\
-	in=${base}.R1.paired.trimmed.fastq.gz \\
-	in2=${base}.R2.paired.trimmed.fastq.gz \\
+	in=${base}_R1.trimmed.fastq.gz \\
+	in2=${base}_R2.trimmed.fastq.gz \\
 	outm=${base}_${ref_id}_${ref_tag}_map1.sam \\
 	ref=${base}_${ref_id}_${ref_tag}.consensus1.fa \\
 	threads=${task.cpus} \\
@@ -682,8 +682,8 @@ process Consensus_Generation_PE {
 
     # Align reads to consensus2 and create bam and sorted bam files 
     bbmap.sh \\
-	in=${base}.R1.paired.trimmed.fastq.gz \\
-	in2=${base}.R2.paired.trimmed.fastq.gz \\
+	in=${base}_R1.trimmed.fastq.gz \\
+	in2=${base}_R2.trimmed.fastq.gz \\
 	outm=${base}_${ref_id}_${ref_tag}_map2.sam \\
 	ref=${base}_${ref_id}_${ref_tag}.consensus2.fa \\
 	threads=${task.cpus} \\
@@ -708,8 +708,8 @@ process Consensus_Generation_PE {
 
     # Align reads to final consensus and create bam and sorted bam files 
     bbmap.sh \\
-	in=${base}.R1.paired.trimmed.fastq.gz \\
-	in2=${base}.R2.paired.trimmed.fastq.gz \\
+	in=${base}_R1.trimmed.fastq.gz \\
+	in2=${base}_R2.trimmed.fastq.gz \\
 	outm=${base}_${ref_id}_${ref_tag}_mapf.sam \\
 	ref=${base}_${ref_id}_${ref_tag}.consensus_final.fa \\
 	threads=${task.cpus} \\

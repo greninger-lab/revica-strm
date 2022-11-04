@@ -63,6 +63,7 @@ params.p = 0
 params.q = 20
 params.t = 0.6
 params.d = 5
+params.skip_trimming = false
 params.help = false
 
 //Trimmomatic Settings
@@ -191,9 +192,59 @@ if(params.pe == false) {
 ////////////////////////////////////////////////////////
 
 workflow {
-    if(params.pe == false) {
+    if(params.pe) {
 
-	Trimming_SE (
+        Trimming_PE (                                                              
+            input_read_ch,                                                         
+            ADAPTERS                                                               
+        )
+                                                                                   
+        Aligning_PE (                                                              
+            Trimming_PE.out[0]
+            ref                                                                    
+        )                                                                          
+                                                                                   
+        Viral_Identification (                                                     
+            Aligning_PE.out[0],                                                    
+            ref                                                                    
+        )                                                                          
+                                                                                   
+        Consensus_Generation_Prep_PE (                                             
+            Viral_Identification.out[0].flatten(),                                 
+            ref                                                                    
+        )                                                                          
+                                                                                   
+        Consensus_Generation_PE (                                                  
+            Consensus_Generation_Prep_PE.out[0]                                    
+        )                                                                          
+                                                                                   
+        VCF_Generation (                                                           
+            Consensus_Generation_PE.out[0]                                         
+        )                                                                          
+                                                                                   
+        Serotyping (                                                               
+            Consensus_Generation_PE.out[1],                                        
+            BLAST_DB_ALL_1,                                                        
+            BLAST_DB_ALL_2,                                                        
+            BLAST_DB_ALL_3,                                                        
+            BLAST_DB_ALL_4,                                                        
+            BLAST_DB_ALL_5,                                                        
+            BLAST_DB_ALL_6,                                                        
+            BLAST_DB_ALL_7,                                                        
+            BLAST_DB_ALL_8                                                         
+        )                                                                          
+                                                                                   
+        Summary_Generation (                                                       
+            Serotyping.out[0]                                                      
+        )                                                                          
+                                                                                   
+        Final_Processing (                                                         
+            Summary_Generation.out[0].collect()                                    
+        )                                       
+	
+    } else { 
+	 
+        Trimming_SE (
             input_read_ch, 
             ADAPTERS
         )
@@ -223,56 +274,6 @@ workflow {
 
 	Serotyping (
 	    Consensus_Generation_SE.out[1],
-	    BLAST_DB_ALL_1,
-	    BLAST_DB_ALL_2,
-	    BLAST_DB_ALL_3,
-	    BLAST_DB_ALL_4,
-	    BLAST_DB_ALL_5,
-	    BLAST_DB_ALL_6,
-	    BLAST_DB_ALL_7,
-	    BLAST_DB_ALL_8
-	)
-
-        Summary_Generation (
-	    Serotyping.out[0]
-	)
-
-        Final_Processing (
-            Summary_Generation.out[0].collect()
-        )
-
-    } else { 
-	
-	Trimming_PE (
-	    input_read_ch, 
-            ADAPTERS
-	)
-
-        Aligning_PE (
-            Trimming_PE.out[0],
-	    ref
-	)
-
-	Viral_Identification (
-	    Aligning_PE.out[0],
-	    ref
-	)
-
-	Consensus_Generation_Prep_PE (
-	    Viral_Identification.out[0].flatten(),
-	    ref
-	)
-
-        Consensus_Generation_PE (
-            Consensus_Generation_Prep_PE.out[0]
-        )
-
-        VCF_Generation (
-            Consensus_Generation_PE.out[0]
-        )
-
-	Serotyping (
-	    Consensus_Generation_PE.out[1],
 	    BLAST_DB_ALL_1,
 	    BLAST_DB_ALL_2,
 	    BLAST_DB_ALL_3,

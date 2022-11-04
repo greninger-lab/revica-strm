@@ -1,22 +1,23 @@
-FROM openjdk:8-jdk-alpine
+FROM ubuntu:20.04
 
 ARG SAMTOOLS_VERSION=1.15 
 ARG BCFTOOLS_VERSION=1.15
+ARG HTSLIB_VERSION=1.15
 ARG TRIMMOMATIC_VERSION=0.39
 ARG BBMAP_VERSION=38.96
 ARG PICARD_VERSION=2.26.11
 ARG SEQKIT_VERSION=2.1.0
 ARG IVAR_VERSION=1.3.1
-ARG HTSLIB_VERSION=1.15
 ARG SEQTK_VERSION=1.3
 
+ENV DEBIAN_FRONTEND=noninteractive 
 ENV PATH=$PATH:/opt/bbmap
+ENV TRIMMOMATIC=/usr/local/bin/trimmomatic.jar
 ENV PICARD=/usr/local/bin/picard.jar
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 
-COPY java_jar_helper.sh /tmp
-
-RUN apk add --update --no-cache ncurses libbz2 xz zlib bash bc python3 \
-    && apk add --virtual=deps --update --no-cache ncurses-dev musl-dev g++ make zlib-dev bzip2-dev xz-dev autoconf automake \
+RUN apt-get update && apt-get install -y \
+    openjdk-11-jdk bc python3 wget libncurses5-dev bzip2 gcc g++ make zlib1g-dev libbz2-dev liblzma-dev unzip autoconf\
     # ---------- 
     # samtools
     && cd /tmp \
@@ -40,8 +41,7 @@ RUN apk add --update --no-cache ncurses libbz2 xz zlib bash bc python3 \
     && cd /tmp \
     && wget http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmomatic-${TRIMMOMATIC_VERSION}.zip \
     && unzip Trimmomatic-${TRIMMOMATIC_VERSION}.zip \
-    && cat java_jar_helper.sh Trimmomatic-${TRIMMOMATIC_VERSION}/trimmomatic-${TRIMMOMATIC_VERSION}.jar > /usr/local/bin/trimmomatic \
-    && chmod +x /usr/local/bin/trimmomatic \ 
+    && mv Trimmomatic-${TRIMMOMATIC_VERSION}/trimmomatic-${TRIMMOMATIC_VERSION}.jar /usr/local/bin/trimmomatic.jar \
     # ---------- 
     # bbmap
     && cd /tmp \
@@ -86,7 +86,7 @@ RUN apk add --update --no-cache ncurses libbz2 xz zlib bash bc python3 \
     && mv seqtk /usr/local/bin \ 
     # ----------
     # Clean up
-    && rm -rf /var/cache/apk/* /tmp/* \
-    && apk del deps
+    && apt autoremove -y wget libncurses5-dev bzip2 gcc g++ make zlib1g-dev libbz2-dev liblzma-dev unzip autoconf \
+    && rm -rf /var/lib/apt/lists/* /tmp/*
    
 CMD ["bash"]

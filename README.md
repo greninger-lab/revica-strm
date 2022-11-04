@@ -26,7 +26,7 @@ Examples:
 
 or with Docker
 
-	nextflow run greninger-lab/revica -r main -latest --reads example --outdir output -with-docker greningerlab/revica
+	nextflow run greninger-lab/revica -r main -latest --reads example --outdir output -with-docker greningerlab/revica:ubuntu-20.04
 	
 Valid command line arguments:
 
@@ -82,13 +82,17 @@ Valid command line arguments:
 - Stats for samples that failed assembly are in `failed_assembly_summary.tsv`.
 
 ## Docker
-Pull the docker image (269MB) that has all the dependencies from Docker Hub using the following command
+Pull the docker image that has all the dependencies from Docker Hub using the following command
 
-	docker pull greningerlab/revica
+	docker pull greningerlab/revica:ubuntu-20.04
 
 To run the docker image interactively, run the following command
 
-	docker run -it --rm greningerlab/revica
+	docker run -it --rm greningerlab/revica:ubuntu-20.04
+
+A smaller docker image based on alpine openjdk-8 (not compatible with AWS) is available at:
+	
+	docker pull greningerlab/revica:8-jdk-alpine
 
 [Revica docker image on Docker Hub](https://hub.docker.com/repository/docker/greningerlab/revica) 
 
