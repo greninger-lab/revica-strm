@@ -30,7 +30,7 @@ def help() {
 	Natively
 	nextflow run greninger-lab/revica -r main -latest --reads input_fastq/fastq.gz_dir_path --outdir output_dir_path
 	or with Docker:
-	nextflow run greninger-lab/revica -r main -latest --reads input_fastq/fastq.gz_dir_path --outdir output_dir_path -with-docker greningerlab/revica
+	nextflow run greninger-lab/revica -r main -latest --reads input_fastq/fastq.gz_dir_path --outdir output_dir_path -with-docker greningerlab/revica:ubuntu-20.04
 
 
     Valid CLI Arguments:
@@ -200,7 +200,7 @@ workflow {
         )
                                                                                    
         Aligning_PE (                                                              
-            Trimming_PE.out[0]
+            Trimming_PE.out[0],
             ref                                                                    
         )                                                                          
                                                                                    
