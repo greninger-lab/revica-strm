@@ -485,7 +485,7 @@ process Trimming_PE {
         tuple val(base), file("${base}_R1.trimmed.fastq.gz"), file("${base}_R2.trimmed.fastq.gz")
 	file("*_trim_stats.txt")
 
-    publishDir "${params.outdir}/trimmed_fastq", mode: 'copy', pattern:'*.paired.trimmed.fastq.gz'
+    publishDir "${params.outdir}/trimmed_fastq", mode: 'copy', pattern:'*.trimmed.fastq.gz'
     publishDir "${params.outdir}/trim_stats", mode: 'copy', pattern:'*_trim_stats.txt'
 
     script:
