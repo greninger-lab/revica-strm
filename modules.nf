@@ -328,7 +328,7 @@ process VCF_Generation {
 
 }
 process Serotyping {
-    container 'bschiffthaler/ncbi-blast:latest'
+    container 'quay.io/biocontainers/blast:2.12.0--pl5262h3289130_0'
     errorStrategy 'retry'
     maxRetries 1
 
