@@ -25,7 +25,7 @@ process Trimming_SE {
     	if [[ ${params.sample} == false ]]
     	then 
             gzip ${R1} 
-    	    java -Xmx${task.memory.giga}g -jar \$TRIMMOMATIC SE -threads ${task.cpus} ${R1} \${base}.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
+    	    java -Xmx${task.memory.giga}g -jar \$TRIMMOMATIC SE -threads ${task.cpus} ${R1}.gz \${base}.trimmed.fastq.gz ILLUMINACLIP:${ADAPTERS}:${params.SETTING} \
     	    LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> \${base}_trim_stats.txt
 	else
 	    seqtk sample ${R1} ${params.sample} | gzip > \${base}_sampled.fastq.gz
@@ -497,7 +497,7 @@ process Trimming_PE {
 	if [[ ${params.sample} == false ]]
 	then
             gzip ${R1} && gzip ${R2}
-    	    java -Xmx${task.memory.giga}g -jar \$TRIMMOMATIC PE -threads ${task.cpus} ${R1} ${R2} ${base}_R1.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}_R2.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
+    	    java -Xmx${task.memory.giga}g -jar \$TRIMMOMATIC PE -threads ${task.cpus} ${R1}.gz ${R2}.gz ${base}_R1.trimmed.fastq.gz ${base}.R1.unpaired.fastq.gz ${base}_R2.trimmed.fastq.gz ${base}.R2.unpaired.fastq.gz \
     	    ILLUMINACLIP:${ADAPTERS}:${params.SETTING} LEADING:${params.LEADING} TRAILING:${params.TRAILING} SLIDINGWINDOW:${params.SWINDOW} MINLEN:${params.MINLEN} &> ${base}_trim_stats.txt
 	else
 	    seqtk sample -s 100 ${R1} ${params.sample} | gzip > ${base}_R1_sampled.fastq.gz
