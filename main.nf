@@ -115,14 +115,17 @@ if (params.ref != false) {
 ADAPTERS = file("${baseDir}/adapters/adapters.fa")
 
 // Setup Blast database for rhinovirus serotyping
-BLAST_DB_ALL_1 = file("${baseDir}/blast_db/VP1_164_annotated_nospaces.fasta")
-BLAST_DB_ALL_2 = file("${baseDir}/blast_db/VP1_164_annotated_nospaces.fasta.ndb")
-BLAST_DB_ALL_3 = file("${baseDir}/blast_db/VP1_164_annotated_nospaces.fasta.nhr")
-BLAST_DB_ALL_4 = file("${baseDir}/blast_db/VP1_164_annotated_nospaces.fasta.nin")
-BLAST_DB_ALL_5 = file("${baseDir}/blast_db/VP1_164_annotated_nospaces.fasta.not")
-BLAST_DB_ALL_6 = file("${baseDir}/blast_db/VP1_164_annotated_nospaces.fasta.nsq")
-BLAST_DB_ALL_7 = file("${baseDir}/blast_db/VP1_164_annotated_nospaces.fasta.ntf")    
-BLAST_DB_ALL_8 = file("${baseDir}/blast_db/VP1_164_annotated_nospaces.fasta.nto")  
+BLAST_DB_ALL_1 = file("${baseDir}/rv_genotyping_blastdb/VP1_AA_164_annotated.fasta")
+BLAST_DB_ALL_2 = file("${baseDir}/rv_genotyping_blastdb/VP1_AA_164_annotated.fasta.pdb")
+BLAST_DB_ALL_3 = file("${baseDir}/rv_genotyping_blastdb/VP1_AA_164_annotated.fasta.phr")
+BLAST_DB_ALL_4 = file("${baseDir}/rv_genotyping_blastdb/VP1_AA_164_annotated.fasta.pin")
+BLAST_DB_ALL_5 = file("${baseDir}/rv_genotyping_blastdb/VP1_AA_164_annotated.fasta.pjs")
+BLAST_DB_ALL_6 = file("${baseDir}/rv_genotyping_blastdb/VP1_AA_164_annotated.fasta.pog")
+BLAST_DB_ALL_7 = file("${baseDir}/rv_genotyping_blastdb/VP1_AA_164_annotated.fasta.pos")
+BLAST_DB_ALL_8 = file("${baseDir}/rv_genotyping_blastdb/VP1_AA_164_annotated.fasta.psq")
+BLAST_DB_ALL_9 = file("${baseDir}/rv_genotyping_blastdb/VP1_AA_164_annotated.fasta.ptf")
+BLAST_DB_ALL_10 = file("${baseDir}/rv_genotyping_blastdb/VP1_AA_164_annotated.fasta.pto")
+BLAST_DB_ALL_11 = file("${baseDir}/rv_genotyping_blastdb/VP1_AA_164_annotated.fasta.pot")
 
 // Setup pipeline header
 def header() {
@@ -164,7 +167,7 @@ include { Consensus_Generation_Prep_PE } from './modules.nf'
 include { Consensus_Generation_SE } from './modules.nf'
 include { Consensus_Generation_PE } from './modules.nf'
 include { VCF_Generation } from './modules.nf'
-include { Serotyping } from './modules.nf'
+include { Genotyping } from './modules.nf'
 include { Summary_Generation } from './modules.nf'
 include { Final_Processing } from './modules.nf'
 
@@ -222,7 +225,7 @@ workflow {
             Consensus_Generation_PE.out[0]                                         
         )                                                                          
                                                                                    
-        Serotyping (                                                               
+        Genotyping (                                                               
             Consensus_Generation_PE.out[1],                                        
             BLAST_DB_ALL_1,                                                        
             BLAST_DB_ALL_2,                                                        
@@ -231,11 +234,14 @@ workflow {
             BLAST_DB_ALL_5,                                                        
             BLAST_DB_ALL_6,                                                        
             BLAST_DB_ALL_7,                                                        
-            BLAST_DB_ALL_8                                                         
+            BLAST_DB_ALL_8,
+            BLAST_DB_ALL_9,
+            BLAST_DB_ALL_10,
+            BLAST_DB_ALL_11 
         )                                                                          
                                                                                    
         Summary_Generation (                                                       
-            Serotyping.out[0]                                                      
+            Genotyping.out[0]                                                      
         )                                                                          
                                                                                    
         Final_Processing (                                                         
@@ -272,7 +278,7 @@ workflow {
             Consensus_Generation_SE.out[0]
         )
 
-	Serotyping (
+	Genotyping (
 	    Consensus_Generation_SE.out[1],
 	    BLAST_DB_ALL_1,
 	    BLAST_DB_ALL_2,
@@ -281,11 +287,14 @@ workflow {
 	    BLAST_DB_ALL_5,
 	    BLAST_DB_ALL_6,
 	    BLAST_DB_ALL_7,
-	    BLAST_DB_ALL_8
+	    BLAST_DB_ALL_8,
+        BLAST_DB_ALL_9,
+        BLAST_DB_ALL_10,
+        BLAST_DB_ALL_11
 	)
 
         Summary_Generation (
-	    Serotyping.out[0]
+	    Genotyping.out[0]
 	)
 
         Final_Processing (

@@ -89,7 +89,7 @@ To run the docker image interactively, run the following command
 
 	docker run -it --rm greningerlab/revica:ubuntu-20.04
 
-A smaller docker image based on alpine openjdk-8 (not compatible with AWS) is available at:
+A smaller docker image based on alpine openjdk-8 is available at:
 	
 	docker pull greningerlab/revica:8-jdk-alpine
 
