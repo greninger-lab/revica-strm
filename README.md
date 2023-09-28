@@ -11,9 +11,6 @@ Revica is a reference-based viral consensus genome assembly pipeline for some of
 - Influenza B virus (IBV)
 - Human adenovirus (HAdV)
 
-## Workflow
-![Workflow](revica_workflow.png)
-
 ## Usage
 Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation) (`>=21.10.3`)
 
@@ -23,29 +20,27 @@ To run Revica:
 
 	nextflow run greninger-lab/revica -r main -latest --input samplesheet.csv --output output
 
-or with Docker:
+with Docker:
 
 	nextflow run greninger-lab/revica -r main -latest --input samplesheet.csv --output output -profile docker
 
-To run on AWS:
+on AWS:
     
-    nextflow run greninger-lab/revica -r main -latest --input samplesheet.csv --output output -profile docker -c your_aws.config
+	nextflow run greninger-lab/revica -r main -latest --input samplesheet.csv --output output -profile docker -c your_aws.config
 	
 ## Usage notes
 - Samplesheet example: `assets/samplesheet.csv`
-- You can create a samplesheet using the bundled python script in `bin/fastq_dir_samplesheet.py`:
-    
-    python fastq_dir_samplesheet.py fastq_dir samplesheet_name.csv
-
+- You can create a samplesheet using the bundled python script: `python bin/fastq_dir_samplesheet.py fastq_dir samplesheet_name.csv`
 - More command line options are specified in `nextflow.config`
+- Memory and CPU usage for pipeline processes can be adjusted in `conf/base.config`
+- Process arguments can be adjusted in `conf/modules.config`
 - You can use your own reference(s) for consensus genome assembly by specifying the `--db` parameter followed by your fasta file. 
 	- reference header format: `>reference_accession reference_tag reference_header_info`
 	- it's important to tag the fasta sequences for the same species or gene segments with the same name or abbreviation in the header section, otherwise the pipeline
 	will generate a consensus genome for every reference where the median coverage of the first alignment exceed the specified threshold (default 3).  
 	- Revica works with segmented viral genomes, just keep the different gene segments separated and tag them in the reference fasta file
-- If you are using Docker on Linux, check these [post-installation steps](https://docs.docker.com/engine/install/linux-postinstall/) (especially cgroup swap limit capabilities support) for configuring Linux to work better with Docker. 
-- By default, Docker has full access to full RAM and CPU resources of the host. If you are using MacOS, go to Settings -> Resources in Docker Desktop to make sure enough resources are allocated to docker containers. 
-- Memory and CPU usage for pipeline processes can be adjusted in `conf/base.config` file.
+- If you are using Docker on Linux, check out these [post-installation steps](https://docs.docker.com/engine/install/linux-postinstall/) (especially cgroup swap limit capabilities support) for configuring Linux to work better with Docker. 
+- By default, Docker has full access to full RAM and CPU resources of the host, but if you are using MacOS, go to Settings -> Resources in Docker Desktop to make sure enough resources are allocated to docker containers. 
 
 ## Contact
 For bug reports please email aseree@uw.edu or raise an issue on Github.
