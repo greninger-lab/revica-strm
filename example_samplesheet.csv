@@ -1,2 +1,2 @@
 sample,fastq_1,fastq_2
-example,fastq_example/example.fastq.gz,
+SRR23143770,fastq_example/SRR23143770_1.fastq.gz,fastq_example/SRR23143770_2.fastq.gz

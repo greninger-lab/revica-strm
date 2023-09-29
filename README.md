@@ -49,7 +49,6 @@ on AWS:
 | `--ivar_consensus_t` | minimum frequency threshold to call consensus (default: 0.6) |
 | `--ivar_consensus_q` | minimum quality score threshold to call consensus (default: 20) |
 | `--ivar_consensus_m` | minimum depth to call consensus (default: 5) |
-| `--save_intermediate_consensus` | save intermediate consensus and their alignments |
 
 ## Usage notes
 - Samplesheet example: `assets/samplesheet.csv`
