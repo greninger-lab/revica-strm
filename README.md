@@ -1,6 +1,6 @@
 # REVICA
 
-Revica is a reference-based viral consensus genome assembly pipeline for some of the most common respiratory viruses. Revica is written in [Nextflow](https://www.nextflow.io/) and can be run in [Docker](https://docs.docker.com/get-docker/). Revica currently supports genome assembly of:
+Revica is a reference-based viral consensus genome assembly pipeline for some of the most common respiratory viruses. Revica currently supports genome assembly of:
 - Enterovirus (EV)
 - Seasonal human coronavirus (HCOV)
 - Human metapneumovirus (HMPV)
@@ -11,6 +11,9 @@ Revica is a reference-based viral consensus genome assembly pipeline for some of
 - Influenza B virus (IBV)
 - Human adenovirus (HAdV)
 
+## Workflow
+![Workflow](revica_workflow_diagram.png)
+
 ## Usage
 Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation) (`>=21.10.3`)
 
@@ -18,20 +21,39 @@ Install [`Docker`](https://docs.docker.com/engine/installation/)
 
 To run Revica:
 
-	nextflow run greninger-lab/revica -r main -latest --input samplesheet.csv --output output
+	nextflow run greninger-lab/revica -r main -latest --input example_samplesheet.csv --output example_output
 
 with Docker:
 
-	nextflow run greninger-lab/revica -r main -latest --input samplesheet.csv --output output -profile docker
+	nextflow run greninger-lab/revica -r main -latest --input example_samplesheet.csv --output example_output -profile docker
 
 on AWS:
     
-	nextflow run greninger-lab/revica -r main -latest --input samplesheet.csv --output output -profile docker -c your_aws.config
+	nextflow run greninger-lab/revica -r main -latest --input example_samplesheet.csv --output example_output -profile docker -c your_aws.config
 	
+
+## Options
+|Option|Explanation|
+|------|-----------|
+| `--input` | samplesheet in csv format with fastq information |
+| `--output` | output directory (default: revica_output) |
+| `--db` | (multi)fasta file to overwrite the bundled viral database |
+| `--run_name` | name for the summary tsv file (default: 'run') |
+| `--skip_fastqc` | skip quality control using FastQC (default: false) |
+| `--skip_fastp` | skip adapters and reads trimming using fastp (default: false) |
+| `--trim_len` | minimum read length to keep (default:50) |
+| `--save_trimmed_reads` | save trimmed fastq |
+| `--sample` | downsample fastq to a certain fraction or number of reads |
+| `--ref_min_median_cov` | minimum median coverage on a reference for consensus assembly (default: 3) |
+| `--ref_min_genome_cov` | minimum reference coverage percentage for consensus assembly (default: 60%) |
+| `--ivar_consensus_t` | minimum frequency threshold to call consensus (default: 0.6) |
+| `--ivar_consensus_q` | minimum quality score threshold to call consensus (default: 20) |
+| `--ivar_consensus_m` | minimum depth to call consensus (default: 5) |
+| `--save_intermediate_consensus` | save intermediate consensus and their alignments |
+
 ## Usage notes
 - Samplesheet example: `assets/samplesheet.csv`
 - You can create a samplesheet using the bundled python script: `python bin/fastq_dir_samplesheet.py fastq_dir samplesheet_name.csv`
-- More command line options are specified in `nextflow.config`
 - Memory and CPU usage for pipeline processes can be adjusted in `conf/base.config`
 - Process arguments can be adjusted in `conf/modules.config`
 - You can use your own reference(s) for consensus genome assembly by specifying the `--db` parameter followed by your fasta file. 
