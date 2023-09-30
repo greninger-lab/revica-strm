@@ -15,21 +15,21 @@ Revica is a reference-based viral consensus genome assembly pipeline for some of
 ![Workflow](revica_workflow_diagram.png)
 
 ## Usage
-Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation) (`>=21.10.3`)
+Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)
 
 Install [`Docker`](https://docs.docker.com/engine/installation/)
 
 To run Revica:
 
-	nextflow run greninger-lab/revica -r main -latest --input example_samplesheet.csv --output example_output
+	nextflow run asereewit/revica -r main -latest --input example_samplesheet.csv --output example_output
 
 with Docker:
 
-	nextflow run greninger-lab/revica -r main -latest --input example_samplesheet.csv --output example_output -profile docker
+	nextflow run asereewit/revica -r main -latest --input example_samplesheet.csv --output example_output -profile docker
 
 on AWS:
     
-	nextflow run greninger-lab/revica -r main -latest --input example_samplesheet.csv --output example_output -profile docker -c your_aws.config
+	nextflow run asereewit/revica -r main -latest --input example_samplesheet.csv --output example_output -profile docker -c your_nextflow_aws.config
 	
 
 ## Options
