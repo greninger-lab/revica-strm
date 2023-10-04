@@ -77,7 +77,7 @@ workflow {
 
     REFERENCE_PREP (
         ch_ref_prep_input,
-        params.db
+        file(params.db)
     ) 
     
     CONSENSUS_ASSEMBLY (
