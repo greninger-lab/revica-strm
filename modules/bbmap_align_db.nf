@@ -1,6 +1,6 @@
 process BBMAP_ALIGN_DB {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_medium_java'
     container 'quay.io/biocontainers/mulled-v2-008daec56b7aaf3f162d7866758142b9f889d690:e8a286b2e789c091bac0a57302cdc78aa0112353-0'
 
     input:
