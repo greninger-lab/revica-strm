@@ -2,7 +2,6 @@ process FASTQC {
     tag "$meta.id"
     label 'process_low'
     container 'quay.io/biocontainers/fastqc:0.11.9--0'
-    errorStrategy "retry"
 
     input:
     tuple val(meta), path(reads)
