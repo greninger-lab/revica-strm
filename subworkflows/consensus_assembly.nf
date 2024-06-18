@@ -31,14 +31,14 @@ workflow CONSENSUS_ASSEMBLY {
         IVAR_CONSENSUS_BBMAP_ALIGN_1.out.reads
     )
 
-    IVAR_CONSENSUS_BBMAP_ALIGN_FINAL (
-        IVAR_CONSENSUS_BBMAP_ALIGN_2.out.bam,
-        IVAR_CONSENSUS_BBMAP_ALIGN_2.out.consensus,
-        IVAR_CONSENSUS_BBMAP_ALIGN_2.out.reads
-    )
+//   IVAR_CONSENSUS_BBMAP_ALIGN_FINAL (
+//       IVAR_CONSENSUS_BBMAP_ALIGN_2.out.bam,
+//       IVAR_CONSENSUS_BBMAP_ALIGN_2.out.consensus,
+//       IVAR_CONSENSUS_BBMAP_ALIGN_2.out.reads
+//   )
 
     emit:
-    consensus   = IVAR_CONSENSUS_BBMAP_ALIGN_FINAL.out.consensus // channel: [ val(meta), val(ref_info), path(consensus) ]
-    bam         = IVAR_CONSENSUS_BBMAP_ALIGN_FINAL.out.bam       // channel: [ val(meta), val(ref_info), path(bam), path(bai) ]
-    reads       = IVAR_CONSENSUS_BBMAP_ALIGN_FINAL.out.reads     // channel: [ val(meta), path(reads) ]
+    consensus   = IVAR_CONSENSUS_BBMAP_ALIGN_1.out.consensus // channel: [ val(meta), val(ref_info), path(consensus) ]
+    bam         = IVAR_CONSENSUS_BBMAP_ALIGN_1.out.bam       // channel: [ val(meta), val(ref_info), path(bam), path(bai) ]
+    reads       = IVAR_CONSENSUS_BBMAP_ALIGN_1.out.reads     // channel: [ val(meta), path(reads) ]
 } 
