@@ -21,16 +21,7 @@ Install [`Docker`](https://docs.docker.com/engine/installation/)
 
 To run Revica:
 
-	nextflow run asereewit/revica -r main -latest --input example_samplesheet.csv --output example_output
-
-with Docker:
-
-	nextflow run asereewit/revica -r main -latest --input example_samplesheet.csv --output example_output -profile docker
-
-on AWS:
-    
-	nextflow run asereewit/revica -r main -latest --input example_samplesheet.csv --output example_output -profile docker -c your_nextflow_aws.config
-	
+	nextflow run epiliper/nf-rev -r develop -latest --input example_samplesheet.csv --output example_output -profile docker
 
 ## Options
 |Option|Explanation|
