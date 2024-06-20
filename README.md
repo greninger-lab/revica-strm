@@ -32,6 +32,11 @@ To run Revica:
 | `--run_name` | name for the summary tsv file (default: 'run') |
 | `--skip_fastqc` | skip quality control using FastQC (default: false) |
 | `--skip_fastp` | skip adapters and reads trimming using fastp (default: false) |
+| `--run_kraken2` | run Kraken2 for classifying reads (default: false) |
+| `--kraken2_db` | Kraken2 database for reads classification, needs to be specified when using `--run_kraken2` |
+| `--kraken2_variants_host_filter` | use reads that didn't map to the kraken2 database for downstream consensus calling |
+| `--save_kraken2_unclassified_reads` | save reads that didn't map to the specified kraken2 database |
+| `--save_kraken2_classified_reads` | save reads that map to the specified kraken2 database |
 | `--trim_len` | minimum read length to keep (default:50) |
 | `--save_trimmed_reads` | save trimmed fastq |
 | `--sample` | downsample fastq to a certain fraction or number of reads |
