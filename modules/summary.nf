@@ -8,6 +8,7 @@ process SUMMARY {
 
     output:
     path("*.tsv"), emit: summary
+    val true, emit: ready_to_concat
 
     when:
     task.ext.when == null || task.ext.when

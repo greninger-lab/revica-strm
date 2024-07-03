@@ -34,6 +34,7 @@ include { CONSENSUS_ASSEMBLY        } from './subworkflows/consensus_assembly'
 include { SEQTK_SAMPLE  } from './modules/seqtk_sample'
 include { SUMMARY       } from './modules/summary'
 include { KRAKEN2       } from './modules/kraken2'
+include {CONCAT_ANY_SEGMENTED_CONS  } from './modules/concat_any_segmented_cons'
 
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
@@ -52,6 +53,8 @@ log.info " _|    _|  _|_|_|_|      _|      _|_|_|    _|_|_|  _|    _| "
 log.info "                                                            "
 
 workflow {
+
+    ready_to_concat = Channel.value(false)
     
     INPUT_CHECK (
         ch_input
@@ -108,11 +111,20 @@ workflow {
             .map { meta, trim_log, ref_info, consensus, bam, bai -> [ meta, ref_info, trim_log, consensus, bam, bai ] }
             .set { ch_summary_in }
 
+
         SUMMARY (
             ch_summary_in
         )
 
         SUMMARY.out.summary
             .collectFile(storeDir: "${params.output}", name:"${params.run_name}_summary.tsv", keepHeader: true, sort: true)
+
+        SUMMARY.out.ready_to_concat.set { ready_to_concat }
+
+        CONCAT_ANY_SEGMENTED_CONS(
+        "${params.output}",
+        ready_to_concat
+        )
+
     }
 }
