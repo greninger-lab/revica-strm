@@ -119,11 +119,12 @@ workflow {
         SUMMARY.out.summary
             .collectFile(storeDir: "${params.output}", name:"${params.run_name}_summary.tsv", keepHeader: true, sort: true)
 
+
         SUMMARY.out.ready_to_concat.set { ready_to_concat }
 
         CONCAT_ANY_SEGMENTED_CONS(
         file("${params.output}").toAbsolutePath().toString(),
-        ready_to_concat
+        ready_to_concat.unique()
         )
 
     }
