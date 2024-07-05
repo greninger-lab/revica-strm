@@ -45,17 +45,7 @@ if __name__ == "__main__":
                 ],
                 shell=True,
             )
-            # pysam.merge("-@ 4", "-f", merge_file, *samples_bam[sample])
             temp_bams.append(merge_file)
-
-            # [os.remove(segment_bam) for segment_bam in samples_bam[sample]]
-
-    # remove indexes from segment bams
-    [
-        os.remove(os.path.join(bam_dir, index))
-        for index in os.listdir(bam_dir)
-        if index.endswith(".bai")
-    ]
 
     for file in os.listdir(fasta_dir):
         if file.endswith(".fa"):
@@ -78,5 +68,3 @@ if __name__ == "__main__":
                         outfile.write(readfile.read())
 
                     temp_fastas.append(file)
-
-    [os.remove(segment_fa) for segment_fa in temp_fastas]
