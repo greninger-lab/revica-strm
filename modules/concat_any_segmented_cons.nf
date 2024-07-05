@@ -1,4 +1,6 @@
 process CONCAT_ANY_SEGMENTED_CONS {
+
+    debug true
  
     tag "$output_dir"
     label 'process_single'

@@ -122,7 +122,7 @@ workflow {
         SUMMARY.out.ready_to_concat.set { ready_to_concat }
 
         CONCAT_ANY_SEGMENTED_CONS(
-        "${params.output}",
+        file("${params.output}").toAbsolutePath().toString(),
         ready_to_concat
         )
 
