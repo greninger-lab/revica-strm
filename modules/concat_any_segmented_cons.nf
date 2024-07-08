@@ -1,11 +1,8 @@
 process CONCAT_ANY_SEGMENTED_CONS {
-
-    debug true
- 
+    container 'quay.io/biocontainers/mulled-v2-77320db00eefbbf8c599692102c3d387a37ef02a:08144a66f00dc7684fad061f1466033c0176e7ad-0'
     tag "$output_dir"
     label 'process_single'
-    container 'quay.io/biocontainers/python:3.8.3' 
-
+ 
     input: 
     val output_dir
     val ready_to_concat
@@ -15,6 +12,8 @@ process CONCAT_ANY_SEGMENTED_CONS {
 
     script: 
     """
+    pip install pysam \\
+
     merged_consensus.py \\
     $output_dir 
     """
