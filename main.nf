@@ -31,10 +31,11 @@ include { CONSENSUS_ASSEMBLY        } from './subworkflows/consensus_assembly'
 //
 // MODULES
 //
-include { SEQTK_SAMPLE  } from './modules/seqtk_sample'
-include { SUMMARY       } from './modules/summary'
-include { KRAKEN2       } from './modules/kraken2'
-include {CONCAT_ANY_SEGMENTED_CONS  } from './modules/concat_any_segmented_cons'
+include { SEQTK_SAMPLE              } from './modules/seqtk_sample'
+include { SUMMARY                   } from './modules/summary'
+include { KRAKEN2                   } from './modules/kraken2'
+include { CONCAT_ANY_SEGMENTED_CONS } from './modules/concat_any_segmented_cons'
+include { FASTQ_TRIM_FASTP_MULTIQC  } from './subworkflows/fastq_trim_fastp_multiqc.nf'
 
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
@@ -60,7 +61,16 @@ workflow {
         ch_input
     )
 
-    FASTQ_TRIM_FASTP_FASTQC (
+    //FASTQ_TRIM_FASTP_FASTQC (
+    //    INPUT_CHECK.out.reads,
+    //    params.adapter_fasta,
+    //    params.save_trimmed_fail,
+    //    params.save_merged,
+    //    params.skip_fastp,
+    //    params.skip_fastqc
+    //)
+
+    FASTQ_TRIM_FASTP_MULTIQC (
         INPUT_CHECK.out.reads,
         params.adapter_fasta,
         params.save_trimmed_fail,
@@ -69,7 +79,7 @@ workflow {
         params.skip_fastqc
     )
 
-    ch_sample_input = FASTQ_TRIM_FASTP_FASTQC.out.reads
+    ch_sample_input = FASTQ_TRIM_FASTP_MULTIQC.out.reads
 
     if (params.run_kraken2) {
         KRAKEN2 (
@@ -105,7 +115,8 @@ workflow {
             REFERENCE_PREP.out.ref,
         )
         
-        FASTQ_TRIM_FASTP_FASTQC.out.trim_log
+        // FASTQ_TRIM_FASTP_FASTQC.out.trim_log
+        FASTQ_TRIM_FASTP_MULTIQC.out.trim_log
             .combine(CONSENSUS_ASSEMBLY.out.consensus
                 .join(CONSENSUS_ASSEMBLY.out.bam, by: [0,1]), by: 0)
             .map { meta, trim_log, ref_info, consensus, bam, bai -> [ meta, ref_info, trim_log, consensus, bam, bai ] }
