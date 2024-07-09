@@ -51,9 +51,11 @@ workflow FASTQ_TRIM_FASTP_MULTIQC {
         }
         .set { ch_trim_reads }
 
-    MULTIQC (
-        params.run_name,
-        file("${params.output}").toAbsolutePath().toString(),
+
+       MULTIQC (
+               params.run_name,
+               file("${params.output}").toAbsolutePath().toString(),
+               ch_trim_html.map{ meta, file -> file.parent.toAbsolutePath() }.collect(),
 
     )
     }
