@@ -30,19 +30,9 @@ def merge_bams(bam_dir):
     for sample in samples_bam:
         # don't merge (or remove) files from unsegmented genomes
         if len(samples_bam[sample]) > 1:
-            merge_file = os.path.join(bam_dir, os.path.basename(sample) + "_merged.bam")
-            # subprocess.run(
-            #     [
-            #         "samtools",
-            #         "merge",
-            #         "-f",
-            #         "-o",
-            #         merge_file,
-            #     ]
-            #     + samples_bam[sample],
-            #     shell=True,
-            #     check=True,
-            # )
+            merge_file = os.path.join(
+                bam_dir, os.path.basename(sample) + "_to_ref_merged.bam"
+            )
             pysam.merge("-f", merge_file, *samples_bam[sample])
 
     for sample in samples_bam:
@@ -72,7 +62,7 @@ def merge_fastas(fasta_dir):
     for sample in samples_fa:
         if len(samples_fa[sample]) > 1:
             multifasta = os.path.join(
-                fasta_dir, os.path.basename(sample) + "_merged.fa"
+                fasta_dir, os.path.basename(sample) + "_assembly_merged.fa"
             )
 
             with open(multifasta, "w") as outfile:
@@ -97,8 +87,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    bam_dir = os.path.join(args.outdir, "bbmap_align", "consensus")
-    fasta_dir = os.path.join(args.outdir, "ivar_consensus")
+    BAM_DIR = os.path.join(args.outdir, "final_files", "align_to_selected_ref")
+    FASTA_DIR = os.path.join(args.outdir, "ivar_consensus")
 
-    merge_bams(bam_dir)
-    merge_fastas(fasta_dir)
+    merge_bams(BAM_DIR)
+    merge_fastas(FASTA_DIR)

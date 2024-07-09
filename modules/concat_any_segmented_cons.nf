@@ -10,12 +10,19 @@ process CONCAT_ANY_SEGMENTED_CONS {
     when:
     ready_to_concat
 
+    output: 
+    path "*_merged.fa", emit: merged_fastas
+
+
     script: 
     """
-    pip install pysam \\
+    pip install pysam 
 
-    merged_consensus.py \\
-    $output_dir 
+    merged_consensus.py $output_dir 
+
+    find $output_dir -type f -name '*_merged.fa' -exec mv {} . \\;
+
+    ls .
     """
 
 }

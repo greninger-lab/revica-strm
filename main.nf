@@ -24,7 +24,6 @@ if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input sample
 // SUBWORKFLOWS
 //
 include { INPUT_CHECK               } from './subworkflows/input_check'
-include { FASTQ_TRIM_FASTP_FASTQC   } from './subworkflows/fastq_trim_fastp_fastqc'
 include { REFERENCE_PREP            } from './subworkflows/reference_prep'
 include { CONSENSUS_ASSEMBLY        } from './subworkflows/consensus_assembly'
 
@@ -60,15 +59,6 @@ workflow {
     INPUT_CHECK (
         ch_input
     )
-
-    //FASTQ_TRIM_FASTP_FASTQC (
-    //    INPUT_CHECK.out.reads,
-    //    params.adapter_fasta,
-    //    params.save_trimmed_fail,
-    //    params.save_merged,
-    //    params.skip_fastp,
-    //    params.skip_fastqc
-    //)
 
     FASTQ_TRIM_FASTP_MULTIQC (
         INPUT_CHECK.out.reads,
@@ -115,7 +105,6 @@ workflow {
             REFERENCE_PREP.out.ref,
         )
         
-        // FASTQ_TRIM_FASTP_FASTQC.out.trim_log
         FASTQ_TRIM_FASTP_MULTIQC.out.trim_log
             .combine(CONSENSUS_ASSEMBLY.out.consensus
                 .join(CONSENSUS_ASSEMBLY.out.bam, by: [0,1]), by: 0)
