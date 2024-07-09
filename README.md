@@ -8,6 +8,8 @@ Added features include:
 - automatic merging of segment files (consensus fasta and alignment BAM) per sample
 - replacement of FastQC with MultiQC for streamlined reporting
 
+The final output files can be found in `<work_folder, default=run>/final_files`
+
 ## Workflow
 ![Workflow](revica_workflow_diagram.png)
 
@@ -16,11 +18,15 @@ Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#install
 
 Install [`Docker`](https://docs.docker.com/engine/installation/)
 
-Download `reference.fasta` from the assets folder of this repo
+To use the test data included in this repo:
 
-To run Revica:
+`git clone git@github.com:epiliper/nf-rev.git -b influenza`  
 
-	nextflow run epiliper/nf-rev -r influenza -latest --input example_samplesheet.csv --output example_output -profile docker --db path/to/reference.fasta
+`cd nf-rev`  
+
+`nextflow run epiliper/nf-rev -r influenza -latest --input example_samplesheet.csv --output example_output -profile docker --db assets/reference.fasta`
+
+If not using example data, replace the fastq files, samplesheet, and database with whatever files you want to use.
 ## Options
 |Option|Explanation|
 |------|-----------|
