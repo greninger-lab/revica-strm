@@ -33,7 +33,7 @@ include { CONSENSUS_ASSEMBLY        } from './subworkflows/consensus_assembly'
 include { SEQTK_SAMPLE              } from './modules/seqtk_sample'
 include { SUMMARY                   } from './modules/summary'
 include { KRAKEN2                   } from './modules/kraken2'
-include { CONCAT_ANY_SEGMENTED_CONS } from './modules/concat_any_segmented_cons'
+include { CONCAT_INTRASAMPLE_FILES  } from './modules/concat_intrasample_files'
 include { FASTQ_TRIM_FASTP_MULTIQC  } from './subworkflows/fastq_trim_fastp_multiqc.nf'
 
 ////////////////////////////////////////////////////////
@@ -50,7 +50,7 @@ log.info " _|    _|  _|        _|      _|    _|    _|        _|    _| "
 log.info " _|_|_|    _|_|_|    _|      _|    _|    _|        _|_|_|_| " 
 log.info " _|    _|  _|          _|  _|      _|    _|        _|    _| " 
 log.info " _|    _|  _|_|_|_|      _|      _|_|_|    _|_|_|  _|    _| "
-log.info "                                                            "
+log.info " Influenza                                                  "
 
 workflow {
 
@@ -122,7 +122,7 @@ workflow {
 
         SUMMARY.out.ready_to_concat.set { ready_to_concat }
 
-        CONCAT_ANY_SEGMENTED_CONS(
+        CONCAT_INTRASAMPLE_FILES(
         file("${params.output}").toAbsolutePath().toString(),
         ready_to_concat.unique()
         )
