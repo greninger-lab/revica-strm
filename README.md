@@ -1,28 +1,26 @@
-# REVICA
+# REVICA - Influenza
 
-Revica is a reference-based viral consensus genome assembly pipeline for some of the most common respiratory viruses. Revica currently supports genome assembly of:
-- Enterovirus (EV)
-- Seasonal human coronavirus (HCOV)
-- Human metapneumovirus (HMPV)
-- Human respiratory syncytial virus (HRSV)
-- Human parainfluenza virus (HPIV)
-- Measles morbillivirus (MeV)
-- Influenza A virus (IAV)
-- Influenza B virus (IBV)
-- Human adenovirus (HAdV)
+This repository is a fork of [the Greninger Lab's REVICA pipeline](https://github.com/greninger-lab/revica) intended for assembly of influenza consensus genomes.  
+
+This fork is usable with any influenza reference database, but includes the one used used in the [Andersen Lab's avian influenza project](https://github.com/andersen-lab/avian-influenza) (`reference.fasta`).
+
+Added features include:
+- automatic merging of segment files (consensus fasta and alignment BAM) per sample
+- replacement of FastQC with MultiQC for streamlined reporting
 
 ## Workflow
 ![Workflow](revica_workflow_diagram.png)
 
-## Usage
+## Usage - REVICA
 Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)
 
 Install [`Docker`](https://docs.docker.com/engine/installation/)
 
+Download `reference.fasta` from the assets folder of this repo
+
 To run Revica:
 
-	nextflow run epiliper/nf-rev -r develop -latest --input example_samplesheet.csv --output example_output -profile docker
-
+	nextflow run epiliper/nf-rev -r influenza -latest --input example_samplesheet.csv --output example_output -profile docker --db path/to/reference.fasta
 ## Options
 |Option|Explanation|
 |------|-----------|
