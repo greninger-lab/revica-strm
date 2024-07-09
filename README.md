@@ -28,7 +28,6 @@ To run Revica:
 | `--output` | output directory (default: revica_output) |
 | `--db` | (multi)fasta file to overwrite the bundled viral database |
 | `--run_name` | name for the summary tsv file (default: 'run') |
-| `--skip_fastqc` | skip quality control using FastQC (default: false) |
 | `--skip_fastp` | skip adapters and reads trimming using fastp (default: false) |
 | `--run_kraken2` | run Kraken2 for classifying reads (default: false) |
 | `--kraken2_db` | Kraken2 database for reads classification, needs to be specified when using `--run_kraken2` |

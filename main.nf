@@ -51,6 +51,7 @@ log.info " _|_|_|    _|_|_|    _|      _|    _|    _|        _|_|_|_| "
 log.info " _|    _|  _|          _|  _|      _|    _|        _|    _| " 
 log.info " _|    _|  _|_|_|_|      _|      _|_|_|    _|_|_|  _|    _| "
 log.info " Influenza                                                  "
+log.info "                                                            "
 
 workflow {
 

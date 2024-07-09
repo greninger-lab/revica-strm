@@ -1,2 +1,3 @@
 sample,fastq_1,fastq_2
-SRR23143770,fastq_example/SRR23143770_1.fastq.gz,fastq_example/SRR23143770_2.fastq.gz
+SRR29543307,fastq_example/SRR29543307_1.fastq.gz,fastq_example/SRR29543307_2.fastq.gz
+SRR29694476,fastq_example/SRR29694476_1.fastq.gz,fastq_example/SRR29694476_2.fastq.gz
