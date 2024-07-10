@@ -1,14 +1,20 @@
 # REVICA - Influenza
 
-This repository is a fork of [the Greninger Lab's REVICA pipeline](https://github.com/greninger-lab/revica) intended for assembly of influenza consensus genomes.  
+Revica is a reference-based viral consensus genome assembly pipeline for some of the most common respiratory viruses. Revica currently supports genome assembly of:
+- Enterovirus (EV)
+- Seasonal human coronavirus (HCOV)
+- Human metapneumovirus (HMPV)
+- Human respiratory syncytial virus (HRSV)
+- Human parainfluenza virus (HPIV)
+- Measles morbillivirus (MeV)
+- Influenza A virus (IAV)
+- Influenza B virus (IBV)
+- Human adenovirus (HAdV)
 
-This fork is usable with any influenza reference database, but includes the one used used in the [Andersen Lab's avian influenza project](https://github.com/andersen-lab/avian-influenza) (`reference.fasta`).
+This tool includes two references databases used for assembly:
 
-Added features include:
-- automatic merging of segment files (consensus fasta and alignment BAM) per sample
-- replacement of FastQC with MultiQC for streamlined reporting
-
-The final output files can be found in `<work_folder, default=run>/final_files`
+- `assets/ref.fa`: a general purpose database containing sequences for the above viruses
+- `assets/flu.fasta`: the database used in the [Andersen Lab's avian influenza project](https://github.com/andersen-lab/avian-influenza)
 
 ## Workflow
 ![Workflow](revica_workflow_diagram.png)
@@ -18,13 +24,17 @@ Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#install
 
 Install [`Docker`](https://docs.docker.com/engine/installation/)
 
+Start the Docker client
+
 To use the test data included in this repo:
 
-`git clone git@github.com:epiliper/nf-rev.git -b influenza`  
+`git clone git@github.com:epiliper/nf-rev.git`  
 
 `cd nf-rev`  
 
-`nextflow run epiliper/nf-rev -r influenza -latest --input example_samplesheet.csv --output example_output -profile docker --db assets/reference.fasta`
+`nextflow run epiliper/nf-rev -r influenza -latest --input example_samplesheet.csv --output example_output -profile docker --db assets/flu.fasta`
+
+The final output files can be found in `<work_folder, default=run>/final_files`
 
 If not using example data, replace the fastq files, samplesheet, and database with whatever files you want to use.
 ## Options
@@ -42,6 +52,7 @@ If not using example data, replace the fastq files, samplesheet, and database wi
 | `--save_kraken2_classified_reads` | save reads that map to the specified kraken2 database |
 | `--trim_len` | minimum read length to keep (default:50) |
 | `--save_trimmed_reads` | save trimmed fastq |
+| `--save_temp_files` | save temporary files |
 | `--sample` | downsample fastq to a certain fraction or number of reads |
 | `--ref_min_median_cov` | minimum median coverage on a reference for consensus assembly (default: 3) |
 | `--ref_min_genome_cov` | minimum reference coverage percentage for consensus assembly (default: 60%) |
