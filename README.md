@@ -54,7 +54,7 @@ Cloning this repo is not necessary unless you need the example data.
     python3 fastq_dir_to_samplesheet.py <dir with fastqs> -r1 _1.fastq.gz -r2 _2.fastq.gz sras_to_run.csv     
     ```
     
-    for single-end data, just use `-r1`.
+    where `-r1` and `-r2` specify the suffixes of input read1 and read2 files to look for, respectively. For single-end data, just use `-r1`.
 
 3. run REVICA and point it to your sample sheet:
 
