@@ -20,30 +20,33 @@ This tool includes two example reference databases usable for assembly:
 ![Workflow](revica_workflow_diagram.png)
 
 ## Usage - REVICA
-Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)
+- Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)
+- Install [`Docker`](https://docs.docker.com/engine/installation/)
+- **it's recommended to use Docker signed out**; access to certain containers is sporadically blocked if signed in. This issue is being actively investigated.
+- Ensure the Docker client is running before starting the pipeline
 
-Install [`Docker`](https://docs.docker.com/engine/installation/)
+### Using the test data included in this repo:
 
-Start the Docker client
 
-### To use the test data included in this repo:
+1. Clone the repository to get the example data and database  
+    `git clone git@github.com:epiliper/nf-rev.git`
 
-`git clone git@github.com:epiliper/nf-rev.git`
-
-`cd nf-rev`
-
-```
-nextflow run epiliper/nf-rev -r main -latest \
---input example_samplesheet.csv \
---output example_output \
--profile docker --db assets/flu.fasta 
-```
+    `cd nf-rev`
+2. Run the pipeline with the example data
+    ```bash
+    nextflow run epiliper/nf-rev -r main -latest \
+    --input example_samplesheet.csv \     ## sample sheet listing FASTQ inputs
+    --output example_output \             ## the name of the working folder with all output data
+    -profile docker --db assets/flu.fasta ## reference database to use
+    ```
 
 After the run has finished, the final output files can be found in `<work_folder, default=run>/final_files`. 
 
 If not using example data, replace the FASTQ files, sample sheet, and database with whatever files you want to use (**see below**).
 
-### To use your own fastq files:
+### Using other FASTQ files and databases:
+
+Cloning this repo is not necessary unless you need the example data. 
 
 1. download FASTQ files for needed samples/SRA projects. The [SRA toolkit's](https://github.com/ncbi/sra-tools) `fasterq_dump` utility can be used for downloading FASTQ files from SRA projects.
 
@@ -52,12 +55,15 @@ If not using example data, replace the FASTQ files, sample sheet, and database w
     Example command:
     ```bash
     python3 \ 
-    fastq_dir_to_samplesheet.py \
-    <dir with fastqs> \
-    -r1 _1.fastq.gz \
-    -r2 _2.fastq.gz \
-    sras_to_run.csv 
+    fastq_dir_to_samplesheet.py \ 
+    <dir with fastqs> \ # the directory with fastq data
+    -r1 _1.fastq.gz \   # the suffix of r1 input files to look for
+    -r2 _2.fastq.gz \   # the suffix of r2 input files to look for
+    sras_to_run.csv     # the name of the created sample sheet
     ```
+    
+    for single-end data, just use `-r1`.
+
 3. run REVICA and point it to your sample sheet:
 
     ```bash
@@ -67,6 +73,7 @@ If not using example data, replace the FASTQ files, sample sheet, and database w
     -profile docker \
     --db assets/flu.fasta
     ```
+
 >[!Note]  
 >This repo includes a python script `bin/pull_sra.py` to download FASTQ files for SRA project numbers specified in a CSV spreadsheet, and create an associated REVICA spreadsheet.    
 >
