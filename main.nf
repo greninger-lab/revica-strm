@@ -115,7 +115,6 @@ workflow {
             .map { meta, trim_log, ref_info, consensus, bam, bai -> [ meta, ref_info, trim_log, consensus, bam, bai ] }
         .set { ch_summary_in }
 
-
         SUMMARY (
                 ch_summary_in
                 )
@@ -123,22 +122,29 @@ workflow {
             SUMMARY.out.summary
             .collectFile(storeDir: "${params.output}", name:"${params.run_name}_summary.tsv", keepHeader: true, sort: true)
 
+            // Collect all 'ready_to_concat' signals, then emit a single true
+            SUMMARY.out.ready_to_concat
+            .collect()
+            .map { it -> true }
+        .set { all_summaries_done }
 
-            //SUMMARY.out.ready_to_concat.set { ready_to_concat }
-            SUMMARY.out.ready_to_concat.map { it -> true }.set { ready_to_concat }
-
+        // Run CONCAT_INTRASAMPLE_FILES once after all SUMMARYs are done
         CONCAT_INTRASAMPLE_FILES(
                 file("${params.output}").toAbsolutePath().toString(),
-                ready_to_concat.unique()
-                .map { it -> true }
-                .set {ready_to_delete}
+                all_summaries_done
+                )
 
-                if (!params.save_temp_files) {
+            // Use the output from CONCAT_INTRASAMPLE_FILES to trigger DELETE_TEMP_FILES
+            CONCAT_INTRASAMPLE_FILES.out
+            .map { it -> true }
+        .set { concat_done }
 
-                    DELETE_TEMP_FILES(
-                            ready_to_delete.unique(),
-                            file("${params.output}").toAbsolutePath().toString()
-                            )
-                }
+        // Delete temp files if needed
+        if (!params.save_temp_files) {
+            DELETE_TEMP_FILES(
+                    concat_done,
+                    file("${params.output}").toAbsolutePath().toString()
+                    )
+        }
     }
 }
