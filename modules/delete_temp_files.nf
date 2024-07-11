@@ -3,6 +3,7 @@
 process DELETE_TEMP_FILES {
     executor 'local'
     errorStrategy = 'terminate'
+    tag "$output_dir"
 
     input:
     val ready_to_delete
