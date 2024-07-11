@@ -20,6 +20,10 @@ LICENSE: GNU
 // if INPUT not set
 if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
 
+// if db not set
+
+if (!params.db) { exit 1, "Reference database not specified!"}
+
 //
 // SUBWORKFLOWS
 //
@@ -126,14 +130,13 @@ workflow {
         CONCAT_INTRASAMPLE_FILES(
                 file("${params.output}").toAbsolutePath().toString(),
                 ready_to_concat.unique()
-                )
                 .map { it -> true }
                 .set {ready_to_delete}
 
                 if (!params.save_temp_files) {
 
                     DELETE_TEMP_FILES(
-                            ready_to_delete,
+                            ready_to_delete.unique(),
                             file("${params.output}").toAbsolutePath().toString()
                             )
                 }

@@ -36,8 +36,7 @@ Start the Docker client
 nextflow run epiliper/nf-rev -r main -latest \
 --input example_samplesheet.csv \
 --output example_output \
--profile docker \
---db assets/flu.fasta
+-profile docker --db assets/flu.fasta 
 ```
 
 After the run has finished, the final output files can be found in `<work_folder, default=run>/final_files`. 
