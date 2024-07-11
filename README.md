@@ -34,10 +34,7 @@ This tool includes two example reference databases usable for assembly:
     `cd nf-rev`
 2. Run the pipeline with the example data
     ```bash
-    nextflow run epiliper/nf-rev -r main -latest \
-    --input example_samplesheet.csv \     ## sample sheet listing FASTQ inputs
-    --output example_output \             ## the name of the working folder with all output data
-    -profile docker --db assets/flu.fasta ## reference database to use
+    nextflow run epiliper/nf-rev -r main -latest --input example_samplesheet.csv --output example_output -profile docker --db assets/flu.fasta 
     ```
 
 After the run has finished, the final output files can be found in `<work_folder, default=run>/final_files`. 
@@ -54,12 +51,7 @@ Cloning this repo is not necessary unless you need the example data.
 
     Example command:
     ```bash
-    python3 \ 
-    fastq_dir_to_samplesheet.py \ 
-    <dir with fastqs> \ # the directory with fastq data
-    -r1 _1.fastq.gz \   # the suffix of r1 input files to look for
-    -r2 _2.fastq.gz \   # the suffix of r2 input files to look for
-    sras_to_run.csv     # the name of the created sample sheet
+    python3 fastq_dir_to_samplesheet.py <dir with fastqs> -r1 _1.fastq.gz -r2 _2.fastq.gz sras_to_run.csv     
     ```
     
     for single-end data, just use `-r1`.
@@ -67,11 +59,7 @@ Cloning this repo is not necessary unless you need the example data.
 3. run REVICA and point it to your sample sheet:
 
     ```bash
-    nextflow run epiliper/nf-rev -r main -latest \
-    --input sras_to_run.csv \
-    --output example_output \
-    -profile docker \
-    --db assets/flu.fasta
+    nextflow run epiliper/nf-rev -r main -latest --input sras_to_run.csv --output example_output -profile docker --db assets/flu.fasta
     ```
 
 >[!Note]  
