@@ -11,7 +11,7 @@ Revica is a reference-based viral consensus genome assembly pipeline for some of
 - Influenza B virus (IBV)
 - Human adenovirus (HAdV)
 
-This tool includes two references databases used for assembly:
+This tool includes two example reference databases usable for assembly:
 
 - `assets/ref.fa`: a general purpose database containing sequences for the above viruses
 - `assets/flu.fasta`: the database used in the [Andersen Lab's avian influenza project](https://github.com/andersen-lab/avian-influenza)
@@ -26,17 +26,37 @@ Install [`Docker`](https://docs.docker.com/engine/installation/)
 
 Start the Docker client
 
-To use the test data included in this repo:
+### To use the test data included in this repo:
 
 `git clone git@github.com:epiliper/nf-rev.git`  
 
 `cd nf-rev`  
 
-`nextflow run epiliper/nf-rev -r influenza -latest --input example_samplesheet.csv --output example_output -profile docker --db assets/flu.fasta`
+`nextflow run epiliper/nf-rev -r main -latest --input example_samplesheet.csv --output example_output -profile docker --db assets/flu.fasta`
 
-The final output files can be found in `<work_folder, default=run>/final_files`
+After the run has finished, the final output files can be found in `<work_folder, default=run>/final_files`
 
-If not using example data, replace the fastq files, samplesheet, and database with whatever files you want to use.
+If not using example data, replace the FASTQ files, sample sheet, and database with whatever files you want to use (**see below**).
+
+### To use your own fastq files:
+
+1. download FASTQ files for needed samples/SRA projects. The [SRA toolkit's](https://github.com/ncbi/sra-tools) `fasterq_dump` utility can be used for downloading FASTQ files from SRA projects.
+
+2. in the directory with the downloaded FASTQs, use this repo's included script `bin/fastq_dir_to_samplesheet.py` to create a REVICA sample sheet.
+
+Example command:
+        `python3 fastq_dir_to_samplesheet.py <dir with fastqs> -r1 _1.fastq.gz -r2 _2.fastq.gz sras_to_run.csv`
+
+3. run REVICA and point it to your sample sheet:
+
+`nextflow run epiliper/nf-rev -r main -latest --input sras_to_run.csv --output example_output -profile docker --db assets/flu.fasta`
+
+[!Note]
+    This repo includes a python script `bin/pull_sra.py` to download FASTQ files for SRA project numbers specified in a CSV spreadsheet, and create an associated REVICA spreadsheet.    
+
+    To use it, download SRA toolkit, add it to $PATH, and populate a csv file with SRAs in the format according to `assets/example_sras.csv`
+
+    then run python3 pull_sra.py <sra csv> <name for REVICA samplesheet`
 ## Options
 |Option|Explanation|
 |------|-----------|
