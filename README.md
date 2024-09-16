@@ -11,15 +11,24 @@ Revica is a reference-based viral consensus genome assembly pipeline for some of
 - Influenza B virus (IBV)
 - Human adenovirus (HAdV)
 
+## Databases
 This tool includes two example reference databases usable for assembly:
 
-- `assets/ref.fa`: a general purpose database containing sequences for the above viruses
+#### general respiratory viruses
+- `assets/ref.fa`: a general purpose database containing sequences for the aforementioned supported viruses
+
+#### influenza only
 - `assets/flu.fasta`: the database used in the [Andersen Lab's avian influenza project](https://github.com/andersen-lab/avian-influenza)
+
+This database has been supplemented with recent influenza A H5, H1N1 and H3N1 strains, as well as Influenza B, across all available species collected from 2023-2024.
 
 ## Workflow
 ![Workflow](revica_workflow_diagram.png)
 
 ## Usage - REVICA
+
+REVICA is built to be run via NextFlow and Docker from the cloud. Cloning this repo is only necessary if you want the databases or test data.
+
 - Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)
 - Install [`Docker`](https://docs.docker.com/engine/installation/)
 - **it's recommended to use Docker signed out**; access to certain containers is sporadically blocked if signed in. This issue is being actively investigated.
@@ -105,4 +114,4 @@ Cloning this repo is not necessary unless you need the example data.
 - By default, Docker has full access to full RAM and CPU resources of the host, but if you are using MacOS, go to Settings -> Resources in Docker Desktop to make sure enough resources are allocated to docker containers. 
 
 ## Contact
-For bug reports please email aseree@uw.edu or raise an issue on Github.
+For bug reports, please raise an issue.
