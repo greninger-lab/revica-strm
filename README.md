@@ -1,4 +1,8 @@
-# REVICA
+# REVICA-STRM
+
+STRM = Streamlined
+
+---
 
 Revica is a reference-based viral consensus genome assembly pipeline for some of the most common respiratory viruses. Revica currently supports genome assembly of:
 - Enterovirus (EV)
@@ -10,6 +14,19 @@ Revica is a reference-based viral consensus genome assembly pipeline for some of
 - Influenza A virus (IAV)
 - Influenza B virus (IBV)
 - Human adenovirus (HAdV)
+
+## How it works
+
+REVICA-STRM creates assembly genomes from raw FASTQ files in 2 fundamental steps:
+
+1. **Create an initial, rough consensus sequence.** A given query sequence is aligned to all entries in a given database, with the best-mapping reference used to create an early consensus sequence with the general predicted features.
+
+2. **Generate the final consensus for the query**. The query is realigned to the consensus from the previous step, and this alignment is used to generate the final assembly. This second pass serves to confirm unique features of the query that may have been suppressed during the previous assembly.
+---
+The important outputs are:
+- the final consensus sequence
+- the BAM file generated from the first alignment: this is useful for gauging how much of your RAW FASTQ data could be mapped to a known reference sequence.
+- a MULTIQC report file 
 
 ## Databases
 This tool includes two example reference databases usable for assembly:
@@ -25,9 +42,9 @@ This database has been supplemented with recent influenza A H5, H1N1 and H3N1 st
 ## Workflow
 ![Workflow](revica_workflow_diagram.png)
 
-## Usage - REVICA
+## Usage
 
-REVICA is built to be run via NextFlow and Docker from the cloud. Cloning this repo is only necessary if you want the databases or test data.
+REVICA is built to be run on the cloud via NextFlow and Docker. Cloning this repo is only necessary if you want the databases, scripts, or test data.
 
 - Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)
 - Install [`Docker`](https://docs.docker.com/engine/installation/)
@@ -43,7 +60,7 @@ REVICA is built to be run via NextFlow and Docker from the cloud. Cloning this r
     `cd nf-rev`
 2. Run the pipeline with the example data
     ```bash
-    nextflow run epiliper/nf-rev -r main -latest --input example_samplesheet.csv --output example_output -profile docker --db assets/flu.fasta 
+    nextflow run greninger-lab/REVICA-STRM -r main -latest --input example_samplesheet.csv --output example_output -profile docker --db assets/flu.fasta 
     ```
 
 After the run has finished, the final output files can be found in `<work_folder, default=run>/final_files`. 
@@ -68,7 +85,7 @@ Cloning this repo is not necessary unless you need the example data.
 3. run REVICA and point it to your sample sheet:
 
     ```bash
-    nextflow run epiliper/nf-rev -r main -latest --input sras_to_run.csv --output example_output -profile docker --db assets/flu.fasta
+    nextflow run greninger-lab/REVICA-STRM -r main -latest --input sras_to_run.csv --output example_output -profile docker --db assets/flu.fasta
     ```
 
 >[!Note]  
