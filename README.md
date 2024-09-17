@@ -23,10 +23,10 @@ REVICA-STRM creates assembly genomes from raw FASTQ files in 2 fundamental steps
 
 2. **Generate the final consensus for the query**. The query is realigned to the consensus from the previous step, and this alignment is used to generate the final assembly. This second pass serves to confirm unique features of the query that may have been suppressed during the previous assembly.
 ---
-The important outputs are:
-- the final consensus sequence
-- the BAM file generated from the first alignment: this is useful for gauging how much of your RAW FASTQ data could be mapped to a known reference sequence.
-- a MULTIQC report file 
+The important outputs are found in the output directory (specified by `--output`), in the `final_files` subdirectory:
+- the final consensus sequence (filename contains `assembly.fa`)
+- the BAM file(s) generated from the first alignment: this is useful for gauging how much of your RAW FASTQ data could be mapped to a known reference sequence. Located in the `align_to_selected_ref` directory.
+- a MULTIQC report file named `<run name>_multiqc.html`
 
 ## Databases
 This tool includes two example reference databases usable for assembly:
@@ -35,9 +35,7 @@ This tool includes two example reference databases usable for assembly:
 - `assets/ref.fa`: a general purpose database containing sequences for the aforementioned supported viruses
 
 #### influenza only
-- `assets/flu.fasta`: the database used in the [Andersen Lab's avian influenza project](https://github.com/andersen-lab/avian-influenza)
-
-This database has been supplemented with recent influenza A H5, H1N1 and H3N1 strains, as well as Influenza B, across all available species collected from 2023-2024.
+- `assets/flu.fasta`: the database used in the [Andersen Lab's avian influenza project](https://github.com/andersen-lab/avian-influenza). This database has been supplemented with recent influenza A H5, H1N1 and H3N1 strains, as well as Influenza B, across all available species collected from 2023-2024.
 
 ## Workflow
 ![Workflow](revica_workflow_diagram.png)
