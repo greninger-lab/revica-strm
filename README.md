@@ -2,6 +2,8 @@
 
 STRM = Streamlined
 
+This is a fork of the [original REVICA](https://github.com/greninger-lab/revica), meant for faster assembly of viral genomes from metagenomics sequencing data. Other changes include streamlined (combined) output files and quality-of-life features for multi-organism/reference sequencing data (e.g. Influenza with 8 segments).
+
 ---
 
 REVICA is a reference-based viral consensus genome assembly pipeline for some of the most common respiratory viruses. REVICA currently supports genome assembly of:
@@ -14,6 +16,7 @@ REVICA is a reference-based viral consensus genome assembly pipeline for some of
 - Influenza A virus (IAV)
 - Influenza B virus (IBV)
 - Human adenovirus (HAdV)
+- SARS-CoV-2
 
 ## How it works
 
@@ -97,6 +100,9 @@ Cloning this repo is not necessary unless you need the example data.
 Inputs to REVICA-STRM can optionally be filtered with Kraken2 and a user-supplied Kraken2 database. This database should be comprised of host/contaminant genomes desired to be removed from downstream analysis.
 
 To use this, run REVICA-STRM with the `--run-kraken2` and `--kraken2_variants_host_filter` commands, and point the `--kraken2_db` argument to your kraken2 database.
+
+>[!NOTE]
+>To create a database we recommend for removal of human reads, see [these instructions](making_kraken2_human_db.md).
 ## Options
 |Option|Explanation|
 |------|-----------|
