@@ -77,7 +77,7 @@ workflow {
 
         if (params.run_kraken2) {
             KRAKEN2 (
-                    FASTQ_TRIM_FASTP_FASTQC.out.reads,
+                    FASTQ_TRIM_FASTP_MULTIQC.out.reads,
                     file(params.kraken2_db),
                     params.kraken2_variants_host_filter || params.kraken2_assembly_host_filter,
                     params.kraken2_variants_host_filter || params.kraken2_assembly_host_filter

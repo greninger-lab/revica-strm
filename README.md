@@ -4,7 +4,7 @@ STRM = Streamlined
 
 ---
 
-Revica is a reference-based viral consensus genome assembly pipeline for some of the most common respiratory viruses. Revica currently supports genome assembly of:
+REVICA is a reference-based viral consensus genome assembly pipeline for some of the most common respiratory viruses. REVICA currently supports genome assembly of:
 - Enterovirus (EV)
 - Seasonal human coronavirus (HCOV)
 - Human metapneumovirus (HMPV)
@@ -29,7 +29,7 @@ The important outputs are found in the output directory (specified by `--output`
 - a MULTIQC report file named `<run name>_multiqc.html`
 
 ## Databases
-This tool includes two example reference databases usable for assembly:
+This repository includes two example reference databases usable for assembly:
 
 #### general respiratory viruses
 - `assets/ref.fa`: a general purpose database containing sequences for the aforementioned supported viruses
@@ -92,6 +92,11 @@ Cloning this repo is not necessary unless you need the example data.
 >To use it, download SRA toolkit, add it to $PATH, and populate a csv file with SRAs in the format according to `assets/example_sras.csv`
 >
 >then run `python3 pull_sra.py <sra csv> <name for REVICA samplesheet>`
+
+### Removing host (human) reads
+Inputs to REVICA-STRM can optionally be filtered with Kraken2 and a user-supplied Kraken2 database. This database should be comprised of host/contaminant genomes desired to be removed from downstream analysis.
+
+To use this, run REVICA-STRM with the `--run-kraken2` and `--kraken2_variants_host_filter` commands, and point the `--kraken2_db` argument to your kraken2 database.
 ## Options
 |Option|Explanation|
 |------|-----------|
