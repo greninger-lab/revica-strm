@@ -11,7 +11,7 @@ process CONCAT_INTRASAMPLE_FILES {
     ready_to_concat
 
     output: 
-    path "*.fa", emit: merged_fastas
+    path "*_final.fa", emit: merged_fastas
 
 
     script: 
@@ -20,9 +20,7 @@ process CONCAT_INTRASAMPLE_FILES {
 
     merged_consensus.py $output_dir 
 
-    find $output_dir -type f -name '*_merged.fa' -exec mv {} . \\;
-
-    ls .
+    find $output_dir -type f -name '*_final.fa' -exec mv {} . \\;
     """
 
 }

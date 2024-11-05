@@ -122,22 +122,20 @@ workflow {
             SUMMARY.out.summary
             .collectFile(storeDir: "${params.output}", name:"${params.run_name}_summary.tsv", keepHeader: true, sort: true)
 
-            // Collect all 'ready_to_concat' signals, then emit a single true
             SUMMARY.out.ready_to_concat
             .collect()
             .map { it -> true }
         .set { all_summaries_done }
 
-        // Run CONCAT_INTRASAMPLE_FILES once after all SUMMARYs are done
-        CONCAT_INTRASAMPLE_FILES(
-                file("${params.output}").toAbsolutePath().toString(),
-                all_summaries_done
-                )
+        //Run CONCAT_INTRASAMPLE_FILES once after all SUMMARYs are done
+            CONCAT_INTRASAMPLE_FILES(
+                    file("${params.output}").toAbsolutePath().toString(),
+                    all_summaries_done
+                    )
 
-            // Use the output from CONCAT_INTRASAMPLE_FILES to trigger DELETE_TEMP_FILES
             CONCAT_INTRASAMPLE_FILES.out
             .map { it -> true }
-        .set { concat_done }
+            .set { concat_done }
 
         // Delete temp files if needed
         if (!params.save_temp_files) {
