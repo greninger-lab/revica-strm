@@ -11,7 +11,7 @@ process CONCAT_INTRASAMPLE_FILES {
     ready_to_concat
 
     output: 
-    path "*_merged.fa", emit: merged_fastas
+    path "*.fa", emit: merged_fastas
 
 
     script: 

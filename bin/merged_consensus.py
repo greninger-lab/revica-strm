@@ -50,7 +50,7 @@ def merge_fastas(fasta_dir):
     temp_fastas = []
     for file in os.listdir(fasta_dir):
         if file.endswith(".fa") and "merged" not in file:
-            prefix = file.split("_")[0]
+            prefix = "_".join(file.split("_")[0:-1])
             segment = os.path.join(fasta_dir, file)
 
             if prefix not in samples_fa:
