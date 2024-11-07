@@ -5,6 +5,7 @@ process CONCAT_INTRASAMPLE_FILES {
  
     input: 
     val output_dir
+    val samplesheet
     val ready_to_concat
 
     when:
@@ -18,7 +19,7 @@ process CONCAT_INTRASAMPLE_FILES {
     """
     pip install pysam 
 
-    merged_consensus.py $output_dir 
+    merge_intrasample_files.py $output_dir $samplesheet
 
     find $output_dir -type f -name '*_final.fa' -exec mv {} . \\;
     """

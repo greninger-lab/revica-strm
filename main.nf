@@ -130,6 +130,7 @@ workflow {
         //Run CONCAT_INTRASAMPLE_FILES once after all SUMMARYs are done
             CONCAT_INTRASAMPLE_FILES(
                     file("${params.output}").toAbsolutePath().toString(),
+                    file("${params.input}").toAbsolutePath().toString(),
                     all_summaries_done
                     )
 
