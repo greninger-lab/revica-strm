@@ -13,23 +13,36 @@ def match_with_samples(dir, file, samples_files):
             samples_files[s].append(os.path.join(dir, file))
 
 
-def get_samples(csv_reader_samplesheet):
-    next(csv_reader_samplesheet)
-    samples = []
+def init_sample_dict(samples):
+    sample_dict = defaultdict(list)
+    for s in samples:
+        sample_dict[s] = []
 
-    for row in csv_reader_samplesheet:
-        samples.append(row[0])  # samples should be first column of samplesheet
+    return sample_dict
+
+
+def get_samples(samplesheet):
+    with open(samplesheet, newline="") as file:
+        reader = csv.reader(file)
+        next(reader)
+        samples = []
+
+        for row in reader:
+            samples.append(row[0])  # samples should be first column of samplesheet
 
     if len(samples) == 0:
         sys.exit(
             "No samples found in first column of samplesheet! Is it appropriately formatted?"
         )
 
+    return samples
+
 
 # combine the per-segment bam files into a multibam for
 # all samples with segmented genomes
 def merge_bams(bam_dir, samples):
-    samples_bam = defaultdict(list)
+    # samples_bam = defaultdict(list)
+    samples_bam = init_sample_dict(samples)
     temp_bams = []
     for file in os.listdir(bam_dir):
         if file.endswith(".bam") and "_MER_" not in file:
@@ -54,7 +67,8 @@ def merge_bams(bam_dir, samples):
 # combine per-segment final consensus fastas into a multifasta
 # for all samples with segmented genomes
 def merge_fastas(fasta_dir, samples):
-    samples_fa = defaultdict(list)
+    # samples_fa = defaultdict(list)
+    samples_fa = init_sample_dict(samples)
     temp_fastas = []
     for file in os.listdir(fasta_dir):
         if file.endswith("_final.fa") and "_MER_" not in file:
@@ -72,6 +86,7 @@ def merge_fastas(fasta_dir, samples):
                         with open(file, "r") as readfile:
                             outfile.write(readfile.read())
                         temp_fastas.append(file)
+                        print(file)
                     except FileNotFoundError:
                         pass
 
@@ -93,13 +108,11 @@ if __name__ == "__main__":
     FASTA_DIR = os.path.join(args.outdir, "ivar_consensus")
 
     try:
-        reader = csv.reader(args.samplesheet)
+        samples = get_samples(args.samplesheet)
     except FileNotFoundError:
         sys.exit(
             "Samplesheet not found! Check if the samplesheet was moved during processing."
         )
-
-    samples = get_samples(reader)
 
     merge_bams(BAM_DIR, samples)
     merge_fastas(FASTA_DIR, samples)
