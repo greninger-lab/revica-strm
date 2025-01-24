@@ -40,6 +40,7 @@ include { KRAKEN2                   } from './modules/kraken2'
 include { CONCAT_INTRASAMPLE_FILES  } from './modules/concat_intrasample_files'
 include { FASTQ_TRIM_FASTP_MULTIQC  } from './subworkflows/fastq_trim_fastp_multiqc.nf'
 include { DELETE_TEMP_FILES         } from './modules/delete_temp_files'
+include { BAM_TO_FASTQ              } from './modules/bam_to_fastq'
 
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
@@ -134,16 +135,20 @@ workflow {
                     all_summaries_done
                     )
 
-            CONCAT_INTRASAMPLE_FILES.out
-            .map { it -> true }
+            CONCAT_INTRASAMPLE_FILES
+            .out.done
             .set { concat_done }
 
         // Delete temp files if needed
         if (!params.save_temp_files) {
             DELETE_TEMP_FILES(
-                    concat_done,
-                    file("${params.output}").toAbsolutePath().toString()
+                    concat_done, 
+                    file("${params.output}").toAbsolutePath()
                     )
         }
+
+        BAM_TO_FASTQ (
+            CONCAT_INTRASAMPLE_FILES.out.merged_bams.flatten()
+        )
     }
 }

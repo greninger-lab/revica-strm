@@ -52,7 +52,7 @@ def merge_bams(bam_dir, samples):
         # don't merge (or remove) files from unsegmented genomes
         if len(samples_bam[sample]) > 1:
             merge_file = os.path.join(
-                bam_dir, os.path.basename(sample) + "_to_ref_MER_.bam"
+                os.path.basename(sample) + "_to_ref_MER_.bam"
             )
             pysam.merge("-f", merge_file, *samples_bam[sample])
             temp_bams.extend(samples_bam[sample])
@@ -77,7 +77,7 @@ def merge_fastas(fasta_dir, samples):
     for sample in samples_fa:
         if len(samples_fa[sample]) > 1:
             multifasta = os.path.join(
-                fasta_dir, os.path.basename(sample) + "_assembly_MER_final.fa"
+                os.path.basename(sample) + "_assembly_MER_final.fa"
             )
 
             with open(multifasta, "w") as outfile:

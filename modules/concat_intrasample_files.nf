@@ -13,6 +13,8 @@ process CONCAT_INTRASAMPLE_FILES {
 
     output: 
     path "*_final.fa", emit: merged_fastas
+    path "*_MER_.bam", emit: merged_bams
+    val "done", emit: done
 
 
     script: 
@@ -20,8 +22,6 @@ process CONCAT_INTRASAMPLE_FILES {
     pip install pysam 
 
     merge_intrasample_files.py $output_dir $samplesheet
-
-    find $output_dir -type f -name '*_final.fa' -exec mv {} . \\;
     """
 
 }
