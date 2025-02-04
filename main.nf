@@ -23,13 +23,13 @@ if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input sample
 // if db not set
 
 if (!params.db) { exit 1, "Reference database not specified!"}
-
 //
 // SUBWORKFLOWS
 //
 include { INPUT_CHECK               } from './subworkflows/input_check'
 include { REFERENCE_PREP            } from './subworkflows/reference_prep'
 include { CONSENSUS_ASSEMBLY        } from './subworkflows/consensus_assembly'
+include { FINALIZE_OUTPUT           } from './modules/finalize_output'
 
 //
 // MODULES
@@ -37,10 +37,8 @@ include { CONSENSUS_ASSEMBLY        } from './subworkflows/consensus_assembly'
 include { SEQTK_SAMPLE              } from './modules/seqtk_sample'
 include { SUMMARY                   } from './modules/summary'
 include { KRAKEN2                   } from './modules/kraken2'
-include { CONCAT_INTRASAMPLE_FILES  } from './modules/concat_intrasample_files'
 include { FASTQ_TRIM_FASTP_MULTIQC  } from './subworkflows/fastq_trim_fastp_multiqc.nf'
 include { DELETE_TEMP_FILES         } from './modules/delete_temp_files'
-include { BAM_TO_FASTQ              } from './modules/bam_to_fastq'
 
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
@@ -49,15 +47,16 @@ include { BAM_TO_FASTQ              } from './modules/bam_to_fastq'
 /*                                                    */
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
+log.info "                                                                                        "
+log.info " ██████╗ ███████╗██╗   ██╗██╗ ██████╗ █████╗       ███████╗████████╗██████╗ ███╗   ███╗ "
+log.info " ██╔══██╗██╔════╝██║   ██║██║██╔════╝██╔══██╗      ██╔════╝╚══██╔══╝██╔══██╗████╗ ████║ "
+log.info " ██████╔╝█████╗  ██║   ██║██║██║     ███████║█████╗███████╗   ██║   ██████╔╝██╔████╔██║ "
+log.info " ██╔══██╗██╔══╝  ╚██╗ ██╔╝██║██║     ██╔══██║╚════╝╚════██║   ██║   ██╔══██╗██║╚██╔╝██║ "
+log.info " ██║  ██║███████╗ ╚████╔╝ ██║╚██████╗██║  ██║      ███████║   ██║   ██║  ██║██║ ╚═╝ ██║ "
+log.info " ╚═╝  ╚═╝╚══════╝  ╚═══╝  ╚═╝ ╚═════╝╚═╝  ╚═╝      ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝     ╚═╝ "
+log.info "                                                                                        "
 
-log.info "                                                            "
-log.info " _|_|_|    _|_|_|_|  _|      _|  _|_|_|    _|_|_|    _|_|   " 
-log.info " _|    _|  _|        _|      _|    _|    _|        _|    _| " 
-log.info " _|_|_|    _|_|_|    _|      _|    _|    _|        _|_|_|_| " 
-log.info " _|    _|  _|          _|  _|      _|    _|        _|    _| " 
-log.info " _|    _|  _|_|_|_|      _|      _|_|_|    _|_|_|  _|    _| "
-log.info "                                                            "
-log.info "                                                            "
+
 
 workflow {
 
@@ -128,27 +127,18 @@ workflow {
             .map { it -> true }
         .set { all_summaries_done }
 
-        //Run CONCAT_INTRASAMPLE_FILES once after all SUMMARYs are done
-            CONCAT_INTRASAMPLE_FILES(
-                    file("${params.output}").toAbsolutePath().toString(),
-                    file("${params.input}").toAbsolutePath().toString(),
-                    all_summaries_done
-                    )
+        FINALIZE_OUTPUT(
+            file("${params.output}").toAbsolutePath().toString(),
+            file("${params.input}").toAbsolutePath().toString(),
+            all_summaries_done,
+            params.concat_flu
+        )
 
-            CONCAT_INTRASAMPLE_FILES
-            .out.done
-            .set { concat_done }
-
-        // Delete temp files if needed
         if (!params.save_temp_files) {
             DELETE_TEMP_FILES(
-                    concat_done, 
-                    file("${params.output}").toAbsolutePath()
-                    )
+                FINALIZE_OUTPUT.out.done,
+                file("${params.output}").toAbsolutePath()
+            )
         }
-
-        BAM_TO_FASTQ (
-            CONCAT_INTRASAMPLE_FILES.out.merged_bams.flatten()
-        )
     }
 }
