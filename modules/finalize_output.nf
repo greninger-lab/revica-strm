@@ -14,8 +14,9 @@ process FINALIZE_OUTPUT {
     ready_to_concat
 
     output: 
-    path "*_final.fa",      emit: fastas,   optional: true
+    path "*.fa",            emit: fastas,   optional: true
     path "*.bam",           emit: bams,     optional: true
+    path "*.bai",           emit: bais,     optional: true
     path "*SRA.fastq.gz",   emit: fastqs
     val "done",             emit: done
 

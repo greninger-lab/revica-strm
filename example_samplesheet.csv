@@ -1,3 +1,4 @@
 sample,fastq_1,fastq_2
+MPV-384012_S33,fastq_example/MPV-384012_S33_1.fastq.gz,fastq_example/MPV-384012_S33_2.fastq.gz
 SRR29543307,fastq_example/SRR29543307_1.fastq.gz,fastq_example/SRR29543307_2.fastq.gz
 SRR29694476,fastq_example/SRR29694476_1.fastq.gz,fastq_example/SRR29694476_2.fastq.gz
