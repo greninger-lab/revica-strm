@@ -5,8 +5,11 @@ process FINALIZE_OUTPUT {
     label 'process_medium'
  
     input: 
-    val output_dir
-    val samplesheet
+    // val output_dir
+    path(final_consensus)
+    path(initial_consensus)
+    path(bam)
+    path samplesheet
     val ready_to_concat
     val concat_flu
 
@@ -23,9 +26,11 @@ process FINALIZE_OUTPUT {
     script: 
     """
     if [ "${concat_flu}" = "true" ]; then 
-        finalize_output.py $output_dir $samplesheet $task.cpus --merge
+        finalize_output.py $samplesheet $final_consensus --suffix final --threads $task.cpus --merge
+        finalize_output.py $samplesheet $initial_consensus $bam --suffix init_consensus --threads $task.cpus --merge
     else
-        finalize_output.py $output_dir $samplesheet $task.cpus
+        finalize_output.py $samplesheet $final_consensus --suffix final --threads $task.cpus
+        finalize_output.py $samplesheet $initial_consensus $bam --suffix init_consensus --threads $task.cpus
     fi
     """
 

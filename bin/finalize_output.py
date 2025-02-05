@@ -8,6 +8,7 @@ import time
 import sys
 import subprocess
 import re
+import glob
 
 SEGMENTED_PATTERN = "H[0-9]{1}N[0-9]{1}"
 
@@ -79,10 +80,10 @@ def index_bam(bam, threads):
 
     subprocess.run(cmd)
 
-def match_with_samples(dir, file, samples_files):
+def match_with_samples(file, samples_files):
     for s in samples_files.keys():
         if file.startswith(s):
-            samples_files[s].append(os.path.join(dir, file))
+            samples_files[s].append(file)
 
 
 def init_sample_dict(samples):
@@ -111,15 +112,16 @@ def get_samples(samplesheet):
 
 # combine the per-segment bam files into a multibam for
 # all samples with segmented genomes
-def merge_bams(bam_dir, samples, threads, merge):
+def merge_bams(samples, files, threads, merge):
     # samples_bam = defaultdict(list)
     segments = None
     samples_bam = init_sample_dict(samples)
     temp_bams = []
-    for file in os.listdir(bam_dir):
-        if file.endswith(".bam") and "_MER_" not in file:
-            match_with_samples(bam_dir, file, samples_bam)
+    for file in files:
+        if file.endswith(".bam"):
+            match_with_samples(file, samples_bam)
 
+    print(f"SAMPLES_MAP: {samples_bam}")
     for sample in samples_bam:
         # don't merge (or remove) files from unsegmented genomes
         if len(samples_bam[sample]) > 1 and merge:
@@ -134,18 +136,19 @@ def merge_bams(bam_dir, samples, threads, merge):
 
 # combine per-segment final consensus fastas into a multifasta
 # for all samples with segmented genomes
-def merge_fastas(fasta_dir, samples, merge, suffix):
+def merge_fastas(samples, files, merge, suffix):
     # samples_fa = defaultdict(list)
     samples_fa = init_sample_dict(samples)
     temp_fastas = []
-    for file in os.listdir(fasta_dir):
-        if file.endswith(f"{suffix}.fa") and "_MER_" not in file:
-            match_with_samples(fasta_dir, file, samples_fa)
+    for file in files:
+        if file.endswith(".fa"):
+            match_with_samples(file, samples_fa)
 
+    print(f"SAMPLES_MAP: {samples_fa}")
     for sample in samples_fa:
         if len(samples_fa[sample]) > 1 and merge:
             multifasta = os.path.join(
-                os.path.basename(sample) + f"_assembly_MER_{suffix}.fa"
+                sample + f"_assembly_MER_{suffix}.fa"
             )
 
             segments = collect_segmented_files(sample, samples_fa[sample])
@@ -161,20 +164,16 @@ def merge_fastas(fasta_dir, samples, merge, suffix):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("outdir")
     parser.add_argument("samplesheet")
-    parser.add_argument("threads", type=str)
+    parser.add_argument("files", nargs="+")
+    parser.add_argument("--suffix", type=str, required=False, default="")
+    parser.add_argument("--threads", type=str)
     parser.add_argument("--merge", action="store_true", required=False)
 
     args = parser.parse_args()
 
     print("FINALIZING OUTPUT")
     print(args)
-
-    # this directory should have reads aligned to the initial assemblies, and 
-    # the initial assembly fastas themselves
-    BAM_DIR = os.path.join(args.outdir, "final_files", "align_to_consensus")
-    FASTA_DIR = os.path.join(args.outdir, "final_files", "final_assemblies")
 
     try:
         samples = get_samples(args.samplesheet)
@@ -183,9 +182,5 @@ if __name__ == "__main__":
             "Samplesheet not found! Check if the samplesheet was moved during processing."
         )
 
-    # merge all BAM files aligned to initial consensus, and 
-    # merge the initial assemblies themselves for use as BAM reference
-    merge_bams(BAM_DIR, samples, args.threads, args.merge)
-    merge_fastas(BAM_DIR, samples, args.merge, "consensus1")
-
-    merge_fastas(FASTA_DIR, samples, args.merge, "consensus_final")
+    merge_bams(samples, args.files, args.threads, args.merge)
+    merge_fastas(samples, args.files, args.merge, args.suffix)

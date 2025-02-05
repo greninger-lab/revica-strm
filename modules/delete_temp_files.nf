@@ -2,7 +2,7 @@
 
 process DELETE_TEMP_FILES {
     executor 'local'
-    errorStrategy = 'terminate'
+    errorStrategy = 'ignore'
     tag "$output_dir"
 
     input:

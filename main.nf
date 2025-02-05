@@ -1,5 +1,4 @@
 #!/usr/bin/env nextflow
-
 /*
    ========================================================================================
    REVICA
@@ -110,7 +109,7 @@ workflow {
                     )
 
             FASTQ_TRIM_FASTP_MULTIQC.out.trim_log
-            .combine(CONSENSUS_ASSEMBLY.out.consensus
+            .combine(CONSENSUS_ASSEMBLY.out.final_consensus
                     .join(CONSENSUS_ASSEMBLY.out.bam, by: [0,1]), by: 0)
             .map { meta, trim_log, ref_info, consensus, bam, bai -> [ meta, ref_info, trim_log, consensus, bam, bai ] }
         .set { ch_summary_in }
@@ -128,8 +127,13 @@ workflow {
         .set { all_summaries_done }
 
         FINALIZE_OUTPUT(
-            file("${params.output}").toAbsolutePath().toString(),
-            file("${params.input}").toAbsolutePath().toString(),
+            CONSENSUS_ASSEMBLY.out.final_consensus.map { meta, ref_info, ref -> [ ref ] }.collect(),
+            CONSENSUS_ASSEMBLY.out.initial_consensus.map { meta, ref_info, ref -> [ ref ] }.collect(),
+            CONSENSUS_ASSEMBLY.out.bam.map { meta, ref_info, bam, bai -> [ bam ] }.collect(),
+            // .map { meta, final_ref_info, final_ref, init_ref_info, init_ref, bam , bai -> [ meta, final_ref, init_ref, bam ] }
+            ch_input,
+            // file("${params.output}").toAbsolutePath().toString(),
+            // file("${params.input}").toAbsolutePath().toString(),
             all_summaries_done,
             params.concat_flu
         )
