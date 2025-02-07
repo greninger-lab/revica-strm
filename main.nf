@@ -36,7 +36,7 @@ include { FINALIZE_OUTPUT           } from './modules/finalize_output'
 include { SEQTK_SAMPLE              } from './modules/seqtk_sample'
 include { SUMMARY                   } from './modules/summary'
 include { KRAKEN2                   } from './modules/kraken2'
-include { FASTQ_TRIM_FASTP_MULTIQC  } from './subworkflows/fastq_trim_fastp_multiqc.nf'
+include { FASTQ_TRIM_FASTP_MULTIQC  } from './subworkflows/fastq_trim_fastp_multiqc'
 include { DELETE_TEMP_FILES         } from './modules/delete_temp_files'
 
 ////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@ log.info " ██║  ██║███████╗ ╚████╔╝ �
 log.info " ╚═╝  ╚═╝╚══════╝  ╚═══╝  ╚═╝ ╚═════╝╚═╝  ╚═╝      ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝     ╚═╝ "
 log.info "                                                                                        "
 
-
+log.info "Detected {} threads on this machine...", Runtime.runtime.availableProcessors()
 
 workflow {
 
