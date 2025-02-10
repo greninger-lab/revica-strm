@@ -10,7 +10,7 @@ import subprocess
 import re
 import glob
 
-SEGMENTED_PATTERN = "H[0-9]{1}N[0-9]{1}"
+SEGMENTED_PATTERN = "H[0-9]{1}N[0-9]{1}|flu|Flu|"
 
 def collect_segmented_files(sample, files):
     """
@@ -153,14 +153,17 @@ def merge_fastas(samples, files, merge, suffix):
 
             segments = collect_segmented_files(sample, samples_fa[sample])
 
-            with open(multifasta, "w") as outfile:
-                for file in segments:
-                    try:
-                        with open(file, "r") as readfile:
-                            outfile.write(readfile.read())
-                        temp_fastas.append(file)
-                    except FileNotFoundError:
-                        pass
+            ## don't do this for samples that don't contain segmented viruses
+            if segments:
+
+                with open(multifasta, "w") as outfile:
+                    for file in segments:
+                        try:
+                            with open(file, "r") as readfile:
+                                outfile.write(readfile.read())
+                            temp_fastas.append(file)
+                        except FileNotFoundError:
+                            pass
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
