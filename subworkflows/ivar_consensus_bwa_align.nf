@@ -2,10 +2,11 @@
 // Consensus Assembly using BBMAP for alignment and iVar consensus for consensus calling  
 //                                                              
                                                                                    
-include { IVAR_CONSENSUS    } from '../modules/ivar_consensus'                          
-include { BBMAP_ALIGN       } from '../modules/bbmap_align' 
+include { IVAR_CONSENSUS } from '../modules/ivar_consensus'                          
+// include { BBMAP_ALIGN       } from '../modules/bbmap_align' 
+include { BWA_MEM2_ALIGN } from '../modules/bwa_mem2_align'
                                                                                    
-workflow IVAR_CONSENSUS_BBMAP_ALIGN {                                                 
+workflow IVAR_CONSENSUS_BWA_ALIGN {                                                 
     take:                                                                          
     ch_bam                // channel: [ val(meta), val(ref_info), path(bam), path(bai) ]                             
     ch_ref                // channel: [ val(meta), val(ref_info), path(ref) ]                             
@@ -26,13 +27,14 @@ workflow IVAR_CONSENSUS_BBMAP_ALIGN {
         }
         .set { ch_bbmap_align_input }
 
-    BBMAP_ALIGN (
+    // BBMAP_ALIGN (
+    BWA_MEM2_ALIGN(
         ch_bbmap_align_input.reads,
         ch_bbmap_align_input.consensus
     )
     
     emit:
-    bam         = BBMAP_ALIGN.out.bam       // channel: [ val(meta), val(ref_info), path(bam), path(bai) ]
-    consensus   = BBMAP_ALIGN.out.ref       // channel: [ val(meta), val(ref_info), path(consensus) ]
-    reads       = BBMAP_ALIGN.out.reads     // channel: [ val(meta), path(reads) ]
+    bam         = BWA_MEM2_ALIGN.out.bam       // channel: [ val(meta), val(ref_info), path(bam), path(bai) ]
+    consensus   = BWA_MEM2_ALIGN.out.ref       // channel: [ val(meta), val(ref_info), path(consensus) ]
+    reads       = BWA_MEM2_ALIGN.out.reads     // channel: [ val(meta), path(reads) ]
 }

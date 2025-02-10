@@ -19,7 +19,7 @@ if __name__ == "__main__":
     for i in rec:
         if len(i) > 0:
             temp = i.split('\t')
-            if int(temp[9]) >= args.m and float(temp[4]) >= args.p:
+            if float(temp[5]) >= args.m and float(temp[4]) >= args.p:
                 init_ref_candidates.append(temp[0])
 
     # create a dictionary of references to be used for consensus calling
@@ -48,49 +48,7 @@ if __name__ == "__main__":
         output_file_name = args.b + '_failed_assembly.tsv'
         output_file = open(output_file_name, 'w')
 
-        mapped_ref = []
-        for line in sorted(rec, key=lambda line: float(line.split('\t')[4]), reverse=True):
-            if float(line.split('\t')[4]) <=0 :
-                break
-            else:
-                mapped_ref.append(line)
-
-        # loop index is for: reference id, average coverage, covered percent, plus reads, minus reads, median coverage
-        ref_best_cov_loop_index = [0,1,4,6,7,9]
-        ref_best_cov_stats = [args.b]
-
-        # if there are any mapped reads
-        if len(mapped_ref) > 0:
-            # get stats on reference with the highest covered percent
-            ref_best_cov_split = mapped_ref[0].split('\t')
-            for i in ref_best_cov_loop_index:
-                ref_best_cov_stats.append(ref_best_cov_split[i])
-            
-            # calculate reads distribution based on reference tag
-            mapped_stats = {}
-            for i in mapped_ref:
-                temp = i.split('\t')
-                ref_tag = temp[0].split()[1]
-                mapped_reads = int(temp[6])+int(temp[7])
-                if ref_tag in mapped_stats:
-                    mapped_stats[ref_tag]+=mapped_reads
-                else:
-                    mapped_stats[ref_tag] = mapped_reads
-            mapped_stats = dict(sorted(mapped_stats.items(), key=lambda item: item[1], reverse=True))
-            reads_distribution = '; '.join("{}: {}".format(k, v) for k, v in mapped_stats.items())
-            ref_best_cov_stats.append(reads_distribution)
-
-        # if no reads mapped to the database
-        else:
-            # +1 for reads distribution
-            for i in range(0,len(ref_best_cov_loop_index)+1):
-                ref_best_cov_stats.append("0")
-
-        output_text = ""
-        for i in ref_best_cov_stats:
-            output_text = output_text + str(i) + "\t"
-
-        header = "sample_name\tref_best_cov\taverage_coverage\tcovered_percent\tplus_reads\tminus_reads\tmedian_coverage\treads_distribution"
+        output_text = str(sorted(rec, key=lambda line: float(line.split('\t')[4]), reverse=True)[0])
         output_file.write(header)
         output_file.write('\n')
         output_file.write(output_text)

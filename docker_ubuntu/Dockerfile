@@ -53,7 +53,7 @@ RUN cd /tmp \
 RUN cd /tmp \
     && wget https://github.com/bwa-mem2/bwa-mem2/releases/download/v${BWA_MEM2_VERSION}/bwa-mem2-${BWA_MEM2_VERSION}_x64-linux.tar.bz2 \
     && tar jxf bwa-mem2-${BWA_MEM2_VERSION}_x64-linux.tar.bz2 \
-    && mv bwa-mem2-2.2.1_x64-linux/bwa-mem2 /usr/local/bin/
+    && mv bwa-mem2-2.2.1_x64-linux/* /usr/local/bin/
 
 # ---------- 
 # Picard

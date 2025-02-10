@@ -6,7 +6,8 @@
 // for downstream alignment and consensus assembly processes.
 //
 
-include { BBMAP_ALIGN_DB        } from '../modules/bbmap_align_db'         
+include { BWA_MEM2_INDEX        } from '../modules/bwa_mem2_index' 
+include { BWA_MEM2_ALIGN_DB     } from '../modules/bwa_mem2_align_db'
 include { SELECT_REFERENCE      } from '../modules/select_reference'                     
 include { MAKE_REFERENCE_FASTA  } from '../modules/make_reference_fasta'
 
@@ -18,13 +19,17 @@ workflow REFERENCE_PREP {
                                                                                    
     main:
                                                                                    
-    BBMAP_ALIGN_DB (                                                       
-        ch_reads,                                                          
-        db                                                                 
-    )                                                                              
+    BWA_MEM2_INDEX (
+        db
+    )
+
+    BWA_MEM2_ALIGN_DB (
+        ch_reads,
+        BWA_MEM2_INDEX.out.indexed_fasta
+    )
                                                                                    
     SELECT_REFERENCE (                                                             
-        BBMAP_ALIGN_DB.out.covstats                                        
+        BWA_MEM2_ALIGN_DB.out.covstats
     )                                                                              
 
     // Unpack and reformat the list so each item emitted by the channel is
