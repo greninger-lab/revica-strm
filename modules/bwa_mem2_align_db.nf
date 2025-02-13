@@ -2,7 +2,7 @@ process BWA_MEM2_ALIGN_DB {
     tag "$meta.id"
     label 'process_high'
     container 'ilepeli/revica-strm:0.0.4'
-    maxForks 1 // Still testing this out
+    maxForks 2 // Still testing this out
 
 
     input:
@@ -26,11 +26,11 @@ process BWA_MEM2_ALIGN_DB {
         $db \
         $input \
         -t $task.cpus \
-        > ${prefix}.bam
+        | samtools view -bS -@ $task.cpus > ${prefix}.bam
 
 
     ## run pandepth to get coverage/depth reporting
-    pandepth -i ${prefix}.bam -o ${prefix}
+    pandepth -i ${prefix}.bam -o ${prefix} -t ${task.cpus}
     gunzip ${prefix}.chr.stat.gz
 
     ## replace abbreviated ref names in pandepth with originals from db
@@ -38,7 +38,5 @@ process BWA_MEM2_ALIGN_DB {
     ## usually just the acc number. We need the rest of the fasta header for downstream analyses
 
     prep_pandepth_output.py ${prefix}.chr.stat $db ${prefix}_covstats.tsv
-
-
     """
 }

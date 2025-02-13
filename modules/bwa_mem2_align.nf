@@ -32,10 +32,10 @@ process BWA_MEM2_ALIGN {
         $ref \
         $input \
         -t $task.cpus \
-        > ${prefix}.bam
+        | samtools view -bS -@ $task.cpus > ${prefix}.bam
 
     # check if alignment is above depth/coverage thresholds
-    pandepth -i ${prefix}.bam -o ${prefix}
+    pandepth -i ${prefix}.bam -o ${prefix} -t ${task.cpus}
     gunzip ${prefix}.chr.stat.gz 
 
     prep_pandepth_output.py ${prefix}.chr.stat $ref ${prefix}_covstats.tsv

@@ -130,10 +130,7 @@ workflow {
             CONSENSUS_ASSEMBLY.out.final_consensus.map { meta, ref_info, ref -> [ ref ] }.collect(),
             CONSENSUS_ASSEMBLY.out.initial_consensus.map { meta, ref_info, ref -> [ ref ] }.collect(),
             CONSENSUS_ASSEMBLY.out.bam.map { meta, ref_info, bam, bai -> [ bam ] }.collect(),
-            // .map { meta, final_ref_info, final_ref, init_ref_info, init_ref, bam , bai -> [ meta, final_ref, init_ref, bam ] }
             ch_input,
-            // file("${params.output}").toAbsolutePath().toString(),
-            // file("${params.input}").toAbsolutePath().toString(),
             all_summaries_done,
             params.concat_flu
         )
