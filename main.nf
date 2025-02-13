@@ -126,20 +126,5 @@ workflow {
             .map { it -> true }
         .set { all_summaries_done }
 
-        FINALIZE_OUTPUT(
-            CONSENSUS_ASSEMBLY.out.final_consensus.map { meta, ref_info, ref -> [ ref ] }.collect(),
-            CONSENSUS_ASSEMBLY.out.initial_consensus.map { meta, ref_info, ref -> [ ref ] }.collect(),
-            CONSENSUS_ASSEMBLY.out.bam.map { meta, ref_info, bam, bai -> [ bam ] }.collect(),
-            ch_input,
-            all_summaries_done,
-            params.concat_flu
-        )
-
-        if (!params.save_temp_files) {
-            DELETE_TEMP_FILES(
-                FINALIZE_OUTPUT.out.done,
-                file("${params.output}").toAbsolutePath()
-            )
-        }
     }
 }
