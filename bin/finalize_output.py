@@ -9,6 +9,7 @@ import sys
 import subprocess
 import re
 import glob
+import gzip
 
 SEGMENTED_PATTERN = "H[0-9]{1}N[0-9]{1}|flu|Flu|"
 
@@ -35,7 +36,7 @@ def sample_bams_to_fastq(sample, bams, threads):
     """import all mapped reads to a fastq.gz file from all bam files of a given sample"""
     fq_name = f"{sample}.SRA.fastq.gz"
 
-    with open(fq_name, "a") as outf:
+    with gzip.open(fq_name, "ab") as outf:
         for bam in bams:
             cmd = [
                     "samtools",
@@ -49,7 +50,8 @@ def sample_bams_to_fastq(sample, bams, threads):
                     ]
 
             print(f"bam to fastq: {cmd}")
-            subprocess.check_call(cmd, stdout=outf)
+            output = subprocess.check_output(cmd)
+            outf.write(output)
 
 def merge_sample_bams(sample, bams, threads):
     if bams:
