@@ -12,6 +12,7 @@ process BWA_MEM2_ALIGN {
     tuple val(meta), val(ref_info), path(ref),                                      emit: ref
     tuple val(meta), path(fastq),                                                   emit: reads
     tuple val(meta), path("*_failed_assembly.tsv"), optional: true,                 emit: failed_assembly
+    tuple val(meta), path("*_covstats.tsv"),        optional: true,                 emit: covstats
 
     when:
     task.ext.when == null || task.ext.when
@@ -26,10 +27,10 @@ process BWA_MEM2_ALIGN {
 
     // this currently only supports ref paths to a fasta file, not a directory or subdirectory
     """
-    // this flag combines 0x4 and 0x800, which means:
-    // 1. read is unmapped
-    // 2. read is supplementary alignment (chimeric, not representative alignment)
-    // we can't let these reads survive.
+    # this flag combines 0x4 and 0x800, which means:
+    # 1. read is unmapped
+    # 2. read is supplementary alignment (chimeric, not representative alignment)
+    # we can't let these reads survive.
     FLAG=2052
 
     bwa-mem2 index $ref
@@ -39,7 +40,7 @@ process BWA_MEM2_ALIGN {
         $ref \
         $input \
         -t $task.cpus \
-        | samtools view -bS -@ $task.cpus > ${prefix}.bam
+        | samtools view -bS -F \$FLAG -@ $task.cpus > ${prefix}.bam
 
     # check if alignment is above depth/coverage thresholds
     pandepth -i ${prefix}.bam -o ${prefix} -t ${task.cpus}
