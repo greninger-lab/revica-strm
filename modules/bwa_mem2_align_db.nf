@@ -20,12 +20,18 @@ process BWA_MEM2_ALIGN_DB {
     def input = meta.single_end ? "$fastq" : "${fastq[0]} ${fastq[1]}"
 
     """
+    // this flag combines 0x4 and 0x800, which means:
+    // 1. read is unmapped
+    // 2. read is supplementary alignment (chimeric, not representative alignment)
+    // we can't let these reads survive.
+    FLAG=2052
+
     ## run bwa-mem2 
     bwa-mem2 mem \
         $db \
         $input \
         -t $task.cpus \
-        | samtools view -bS -@ $task.cpus > ${prefix}.bam
+        | samtools view -bS -F \$FLAG -@ 2 > ${prefix}.bam
 
 
     ## run pandepth to get coverage/depth reporting
