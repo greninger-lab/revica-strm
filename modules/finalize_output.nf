@@ -1,6 +1,6 @@
 process FINALIZE_OUTPUT {
     // container 'quay.io/biocontainers/mulled-v2-77320db00eefbbf8c599692102c3d387a37ef02a:08144a66f00dc7684fad061f1466033c0176e7ad-0'
-    container 'greningerlab/revica:ubuntu-20.04'
+    container 'quay.io/epil02/revica-strm:0.0.4'
     tag "$output_dir"
     label 'process_high'
  

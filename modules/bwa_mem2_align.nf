@@ -1,7 +1,7 @@
 process BWA_MEM2_ALIGN {
     tag "${meta.id}_${ref_info.acc}_${ref_info.tag}"
     label 'process_high'
-    container 'ilepeli/revica-strm:0.0.4'
+    container 'quay.io/epil02/revica-strm:0.0.4'
 
     input:
     tuple val(meta), path(fastq)

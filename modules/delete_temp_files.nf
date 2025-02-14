@@ -1,7 +1,6 @@
 #!/usr/bin/env nextflow
 
 process DELETE_TEMP_FILES {
-    executor 'local'
     errorStrategy = 'ignore'
     tag "$output_dir"
 

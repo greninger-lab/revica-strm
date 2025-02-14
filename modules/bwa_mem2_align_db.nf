@@ -1,8 +1,7 @@
 process BWA_MEM2_ALIGN_DB {
     tag "$meta.id"
     label 'process_high'
-    container 'ilepeli/revica-strm:0.0.4'
-    maxForks 2 // Still testing this out
+    container 'quay.io/epil02/revica-strm:0.0.4'
 
 
     input:

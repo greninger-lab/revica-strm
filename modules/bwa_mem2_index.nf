@@ -1,7 +1,7 @@
 process BWA_MEM2_INDEX {
     tag "${fasta}"
     label 'process_single'
-    container 'ilepeli/revica-strm:0.0.4'
+    container 'quay.io/epil02/revica-strm:0.0.4'
 
     input: 
     path fasta

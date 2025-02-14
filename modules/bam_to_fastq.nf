@@ -1,6 +1,6 @@
 process BAM_TO_FASTQ {
 
-    container 'greningerlab/revica:ubuntu-20.04'
+    container 'quay.io/epil02/revica-strm:0.0.4'
     tag "$output_dir"
     label 'process_single'
 
