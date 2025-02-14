@@ -52,6 +52,7 @@ process BWA_MEM2_ALIGN {
     else
         echo "alignment failed to meet thresholds! Depth: \$mean_depth, Coverage: \$coverage"
         rm *.bam
+        touch FAILED.sorted.bam FAILED.sorted.bam.bai
         mv ${prefix}_covstats.tsv ${prefix}_failed_assembly.tsv
     fi
     """

@@ -20,6 +20,12 @@ process IVAR_CONSENSUS {
     def args2 = task.ext.args2 ?: ''
     def prefix = task.ext.prefix ?: ''
     """
+
+    if [[ \$(basename "$bam") == "FAILED.sorted.bam" ]]; then
+        echo "Skipping $prefix consensus with $ref; failed depth/coverage previously"
+        exit 0
+    fi
+
     samtools \\
         mpileup \\
         --reference $ref \\
