@@ -65,7 +65,7 @@ workflow {
 
         FASTQ_TRIM_FASTP_MULTIQC (
                 INPUT_CHECK.out.reads,
-                params.adapter_fasta,
+                params.adapter_trimming,
                 params.save_trimmed_fail,
                 params.save_merged,
                 params.skip_fastp,

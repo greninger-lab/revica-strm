@@ -8,9 +8,9 @@ process IVAR_CONSENSUS {
     tuple val(meta), val(ref_info), path(ref)
 
     output:
-    tuple val(meta), val(ref_info), path("*.fa"),       emit: consensus
-    tuple val(meta), val(ref_info), path("*.qual.txt"), emit: qual
-    tuple val(meta), val(ref_info), path("*.mpileup"),  optional:true, emit: mpileup
+    tuple val(meta), val(ref_info), path("*.fa"),       optional: true, emit: consensus
+    tuple val(meta), val(ref_info), path("*.qual.txt"), optional: true, emit: qual
+    tuple val(meta), val(ref_info), path("*.mpileup"),  optional: true, emit: mpileup
 
     when:
     task.ext.when == null || task.ext.when
@@ -23,7 +23,7 @@ process IVAR_CONSENSUS {
 
     if [[ \$(basename "$bam") == "FAILED.sorted.bam" ]]; then
         echo "Skipping $prefix consensus with $ref; failed depth/coverage previously"
-        exit 0
+        exit 0 // shouldn't cause fail if the outputs are optional
     fi
 
     samtools \\
