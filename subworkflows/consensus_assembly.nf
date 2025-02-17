@@ -35,4 +35,6 @@ workflow CONSENSUS_ASSEMBLY {
     initial_consensus   = IVAR_CONSENSUS_BWA_MEM2_ALIGN_INITIAL_ASSEMBLY.out.consensus
     bam                 = IVAR_CONSENSUS_BWA_MEM2_ALIGN_INITIAL_ASSEMBLY.out.bam       // channel: [ val(meta), val(ref_info), path(bam), path(bai) ]
     reads               = IVAR_CONSENSUS_BWA_MEM2_ALIGN_INITIAL_ASSEMBLY.out.reads     // channel: [ val(meta), path(reads) ]
+    init_covstats       = BWA_MEM2_ALIGN_QUERY.out.covstats
+    final_covstats      = IVAR_CONSENSUS_BWA_MEM2_ALIGN_INITIAL_ASSEMBLY.out.covstats
 } 

@@ -108,11 +108,13 @@ workflow {
                     REFERENCE_PREP.out.ref,
                     )
 
-            FASTQ_TRIM_FASTP_MULTIQC.out.trim_log
-            .combine(CONSENSUS_ASSEMBLY.out.final_consensus
-                    .join(CONSENSUS_ASSEMBLY.out.bam, by: [0,1]), by: 0)
-            .map { meta, trim_log, ref_info, consensus, bam, bai -> [ meta, ref_info, trim_log, consensus, bam, bai ] }
-        .set { ch_summary_in }
+        ch_summary_in = FASTQ_TRIM_FASTP_MULTIQC.out.trim_log
+            .combine(
+                CONSENSUS_ASSEMBLY.out.final_consensus
+                    .join(CONSENSUS_ASSEMBLY.out.init_covstats, by: [0,1])
+                    .join(CONSENSUS_ASSEMBLY.out.final_covstats, by: [0,1])
+                , by: 0
+            ).map {meta, trim_log, ref_info, consensus, init_covstats, final_covstats -> [meta, ref_info, trim_log, consensus, init_covstats, final_covstats]}
 
         SUMMARY (
                 ch_summary_in

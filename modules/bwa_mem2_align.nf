@@ -12,7 +12,7 @@ process BWA_MEM2_ALIGN {
     tuple val(meta), val(ref_info), path(ref),                                      emit: ref
     tuple val(meta), path(fastq),                                                   emit: reads
     tuple val(meta), path("*_failed_assembly.tsv"), optional: true,                 emit: failed_assembly
-    tuple val(meta), path("*_covstats.tsv"),        optional: true,                 emit: covstats
+    tuple val(meta), val(ref_info), path("*_covstats.tsv"), optional: true,         emit: covstats
 
     when:
     task.ext.when == null || task.ext.when
@@ -21,6 +21,7 @@ process BWA_MEM2_ALIGN {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: ''
     def input = meta.single_end ? "${fastq}" : "${fastq[0]} ${fastq[1]}"
+    def iter = task.ext.iter
 
     def min_coverage = task.ext.min_coverage
     def min_depth = task.ext.min_depth
@@ -46,7 +47,10 @@ process BWA_MEM2_ALIGN {
     pandepth -i ${prefix}.bam -o ${prefix} -t ${task.cpus}
     gunzip ${prefix}.chr.stat.gz 
 
-    prep_pandepth_output.py ${prefix}.chr.stat $ref ${prefix}_covstats.tsv
+    mapped=\$(samtools view -c -F \$FLAG -@ $task.cpus ${prefix}.bam)
+
+    prep_pandepth_output.py ${prefix}.chr.stat $ref ${prefix}_covstats.tsv \\
+        --extra_cols "reads_mapped_${iter}:\$mapped"
 
     coverage=\$(awk 'BEGIN {FS="\t"} NR>1 {print \$5}' "${prefix}_covstats.tsv")
     mean_depth=\$(awk 'BEGIN {FS="\t"} NR>1 {print \$4}' "${prefix}_covstats.tsv")

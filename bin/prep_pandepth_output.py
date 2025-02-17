@@ -6,7 +6,7 @@ import csv
 
 PANDEPTH_COLS = ["chr", "length", "covered_site", "depth", "coverage", 	"meandepth"]
 
-def parse_pandepth(file, ref, out):
+def parse_pandepth(file, ref, out, extra_cols):
 
     ref_map = {}
 
@@ -18,9 +18,22 @@ def parse_pandepth(file, ref, out):
 
     try: 
         with open(file, "r") as inf:
-            with open(out, "w") as outf:
+            with open(out, "w", newline='') as outf:
                 csv_reader = csv.DictReader(inf.readlines()[1:-1], fieldnames=PANDEPTH_COLS, delimiter = "\t")
-                csv_writer = csv.DictWriter(outf, fieldnames=PANDEPTH_COLS, delimiter = "\t")
+                new_values = []
+                new_cols = []
+
+                cols = PANDEPTH_COLS
+
+                if extra_cols:
+                    for c in extra_cols:
+                        c = c.split(":")
+                        assert len(c) == 2
+                        new_cols.append(c[0])
+                        cols.append(c[0])
+                        new_values.append(c[1])
+
+                csv_writer = csv.DictWriter(outf, fieldnames=cols, delimiter = "\t")
 
                 csv_writer.writeheader()
 
@@ -33,6 +46,10 @@ def parse_pandepth(file, ref, out):
                     except KeyError:
                         sys.exit("Detected discordance between reference names in pandepth output file and reference! Check work dir output!")
 
+                    j = 0
+                    for i, col in enumerate(new_cols):
+                        row[col] = str(new_values[i])
+
                     csv_writer.writerow(row)
 
     except FileNotFoundError: 
@@ -43,6 +60,7 @@ if __name__ == "__main__":
     parser.add_argument("input", help = "unzipped pandepth output file")
     parser.add_argument("ref", help = "reference fasta to use for replacing header")
     parser.add_argument("out", help = "name of output")
+    parser.add_argument("--extra_cols", required = False, default = [], help = "additional columns to input, in the format of COLNAME:COLVALUE", nargs='+')
     args = parser.parse_args()
 
-    parse_pandepth(args.input, args.ref, args.out)
+    parse_pandepth(args.input, args.ref, args.out, args.extra_cols)

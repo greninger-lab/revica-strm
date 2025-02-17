@@ -37,4 +37,5 @@ workflow IVAR_CONSENSUS_BWA_ALIGN {
     bam         = BWA_MEM2_ALIGN.out.bam       // channel: [ val(meta), val(ref_info), path(bam), path(bai) ]
     consensus   = BWA_MEM2_ALIGN.out.ref       // channel: [ val(meta), val(ref_info), path(consensus) ]
     reads       = BWA_MEM2_ALIGN.out.reads     // channel: [ val(meta), path(reads) ]
+    covstats    = BWA_MEM2_ALIGN.out.covstats
 }

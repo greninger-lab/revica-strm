@@ -4,7 +4,7 @@ process SUMMARY {
     container 'quay.io/epil02/revica-strm:0.0.4'
 
     input:
-    tuple val(meta), val(ref_info), path(fastp_trim_log), path(consensus), path(bam), path(bai)
+    tuple val(meta), val(ref_info), path(fastp_trim_log), path(consensus), path(init_covstats), path(final_covstats)
 
     output:
     path("*.tsv"), emit: summary
@@ -24,18 +24,38 @@ process SUMMARY {
     pct_reads_trimmed=\$(echo "\${trimmed_reads}/\${raw_reads}*100" | bc -l)
     pct_reads_trimmed_formatted=\$(printf "%.2f" "\${pct_reads_trimmed}")
 
-    # mapped reads
-    mapped_reads=\$(samtools view -F 4 -c ${bam})
-    pct_reads_mapped=\$(echo "\${mapped_reads}/\${raw_reads}*100" | bc -l)
-    pct_reads_mapped_formatted=\$(printf "%.2f" "\${pct_reads_mapped}")
+    ###########################
+    # ALIGN TO SELECTED QUERY #
+    ###########################
 
-    # whole genome coverage
-    pct_genome_covered=\$(samtools coverage ${bam} | awk 'NR>1' | cut -f6)
-    pct_genome_covered_formatted=\$(printf "%.2f" "\${pct_genome_covered}")
-    mean_genome_coverage=\$(samtools coverage ${bam} | awk 'NR>1' | cut -f7)
-    mean_genome_coverage_formatted=\$(printf "%.2f" "\${mean_genome_coverage}")
-    
-    # consensus genome
+    # mapped reads
+    #mapped_reads_ref=\$(awk -F'\t' '{print \$NF}' $init_covstats)
+    mapped_reads_ref=\$(awk 'NR==2 {print \$NF}' $init_covstats | tr -d ' \r\n')
+    pct_reads_mapped=\$(echo "\${mapped_reads_ref}/\${raw_reads}*100" | bc -l)
+    pct_reads_mapped_formatted_ref=\$(printf "%.2f" "\${pct_reads_mapped}")
+
+    # coverage/depth
+    coverage_ref=\$(awk 'BEGIN {FS="\t"} NR==2 {print \$5}' $init_covstats)
+    mean_depth_ref=\$(awk 'BEGIN {FS="\t"} NR==2 {print \$6}' $init_covstats)
+
+    ##############################
+    # ALIGN TO INITIAL CONSENSUS #
+    ##############################
+
+    # mapped reads
+    #mapped_reads_c1=\$(awk -F'\t' '{print \$NF}' $final_covstats)
+    mapped_reads_c1=\$(awk 'NR==2 {print \$NF}' $final_covstats | tr -d ' \r\n')
+    pct_reads_mapped=\$(echo "\${mapped_reads_c1}/\${mapped_reads_ref}*100" | bc -l)
+    pct_reads_mapped_formatted_c1=\$(printf "%.2f" "\${pct_reads_mapped}")
+
+    # coverage/depth
+    coverage_c1=\$(awk 'BEGIN {FS="\t"} NR==2 {print \$5}' $final_covstats)
+    mean_depth_c1=\$(awk 'BEGIN {FS="\t"} NR==2 {print \$6}' $final_covstats)
+
+    ####################
+    # CONSENSUS GENOME #
+    ####################
+
     consensus_length=\$(awk '/^>/{if (l!="") print l; print; l=0; next}{l+=length(\$0)}END{print l}' ${consensus} | awk 'FNR==2{print val,\$1}')
     num_ns_consensus=\$(grep -v "^>" ${consensus} | tr -c -d N | wc -c)
     pct_ns=\$(echo "\${num_ns_consensus}/\${consensus_length}*100" | bc -l | awk 'FNR==1{print val,\$1}')
@@ -46,8 +66,21 @@ process SUMMARY {
     num_ts_consensus=\$(grep -v "^>" ${consensus} | tr -c -d T | wc -c)
     num_non_ns_ambiguous=\$(echo "\${consensus_length}-\${num_as_consensus}-\${num_cs_consensus}-\${num_gs_consensus}-\${num_ts_consensus}-\${num_ns_consensus}" | bc -l)
     
+    ##################
+    # OUTPUT TO TSV #
+    ##################
 
-    echo "sample_name\traw_reads\ttrimmed_reads\tpct_reads_trimmed\tref_tag\tref_acc\tref_header\tmapped_reads\tpct_reads_mapped\tpct_genome_covered\tmean_genome_coverage\tconsensus_length\tnum_ns\tpct_ns\tnum_ambiguous" > ${prefix}.summary.tsv
-    echo "${meta.id}\t\${raw_reads}\t\${trimmed_reads}\t\${pct_reads_trimmed_formatted}\t${ref_info.tag}\t${ref_info.acc}\t${ref_info.header}\t\${mapped_reads}\t\${pct_reads_mapped_formatted}\t\${pct_genome_covered_formatted}\t\${mean_genome_coverage_formatted}\t\${consensus_length}\t\${num_ns_consensus}\t\${pct_ns_formatted}\t\${num_non_ns_ambiguous}" >> ${prefix}.summary.tsv
+    printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
+        "sample_name" "raw_reads" "trimmed_reads" "pct_reads_trimmed" "ref_tag" "ref_acc" "ref_header"\
+        "mapped_reads_ref" "pct_reads_mapped_ref" "coverage_ref" "mean_depth_ref" \
+        "mapped_reads_c1" "pct_reads_mapped_c1" "coverage_c1" "mean_depth_c1" \
+        "consensus_length" "num_ns_consensus" "pct_ns" "num_ambiguous" > ${prefix}_summary.tsv
+
+    printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
+        "$meta.id" "\$raw_reads" "\$trimmed_reads" "\$pct_reads_trimmed_formatted" "${ref_info.tag}" "${ref_info.acc}" "${ref_info.header}" \
+        "\$mapped_reads_ref" "\$pct_reads_mapped_formatted_ref" "\$coverage_ref" "\$mean_depth_ref" \
+        "\$mapped_reads_c1" "\$pct_reads_mapped_formatted_c1" "\$coverage_c1" "\$mean_depth_c1" \
+        "\$consensus_length" "\$num_ns_consensus" "\$pct_ns_formatted" "\$num_non_ns_ambiguous" \
+        >> "${prefix}_summary.tsv"
     """
 }
