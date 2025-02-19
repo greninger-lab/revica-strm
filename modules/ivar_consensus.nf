@@ -1,6 +1,6 @@
 process IVAR_CONSENSUS {
     tag "${meta.id}_${ref_info.acc}_${ref_info.tag}"
-    label 'process_medium'
+    label 'process_high'
     container 'quay.io/biocontainers/ivar:1.4--h6b7c446_1'
 
     input:
