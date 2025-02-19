@@ -21,8 +21,9 @@ process IVAR_CONSENSUS {
     def prefix = task.ext.prefix ?: ''
     """
 
-    if [[ \$(basename "$bam") == "FAILED.sorted.bam" ]]; then
+    if [[ \$(basename "$bam") = "FAILED.sorted.bam" ]]; then
         echo "Skipping $prefix consensus with $ref; failed depth/coverage previously"
+        rm *.fa
         exit 0 # shouldn't cause fail if the outputs are optional
     fi
 

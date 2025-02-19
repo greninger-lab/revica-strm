@@ -56,7 +56,7 @@ process BWA_MEM2_ALIGN {
     mean_depth=\$(awk 'BEGIN {FS="\t"} NR>1 {print \$4}' "${prefix}_covstats.tsv")
 
     # Check if thresholds are met
-    if (( \$(echo "\$coverage >= $min_coverage" | bc) == 1 && \$(echo "\$mean_depth >= $min_depth" | bc) == 1 )); then
+    if [ "\$(echo "\$coverage >= $min_coverage" | bc)" -eq 1 ] && [ "\$(echo "\$mean_depth >= $min_depth" | bc)" -eq 1 ]; then
         echo "alignment thresholds met!"
         samtools view -b -F \$FLAG -@ ${task.cpus} "${prefix}.bam" -o "${prefix}_mapped.bam"
         samtools sort -@ ${task.cpus} -o "${prefix}.sorted.bam" "${prefix}_mapped.bam"
