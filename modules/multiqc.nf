@@ -1,7 +1,7 @@
 process MULTIQC {
     container 'quay.io/staphb/multiqc:1.22.3'
     tag "OUTDIR: ${output_dir}"
-    label = 'process_single' 
+    label = 'process_high' 
 
     input:
     val run_name
