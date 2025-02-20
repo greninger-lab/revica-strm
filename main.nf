@@ -29,7 +29,7 @@ if (!params.db) { exit 1, "Reference database not specified!"}
 include { INPUT_CHECK               } from './subworkflows/input_check'
 include { REFERENCE_PREP            } from './subworkflows/reference_prep'
 include { CONSENSUS_ASSEMBLY        } from './subworkflows/consensus_assembly'
-include { FINALIZE_OUTPUT           } from './modules/finalize_output'
+include { FASTQ_TRIM_FASTP_MULTIQC  } from './subworkflows/fastq_trim_fastp_multiqc'
 
 //
 // MODULES
@@ -37,8 +37,7 @@ include { FINALIZE_OUTPUT           } from './modules/finalize_output'
 include { SEQTK_SAMPLE              } from './modules/seqtk_sample'
 include { SUMMARY                   } from './modules/summary'
 include { KRAKEN2                   } from './modules/kraken2'
-include { FASTQ_TRIM_FASTP_MULTIQC  } from './subworkflows/fastq_trim_fastp_multiqc'
-include { DELETE_TEMP_FILES         } from './modules/delete_temp_files'
+include { BAM_TO_FASTQ              } from './modules/bam_to_fastq'
 
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
@@ -104,10 +103,14 @@ workflow {
                 file(params.db)
                 ) 
 
-            CONSENSUS_ASSEMBLY (
-                    REFERENCE_PREP.out.reads,
-                    REFERENCE_PREP.out.ref,
-                    )
+        CONSENSUS_ASSEMBLY (
+                REFERENCE_PREP.out.reads,
+                REFERENCE_PREP.out.ref,
+                )
+
+        BAM_TO_FASTQ(
+            CONSENSUS_ASSEMBLY.out.bam
+        )
 
         ch_summary_in = FASTQ_TRIM_FASTP_MULTIQC.out.trim_log
             .combine(
