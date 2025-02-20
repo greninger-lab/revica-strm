@@ -11,6 +11,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     init_ref_candidates = []
+    to_sort = []
     inf = open(args.bbmap_covstats, 'r').readlines()
     header = inf[0]
     rec = inf[1:]
@@ -20,7 +21,11 @@ if __name__ == "__main__":
         if len(i) > 0:
             temp = i.split('\t')
             if float(temp[5]) >= args.m and float(temp[4]) >= args.p:
-                init_ref_candidates.append(temp[0])
+                # init_ref_candidates.append(temp[0])
+                to_sort.append(temp)
+
+    sorted_by_coverage_depth = sorted(to_sort, key = lambda x: (x[4], x[5]), reverse = True)
+    init_ref_candidates = [entry[0] for entry in sorted_by_coverage_depth]
 
     # create a dictionary of references to be used for consensus calling
     init_ref_header = {}
