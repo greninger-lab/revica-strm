@@ -1,12 +1,12 @@
-# REVICA-STRM
+# revica-strm
 
-STRM = Streamlined
+strm = streamlined
 
-This is a fork of the [original REVICA](https://github.com/greninger-lab/revica), meant for faster assembly of viral genomes from metagenomics sequencing data. Other changes include streamlined (combined) output files and quality-of-life features for multi-organism/reference sequencing data (e.g. Influenza with 8 segments).
+This is a fork of the [original REVICA](https://github.com/greninger-lab/revica), meant for faster assembly of viral genomes from short-read sequencing data. It uses the newer BWA-MEM2 aligner and employs additional assembly quality checks to provide higher-quality consensus genomes, while striving to make output files and reporting more concise and informative.
 
 ---
 
-REVICA is a reference-based viral consensus genome assembly pipeline for some of the most common respiratory viruses. REVICA currently supports genome assembly of:
+revica-strm is a reference-based viral consensus genome assembly pipeline for some of the most common respiratory viruses. revica-strm currently supports genome assembly of:
 - Enterovirus (EV)
 - Seasonal human coronavirus (HCOV)
 - Human metapneumovirus (HMPV)
@@ -20,7 +20,7 @@ REVICA is a reference-based viral consensus genome assembly pipeline for some of
 
 ## How it works
 
-REVICA-STRM creates assembly genomes from raw FASTQ files in 2 fundamental steps:
+revica-strm creates assembly genomes from raw FASTQ files in 2 fundamental steps:
 
 1. **Create an initial, rough consensus sequence.** A given query sequence is aligned to all entries in a given database, with the best-mapping reference used to create an early consensus sequence with the general predicted features.
 
@@ -48,20 +48,20 @@ This repository includes two example reference databases usable for assembly:
 REVICA is built to be run on the cloud via NextFlow and Docker. Cloning this repo is only necessary if you want the databases, scripts, or test data.
 
 - Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)
-- Install [`Docker`](https://docs.docker.com/engine/installation/)
+- Install [`Docker`](https://docs.docker.com/engine/installation/), including Docker Desktop
 - **it's recommended to use Docker signed out**; access to certain containers is sporadically blocked if signed in. This issue is being actively investigated.
-- Ensure the Docker client is running before starting the pipeline
+- Ensure the Docker Desktop app is running before starting the pipeline
 
 ### Using the test data included in this repo:
 
 
 1. Clone the repository to get the example data and database  
-    `git clone git@github.com:epiliper/nf-rev.git`
+    `git clone https://github.com/greninger-lab/revica-strm.git`
 
-    `cd nf-rev`
+    `cd revica-strm`
 2. Run the pipeline with the example data
     ```bash
-    nextflow run greninger-lab/REVICA-STRM -r main -latest --input example_samplesheet.csv --output example_output -profile docker --db assets/flu.fasta 
+    nextflow run greninger-lab/revica-strm -r main -latest --input example_samplesheet.csv --output example_output -profile docker --db assets/flu.fasta 
     ```
 
 After the run has finished, the final output files can be found in `<work_folder, default=run>/final_files`. 
@@ -86,20 +86,13 @@ Cloning this repo is not necessary unless you need the example data.
 3. run REVICA and point it to your sample sheet:
 
     ```bash
-    nextflow run greninger-lab/REVICA-STRM -r main -latest --input sras_to_run.csv --output example_output -profile docker --db assets/flu.fasta
+    nextflow run greninger-lab/revica-strm -r main -latest --input sras_to_run.csv --output example_output -profile docker --db assets/flu.fasta
     ```
 
->[!Note]  
->This repo includes a python script `bin/pull_sra.py` to download FASTQ files for SRA project numbers specified in a CSV spreadsheet, and create an associated REVICA spreadsheet.    
->
->To use it, download SRA toolkit, add it to $PATH, and populate a csv file with SRAs in the format according to `assets/example_sras.csv`
->
->then run `python3 pull_sra.py <sra csv> <name for REVICA samplesheet>`
-
 ### Removing host (human) reads
-Inputs to REVICA-STRM can optionally be filtered with Kraken2 and a user-supplied Kraken2 database. This database should be comprised of host/contaminant genomes desired to be removed from downstream analysis.
+Inputs to revica-strm can optionally be filtered with Kraken2 and a user-supplied Kraken2 database. This database should be comprised of host/contaminant genomes desired to be removed from downstream analysis.
 
-To use this, run REVICA-STRM with the `--run-kraken2` and `--kraken2_variants_host_filter` commands, and point the `--kraken2_db` argument to your kraken2 database.
+To use this, run revica-strm with the `--run-kraken2` and `--kraken2_variants_host_filter` commands, and point the `--kraken2_db` argument to your kraken2 database.
 
 >[!NOTE]
 >To create a database we recommend for removal of human reads, see [these instructions](making_kraken2_human_db.md).
