@@ -45,7 +45,7 @@ process SUMMARY {
     # mapped reads
     #mapped_reads_c1=\$(awk -F'\t' '{print \$NF}' $final_covstats)
     mapped_reads_c1=\$(awk 'NR==2 {print \$NF}' $final_covstats | tr -d ' \r\n')
-    pct_reads_mapped=\$(echo "\${mapped_reads_c1}/\${mapped_reads_ref}*100" | bc -l)
+    pct_reads_mapped=\$(echo "\${mapped_reads_c1}/\${raw_reads}*100" | bc -l)
     pct_reads_mapped_formatted_c1=\$(printf "%.2f" "\${pct_reads_mapped}")
 
     # coverage/depth
