@@ -43,51 +43,53 @@ This repository includes two example reference databases usable for assembly:
 ## Workflow
 ![Workflow](revica_workflow_diagram.png)
 
-## Usage
+## Installation
 
-REVICA is built to be run on the cloud via NextFlow and Docker. Cloning this repo is only necessary if you want the databases, scripts, or test data.
+1. download the latest `revica-strm` run script by running this command:
+```
+wget https://raw.githubusercontent.com/greninger-lab/revica-strm/refs/heads/main/revica-strm
+```
 
-- Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)
-- Install [`Docker`](https://docs.docker.com/engine/installation/), including Docker Desktop
-- **it's recommended to use Docker signed out**; access to certain containers is sporadically blocked if signed in. This issue is being actively investigated.
-- Ensure the Docker Desktop app is running before starting the pipeline
+For convenience, it's recommended to move this file to somewhere in your `$PATH`, so you can run it from other directories via `revica-strm`. Otherwise, you'll have to run it with `./revica-strm`, or the absolute path to the file.
 
-### Using the test data included in this repo:
+2. Install [Docker](https://docs.docker.com/desktop/) if you haven't already
+3. Install [Nextflow](https://www.nextflow.io/docs/latest/install.html) if you haven't already
 
+## Instructions
 
-1. Clone the repository to get the example data and database  
-    `git clone https://github.com/greninger-lab/revica-strm.git`
+1. Ensure the docker desktop client is updated and running
 
-    `cd revica-strm`
-2. Run the pipeline with the example data
-    ```bash
-    nextflow run greninger-lab/revica-strm -r main -latest --input example_samplesheet.csv --output example_output -profile docker --db assets/flu.fasta 
-    ```
+2. Arrange all input fastqs (can be plain .fastq ro compressed .fastq.gz) in their own directory.
 
-After the run has finished, the final output files can be found in `<work_folder, default=run>/final_files`. 
+##### 🚨 <span style="color: red;">MANDATORY: </span>all fastq files must have unique sample names before the first underscore ('_') character.
 
-If not using example data, replace the FASTQ files, sample sheet, and database with whatever files you want to use (**see below**).
+RIGHT: ```sample1_R1.fastq.gz sample1_R2.fastq.gz```  
+WRONG: ```sample_1_R1.fastq.gz sample_2_R1.fastq.gz```  
 
-### Using other FASTQ files and databases:
+- In the wrong case, sample_1_R1 would get wrongly paired with sample_2_R1.
+- *It's recommended to have the read mate info (e.g. R1, 1) immediately follow the first underscore, after the unique sample name.*
+- if samples do not have underscores, this logic applies to the period ('.') character instead.
 
-Cloning this repo is not necessary unless you need the example data. 
+3. once you're sure your fastqs are correctly named, run:
 
-1. download FASTQ files for needed samples/SRA projects. The [SRA toolkit's](https://github.com/ncbi/sra-tools) `fasterq_dump` utility can be used for downloading FASTQ files from SRA projects.
+```
+revica-strm <fastq_dir> -profile docker --output <out_dir>
+```
 
-2. in the directory with the downloaded FASTQs, use this repo's included script `bin/fastq_dir_to_samplesheet.py` to create a REVICA sample sheet.
+You can test this command by downloading the example dataset included in this repository, `fastq_example`, and running:
+```
+revica-strm fastq_example -profile docker
+```
 
-    Example command:
-    ```bash
-    python3 fastq_dir_to_samplesheet.py <dir with fastqs> -r1 _1.fastq.gz -r2 _2.fastq.gz sras_to_run.csv     
-    ```
-    
-    where `-r1` and `-r2` specify the suffixes of input read1 and read2 files to look for, respectively. For single-end data, just use `-r1`.
+For a description of all options, run `revica-strm -h`.
 
-3. run REVICA and point it to your sample sheet:
+Once the pipeline is done, consensus genomes can be found in `$out_dir/final_files/final_assemblies/`. For reports of any genomes/samples that failed assembly QC thresholds, see files in `$out_dir/fail`.
 
-    ```bash
-    nextflow run greninger-lab/revica-strm -r main -latest --input sras_to_run.csv --output example_output -profile docker --db assets/flu.fasta
-    ```
+## 🤓 For developers
+
+### Running the pipeline with advanced nextflow options
+
+The `devira` script is just a wrapper over the basic `nextflow run` command; it creates a fastq samplesheet from given input directory, and passes other arguments to nextflow itself. You can pass any of the typical nextflow arguments to the `devira` script. This includes the `-c` command to specify advanced options for, as an example, running the pipeline on AWS Batch or other cloud computing environments.
 
 ### Removing host (human) reads
 Inputs to revica-strm can optionally be filtered with Kraken2 and a user-supplied Kraken2 database. This database should be comprised of host/contaminant genomes desired to be removed from downstream analysis.
@@ -96,41 +98,22 @@ To use this, run revica-strm with the `--run-kraken2` and `--kraken2_variants_ho
 
 >[!NOTE]
 >To create a database we recommend for removal of human reads, see [these instructions](making_kraken2_human_db.md).
-## Options
-|Option|Explanation|
-|------|-----------|
-| `--input` | samplesheet in csv format with fastq information |
-| `--output` | output directory (default: revica_output) |
-| `--db` | (multi)fasta file to overwrite the bundled viral database |
-| `--run_name` | name for the summary tsv file (default: 'run') |
-| `--skip_fastp` | skip adapters and reads trimming using fastp (default: false) |
-| `--run_kraken2` | run Kraken2 for classifying reads (default: false) |
-| `--kraken2_db` | Kraken2 database for reads classification, needs to be specified when using `--run_kraken2` |
-| `--kraken2_variants_host_filter` | use reads that didn't map to the kraken2 database for downstream consensus calling |
-| `--save_kraken2_unclassified_reads` | save reads that didn't map to the specified kraken2 database |
-| `--save_kraken2_classified_reads` | save reads that map to the specified kraken2 database |
-| `--trim_len` | minimum read length to keep (default:50) |
-| `--save_trimmed_reads` | save trimmed fastq |
-| `--save_temp_files` | save temporary files |
-| `--sample` | downsample fastq to a certain fraction or number of reads |
-| `--ref_min_median_cov` | minimum median coverage on a reference for consensus assembly (default: 3) |
-| `--ref_min_genome_cov` | minimum reference coverage percentage for consensus assembly (default: 60%) |
-| `--ivar_consensus_t` | minimum frequency threshold to call consensus (default: 0.6) |
-| `--ivar_consensus_q` | minimum quality score threshold to call consensus (default: 20) |
-| `--ivar_consensus_m` | minimum depth to call consensus (default: 5) |
 
-## Usage notes
-- Samplesheet example: `assets/samplesheet.csv`
-- You can create a samplesheet using the bundled python script: `python bin/fastq_dir_samplesheet.py fastq_dir samplesheet_name.csv`
-- Memory and CPU usage for pipeline processes can be adjusted in `conf/base.config`
-- Process arguments can be adjusted in `conf/modules.config`
-- You can use your own reference(s) for consensus genome assembly by specifying the `--db` parameter followed by your fasta file. 
-	- reference header format: `>reference_accession reference_tag reference_header_info`
-	- it's important to tag the fasta sequences for the same species or gene segments with the same name or abbreviation in the header section, otherwise the pipeline
-	will generate a consensus genome for every reference where the median coverage of the first alignment exceed the specified threshold (default 3).  
-	- Revica works with segmented viral genomes, just keep the different gene segments separated and tag them in the reference fasta file
-- If you are using Docker on Linux, check out these [post-installation steps](https://docs.docker.com/engine/install/linux-postinstall/) (especially cgroup swap limit capabilities support) for configuring Linux to work better with Docker. 
-- By default, Docker has full access to full RAM and CPU resources of the host, but if you are using MacOS, go to Settings -> Resources in Docker Desktop to make sure enough resources are allocated to docker containers. 
+### Reference database
+The reference database used for selecting sequences to guide scaffolding is the same as in our reference-based assembly pipeline, [revica-strm](https://github.com/greninger-lab/revica-strm). It's comprised of multiple representatives of a variety of respiratory virus species such as enterovirus, seasonal coronavirus, SARS-CoV2, parainfluenza, measles, influenza, and more. Inspect `assets/ref.fa` if curious. If you intend to use your own database, ensure the fasta headers are structured as follows:   
+
+```ACCESSION<SPACE>REF_TAG<SPACE>SAMPLE_HEADER```   
+
+where REF_TAG should be unique to a species-specific segment/genome. Take these entries for Flu A segments PB1 and NS1, and an enterovirus genome, for example:
+
+```
+>NC_007364.1 fluA_NS1 Influenza A virus (A/goose/Guangdong/1/1996(H5N1)) segment 8, complete sequence
+>NC_007375.1 fluA_PB1 Influenza A virus (A/Korea/426/1968(H2N2)) segment 2, complete sequence
+>AF406813.1 EV Porcine enterovirus 8 strain V13, complete genome
+```
+You can specify your own reference database with `--db $REF_DB`.
+
+
 
 ## Contact
 For bug reports, please raise an issue.
