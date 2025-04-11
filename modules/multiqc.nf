@@ -1,5 +1,5 @@
 process MULTIQC {
-    container 'quay.io/staphb/multiqc:1.22.3'
+    container 'quay.io/staphb/multiqc:1.27.1'
     tag "OUTDIR: ${output_dir}"
     label = 'process_high' 
 
