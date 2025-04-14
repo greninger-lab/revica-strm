@@ -99,18 +99,18 @@ def confirm_samplesheet(fastq_map):
 
 def confirm_profile(profile_setting):
     if not profile_setting:
-        response = input("-profile is unset; this means that you'll run the pipeline locally, without using docker for dependencies. Is this what you want? [y/n]")
+        r_text = "-profile is unset; this means that you'll run the pipeline locally, without using docker for dependencies. Is this what you want? [y/n]"
     elif profile_setting == "docker":
-        response = input("-profile is set to use docker; Is this what you want? [y/n]")
+        r_text = "-profile is set to use docker; Is this what you want? [y/n]"
     else:
-        print("-profile is not set to anything recognizable: either set it to 'docker' or don't use it. Exiting...")
+        r_text = "-profile is not set to anything recognizable: either set it to 'docker' or don't use it. Exiting..."
         exit(1)
 
     while True:
-        r = response.strip().lower()
-        if r in ['yes', 'y']:
+        response = input(r_text).strip().lower()
+        if response in ['yes', 'y']:
             return True
-        elif r in ['no', 'n']:
+        elif response in ['no', 'n']:
             sys.exit(0)
         else:
             print("Please enter 'yes' or 'no'")
@@ -159,7 +159,7 @@ if __name__ == "__main__":
     confirm_profile(args.profile)
 
     try:
-        subprocess.run(['nextflow', 'run', 'main.nf', '--input', 'samplesheet.csv'] + extra)
+        subprocess.run(['nextflow', 'run', 'greninger-lab/revica-strm', '-r', 'main', '-latest', '--input', 'samplesheet.csv'] + extra)
     except KeyboardInterrupt:
         print("Abort signal recieved! Killing nextflow run...")
 
