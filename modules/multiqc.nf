@@ -9,7 +9,8 @@ process MULTIQC {
     path(fastp_files)
 
     output:
-    path "./${run_name}_multiqc.html", emit: report
+    path "${run_name}_multiqc.html", emit: report
+
     """
     echo "FastP files:"
     echo "${fastp_files}"
