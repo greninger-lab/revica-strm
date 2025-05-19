@@ -100,7 +100,7 @@ To use this, run revica-strm with the `--run-kraken2` and `--kraken2_variants_ho
 >To create a database we recommend for removal of human reads, see [these instructions](making_kraken2_human_db.md).
 
 ### Reference database
-The reference database used for selecting sequences to guide scaffolding is the same as in our reference-based assembly pipeline, [revica-strm](https://github.com/greninger-lab/revica-strm). It's comprised of multiple representatives of a variety of respiratory virus species such as enterovirus, seasonal coronavirus, SARS-CoV2, parainfluenza, measles, influenza, and more. Inspect `assets/ref.fa` if curious. If you intend to use your own database, ensure the fasta headers are structured as follows:   
+The reference database is comprised of multiple representatives of a variety of respiratory virus species such as enterovirus, seasonal coronavirus, SARS-CoV2, parainfluenza, measles, influenza, and more. Inspect `assets/ref.fa` if curious. If you intend to use your own database, ensure the fasta headers are structured as follows:   
 
 ```ACCESSION<SPACE>REF_TAG<SPACE>SAMPLE_HEADER```   
 
