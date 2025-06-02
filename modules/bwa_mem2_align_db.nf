@@ -36,7 +36,7 @@ process BWA_MEM2_ALIGN_DB {
 
     ## run pandepth to get coverage/depth reporting
     pandepth -i ${prefix}.bam -o ${prefix} -t ${task.cpus}
-    gunzip ${prefix}.chr.stat.gz
+    gunzip -f ${prefix}.chr.stat.gz
 
     ## replace abbreviated ref names in pandepth with originals from db
     ## we do this because BWA_MEM only records the alignment ref before the first space, which is
