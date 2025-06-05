@@ -1,7 +1,7 @@
 process IVAR_CONSENSUS {
     tag "${meta.id}_${ref_info.acc}_${ref_info.tag}"
     label 'process_high'
-    // container 'quay.io/biocontainers/ivar:1.4--h6b7c446_1'
+    container 'quay.io/biocontainers/ivar:1.4--h6b7c446_1'
 
     input:
     tuple val(meta), val(ref_info), path(bam), path(bai)
@@ -27,8 +27,11 @@ process IVAR_CONSENSUS {
         exit 0 # shouldn't cause fail if the outputs are optional
     fi
 
-    samtools faidx $ref
-    viggo $bam -a -A -Q 0 -f $ref \\
+    samtools \\
+        mpileup \\
+        --reference $ref \\
+        $args2 \\
+        $bam \\
         | ivar \\
             consensus \\
             $args \\
