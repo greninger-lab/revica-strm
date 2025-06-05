@@ -159,7 +159,7 @@ if __name__ == "__main__":
     confirm_profile(args.profile)
 
     try:
-        subprocess.run(['nextflow', 'run', 'main.nf', '--input', 'samplesheet.csv'] + extra)
+        subprocess.run(['nextflow', 'run', 'greninger-lab/revica-strm', '-r',  'main', '-latest', '--input', 'samplesheet.csv'] + extra)
     except KeyboardInterrupt:
         print("Abort signal recieved! Killing nextflow run...")
 
