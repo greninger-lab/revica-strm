@@ -85,7 +85,7 @@ def confirm_samplesheet(fastq_map):
     print("=======================================")
     for sample, row in fastq_map.items():
         r = [sample] + row
-        print(f"{"\t".join(r)}\r")
+        print("\t".join(r))
     print("")
 
     while True:
