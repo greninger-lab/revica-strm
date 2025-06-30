@@ -38,6 +38,7 @@ process BWA_MEM2_ALIGN {
 
     ## run bwa-mem2 
     bwa-mem2 mem \
+        -B 20 \
         $ref \
         $input \
         -t $task.cpus \
@@ -58,8 +59,9 @@ process BWA_MEM2_ALIGN {
     # Check if thresholds are met
     if [ "\$(echo "\$coverage >= $min_coverage" | bc)" -eq 1 ] && [ "\$(echo "\$mean_depth >= $min_depth" | bc)" -eq 1 ]; then
         echo "alignment thresholds met!"
-        samtools view -b -F \$FLAG -@ ${task.cpus} "${prefix}.bam" -o "${prefix}_mapped.bam"
-        samtools sort -@ ${task.cpus} -o "${prefix}.sorted.bam" "${prefix}_mapped.bam"
+        #samtools view -b -F \$FLAG -@ ${task.cpus} "${prefix}.bam" -o "${prefix}_mapped.bam"
+        #samtools sort -@ ${task.cpus} -o "${prefix}.sorted.bam" "${prefix}_mapped.bam"
+        samtools sort -@ ${task.cpus} -o "${prefix}.sorted.bam" "${prefix}.bam"
         samtools index -@ ${task.cpus} "${prefix}.sorted.bam"
     else
         echo "alignment failed to meet thresholds! Depth: \$mean_depth, Coverage: \$coverage"
