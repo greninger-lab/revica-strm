@@ -116,4 +116,4 @@ You can specify your own reference database with `--db $REF_DB`.
 
 
 ## Contact
-For bug reports, please raise an issue.
+For bug reports, please raise an issue or contact me via the links in my [profile](https://github.com/epiliper/):
