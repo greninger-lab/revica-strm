@@ -38,7 +38,7 @@ revica-strm {B_BLUE}INPUT_DIR{CLR} (other options)
 
 {header("Runtime")}
 -profile            {ARG_TEXT}      Use with "docker" to run the pipeline with docker (avoids having to download all software used)
--c                  {ARG_PATH}      A nextflow .config file, used for overriding runtime args or specifying details for a run on a cloud provider
+-c                  {ARG_PATH}      Path to nextflow .config file
 
 {header("FASTP")}
 --skip_fastp        {ARG_FLAG}      Skip fastp preprocessing step
@@ -54,24 +54,24 @@ revica-strm {B_BLUE}INPUT_DIR{CLR} (other options)
 --kraken2_db        {ARG_PATH}      Path to Kraken2 database (default: uses pipeline's kraken2_db)
 
 {header("Subsampling")}
---sample            {ARG_INT}       Use SEQTK to subsample reads to the number specified
---save_sample_reads {ARG_FLAG}      Save the subsampled reads in the output direcotry.
+--sample            {ARG_INT}       Use SEQTK to subsample reads to the number specified (default: off)
+--save_sample_reads {ARG_FLAG}      Save the subsampled reads in the output directory.
 
 {header("Reference selection thresholds")}
---ref_min_depth     {ARG_INT}       The minimum depth an alignment against a reference must have to qualify for assembly
---ref_min_cov       {ARG_INT}       The minimum coverage (in percent) an alignment against a reference to qualify for assembly
+--ref_min_depth     {ARG_INT}       The minimum depth an alignment against a reference must have to qualify for assembly (default: 3)
+--ref_min_cov       {ARG_INT}       The minimum coverage (in percent) an alignment against a reference to qualify for assembly (default: 30)
 
 {header("Assembly construction thresholds")}
---cons_init_min_depth   {ARG_INT}   The minimum depth of an alignment against the initial consensus to continue construction
---cons_init_min_cov     {ARG_INT}   The minimum coverage of an alignment against the initial consensus to continue construction
+--cons_init_min_depth   {ARG_INT}   The minimum depth of an alignment against the initial consensus to continue construction (default: 5)
+  --cons_init_min_cov     {ARG_INT}   The minimum coverage of an alignment against the initial consensus to continue construction (default: 60)
 
---ivar_init_t       {ARG_DECIMAL}   The ambiguity threshold for iVar consensus when creating the initial consensus
---ivar_init_t       {ARG_INT}       The minimum mapping quality a read must have to be used during consensus construction
---var_init_m        {ARG_INT}       The minimum depth at an alignment base; if below this, base is marked as "N"
+--ivar_init_t       {ARG_DECIMAL}   The ambiguity threshold for iVar consensus when creating the initial consensus (default: 0.6)
+--ivar_init_t       {ARG_INT}       The minimum mapping quality a read must have to be used during consensus construction (default: 20)
+--var_init_m        {ARG_INT}       The minimum depth at an alignment base; if below this, base is marked as "N" (default: 1)
 
---ivar_fin_t        {ARG_DECIMAL}   The ambiguity threshold for iVar consensus when creating the final consensus
---ivar_fin_t        {ARG_INT}       The minimum mapping quality a read must have to be used during consensus construction
---var_fin_m         {ARG_INT}       The minimum depth at an alignment base; if below this, base is marked as "N"
+--ivar_fin_t        {ARG_DECIMAL}   The ambiguity threshold for iVar consensus when creating the final consensus (default: 0.4)
+--ivar_fin_t        {ARG_INT}       The minimum mapping quality a read must have to be used during consensus construction (default: 20)
+--var_fin_m         {ARG_INT}       The minimum depth at an alignment base; if below this, base is marked as "N" (default: 3)
 
 {header("Compute resources")}
 --max_cpus          {ARG_INT}       Maximum CPUs to use (default: 128)
@@ -158,6 +158,18 @@ def make_samplesheet(dir, samplesheet_name = "samplesheet.csv", sep = ","):
         for sample, fastqs in fastq_map.items():
             _ = outf.write(f"{sample}{sep}{sep.join(fastqs)}\n")
 
+
+def check_commit_history():
+    output = subprocess.run(["nextflow", "pull", "greninger-lab/revica-strm"], stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
+    if "contains uncommitted changes" in str(output.stdout):
+        print(output.stdout.decode("utf-8"))
+        print(f"{B_RED}This is a routine error. To correct this, please run:{CLR}")
+        print("rm -r $HOME/.nextflow/assets/revica-strm/")
+        print("And confirm deletion of all files (this clears nextflow's cache.)")
+        sys.exit(0)
+    else:
+        print(f"{B_GREEN}Commit history clean. Proceeding...{CLR}")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=False, exit_on_error=False)
     _ = parser.add_argument("input", help = argparse.SUPPRESS)
@@ -195,6 +207,7 @@ if __name__ == "__main__":
         run_cmd = ['nextflow', 'run', 'main.nf', '--input', 'samplesheet.csv'] + extra
     else:
         print(f"Running pipeline (most recent commit on branch {args.branch})")
+        check_commit_history()
         run_cmd = ['nextflow', 'run', 'greninger-lab/revica-strm', '-r',  args.branch, '-latest', '--input', 'samplesheet.csv'] + extra
 
     exc_path = os.path.dirname(__file__)
