@@ -15,11 +15,13 @@ B_RED = "\033[1;31m"
 B_BLUE = "\033[1;34m"
 B_MAGENTA = "\033[1;35m"
 CLR = "\033[0m"
+BROWN = "\033[0;33m"
 
 ARG_TEXT=f"{B_MAGENTA}TEXT{CLR}"
 ARG_PATH=f"{B_YELLOW}PATH{CLR}"
 ARG_INT=f"{B_BLUE}INT{CLR}"
 ARG_FLAG=f"{B_RED}FLAG{CLR}"
+ARG_DECIMAL=f"{BROWN}DECIMAL{CLR}"
 
 HELP = f"""
 revica-strm - reference-based assembly of viral genomes
@@ -51,10 +53,34 @@ revica-strm {B_BLUE}INPUT_DIR{CLR} (other options)
 --run_kraken2       {ARG_FLAG}      Use kraken2 to process only unclassified reads (should be paired with a human kraken2 database)
 --kraken2_db        {ARG_PATH}      Path to Kraken2 database (default: uses pipeline's kraken2_db)
 
+{header("Subsampling")}
+--sample            {ARG_INT}       Use SEQTK to subsample reads to the number specified
+--save_sample_reads {ARG_FLAG}      Save the subsampled reads in the output direcotry.
+
+{header("Reference selection thresholds")}
+--ref_min_depth     {ARG_INT}       The minimum depth an alignment against a reference must have to qualify for assembly
+--ref_min_cov       {ARG_INT}       The minimum coverage (in percent) an alignment against a reference to qualify for assembly
+
+{header("Assembly construction thresholds")}
+--cons_init_min_depth   {ARG_INT}   The minimum depth of an alignment against the initial consensus to continue construction
+--cons_init_min_cov     {ARG_INT}   The minimum coverage of an alignment against the initial consensus to continue construction
+
+--ivar_init_t       {ARG_DECIMAL}   The ambiguity threshold for iVar consensus when creating the initial consensus
+--ivar_init_t       {ARG_INT}       The minimum mapping quality a read must have to be used during consensus construction
+--var_init_m        {ARG_INT}       The minimum depth at an alignment base; if below this, base is marked as "N"
+
+--ivar_fin_t        {ARG_DECIMAL}   The ambiguity threshold for iVar consensus when creating the final consensus
+--ivar_fin_t        {ARG_INT}       The minimum mapping quality a read must have to be used during consensus construction
+--var_fin_m         {ARG_INT}       The minimum depth at an alignment base; if below this, base is marked as "N"
+
 {header("Compute resources")}
 --max_cpus          {ARG_INT}       Maximum CPUs to use (default: 128)
 --max_memory        {ARG_TEXT}      Maximum memory to use (default: '256.GB')
 --max_time          {ARG_TEXT}      Maximum run time (default: '48.h')
+
+{header("Misc")}
+--branch            {ARG_TEXT}      The branch of the pipeline to use. Default (and stable): main. Unstable branch: staging.
+--local             {ARG_FLAG}      Run the downloaded pipeline, expected to be in the current directory. Not recommended.
 """
 
 def make_fastq_map(dir):
@@ -137,7 +163,9 @@ if __name__ == "__main__":
     _ = parser.add_argument("input", help = argparse.SUPPRESS)
     _ = parser.add_argument("-profile", required=False, default=None, help = argparse.SUPPRESS)
     _ = parser.add_argument("--print_log", action="store_true", help = argparse.SUPPRESS)
+    _ = parser.add_argument("--branch", default="main", choices=["main", "staging"], help = argparse.SUPPRESS)
     _ = parser.add_argument("-h", "--help", action="store_true", help = argparse.SUPPRESS)
+    _ = parser.add_argument("--local", action="store_true", help = argparse.SUPPRESS)
 
     try:
         args, extra = parser.parse_known_args()
@@ -158,9 +186,22 @@ if __name__ == "__main__":
     make_samplesheet(args.input)
     confirm_profile(args.profile)
 
+    if args.local:
+        if not os.path.exists('main.nf'):
+            print("Cannot find main.nf in current run directory (pipeline is not downloaded. Exiting...)")
+            exit(1)
+
+        print("Running pipeline locally...")
+        run_cmd = ['nextflow', 'run', 'main.nf', '--input', 'samplesheet.csv'] + extra
+    else:
+        print(f"Running pipeline (most recent commit on branch {args.branch})")
+        run_cmd = ['nextflow', 'run', 'greninger-lab/revica-strm', '-r',  args.branch, '-latest', '--input', 'samplesheet.csv'] + extra
+
+    exc_path = os.path.dirname(__file__)
     try:
-        subprocess.run(['nextflow', 'run', 'greninger-lab/revica-strm', '-r',  'main', '-latest', '--input', 'samplesheet.csv'] + extra)
+        subprocess.run(run_cmd)
     except KeyboardInterrupt:
         print("Abort signal recieved! Killing nextflow run...")
+        sys.exit(1)
 
     sys.exit(0)
