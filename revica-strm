@@ -5,6 +5,18 @@ import subprocess
 import sys
 from collections import defaultdict
 import os
+import signal
+
+DIV_LEN = min(os.get_terminal_size()[0], 100)
+
+def print_divider(color):
+    print(f"\n{color}{"".join(["="] * DIV_LEN)}{CLR}\n")
+
+def print_title(title, color):
+    n = DIV_LEN - (len(title) + 2)
+    n, d = n // 2, n % 2
+    l, r = n + d, n
+    print(f"\n{color}{"".join(l * ["="])} {title} {"".join(r * ["="])}{CLR}")
 
 def header(s):
     return f"{B_GREEN}{s}{CLR}"
@@ -195,9 +207,12 @@ if __name__ == "__main__":
 
     extra = extra + profile + print_log
 
+    print_title("RUN SETUP", B_YELLOW)
     make_samplesheet(args.input)
     confirm_profile(args.profile)
+    print_divider(B_YELLOW)
 
+    print_title("RUN LOAD", B_BLUE)
     if args.local:
         if not os.path.exists('main.nf'):
             print("Cannot find main.nf in current run directory (pipeline is not downloaded. Exiting...)")
@@ -211,10 +226,19 @@ if __name__ == "__main__":
         run_cmd = ['nextflow', 'run', 'greninger-lab/revica-strm', '-r',  args.branch, '-latest', '--input', 'samplesheet.csv'] + extra
 
     exc_path = os.path.dirname(__file__)
+    print_divider(B_BLUE)
+
+    print_title("RUN BEGIN", B_GREEN)
+
     try:
-        subprocess.run(run_cmd)
+        p = subprocess.Popen(run_cmd)
+        p.wait()
     except KeyboardInterrupt:
         print("Abort signal recieved! Killing nextflow run...")
+        p.send_signal(signal.SIGINT)
+        p.send_signal(signal.SIGINT) # sending twice since nextflow wants to confirm
+        p.wait()
         sys.exit(1)
 
+    print_divider(B_GREEN)
     sys.exit(0)
