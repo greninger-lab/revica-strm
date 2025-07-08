@@ -176,8 +176,8 @@ def check_commit_history():
     if "contains uncommitted changes" in str(output.stdout):
         print(output.stdout.decode("utf-8"))
         print(f"{B_RED}This is a routine error. To correct this, please run:{CLR}")
-        print("rm -r $HOME/.nextflow/assets/revica-strm/")
-        print("And confirm deletion of all files (this clears nextflow's cache.)")
+        print("rm -r $HOME/.nextflow/assets/greninger-lab/revica-strm/")
+        print("And confirm deletion of all files (this clears nextflow's cache).")
         sys.exit(0)
     else:
         print(f"{B_GREEN}Commit history clean. Proceeding...{CLR}")
