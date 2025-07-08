@@ -1,7 +1,8 @@
 process MULTIQC {
-    container 'quay.io/staphb/multiqc:1.27.1'
+    container 'quay.io/biocontainers/multiqc:1.28--pyhdfd78af_0 '
     tag "OUTDIR: ${output_dir}"
     label = 'process_high' 
+    errorStrategy = 'ignore'
 
     input:
     val run_name
@@ -17,7 +18,7 @@ process MULTIQC {
     
     multiqc -f \\
         -o . \\
-        -n "${run_name}_multiqc.html" \\
+        -n ${run_name}_multiqc.html \\
         -m fastp \\
         ${fastp_files}
     """
