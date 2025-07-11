@@ -13,8 +13,8 @@ revica-strm is a reference-based viral consensus genome assembly pipeline for so
 - Human respiratory syncytial virus (HRSV)
 - Human parainfluenza virus (HPIV)
 - Measles morbillivirus (MeV)
-- Influenza A virus (IAV)
-- Influenza B virus (IBV)
+- Influenza A virus (FluA)
+- Influenza B virus (FluB)
 - Human adenovirus (HAdV)
 - SARS-CoV-2
 
