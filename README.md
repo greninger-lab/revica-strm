@@ -45,9 +45,10 @@ This repository includes two example reference databases usable for assembly:
 
 ## Installation
 
-1. download the latest `revica-strm` run script by running this command:
+1. download the latest `revica-strm` run script and make it executable by running this command:
 ```
 wget https://raw.githubusercontent.com/greninger-lab/revica-strm/refs/heads/main/revica-strm
+chmod +x revica-strm
 ```
 
 For convenience, it's recommended to move this file to somewhere in your `$PATH`, so you can run it from other directories via `revica-strm`. Otherwise, you'll have to run it with `./revica-strm`, or the absolute path to the file.
