@@ -108,7 +108,8 @@ workflow {
                 )
 
         BAM_TO_FASTQ(
-            CONSENSUS_ASSEMBLY.out.bam
+            CONSENSUS_ASSEMBLY.out.bam,
+            params.unpaired_sra
         )
 
         ch_summary_in = FASTQ_TRIM_FASTP_MULTIQC.out.trim_log

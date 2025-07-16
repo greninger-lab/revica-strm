@@ -6,12 +6,18 @@ process BAM_TO_FASTQ {
 
     input:
     tuple val(meta), val(ref_info), path(bam), path(bai)
+    val include_unpaired
 
     output:
     path "*_SRA.fastq.gz", optional: true, emit: fastq
 
     script:
     def prefix = task.ext.prefix ?: ''
+
+    // if single end or include unpaired, output everything to a single fastq file
+    // otherwise, if paired end and not including unpaired, output to -1 and -2.
+    def output = !meta.single_end && !include_unpaired ? "-1 ${prefix}_SRA_1.fastq.gz -2 ${prefix}_SRA_1.fastq.gz -s ${prefix}_unpaired.fastq.gz" : " -0 ${prefix}_SRA.fastq.gz -s ${prefix}_SRA.fastq.gz"
+
 
     """
     if [[ \$(basename "$bam") = "FAILED.sorted.bam" ]]; then
@@ -22,7 +28,7 @@ process BAM_TO_FASTQ {
     samtools fastq \\
     $bam \\
     -F 4 \\
-    -o "${prefix}_SRA.fastq.gz" \\
+    $output \\
     -N \\
     -@ ${task.cpus}
     """
