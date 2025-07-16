@@ -10,7 +10,8 @@ ARG IVAR_VERSION=1.3.1
 ARG SEQTK_VERSION=1.3
 ARG PANDEPTH_VERSION=2.25
 
-ARG BWA_MEM2_VERSION=2.2.1
+ARG BWA_MEM_VERSION=2.2.1
+ARG BWA_VERSION=0.7.19
 
 ENV DEBIAN_FRONTEND=noninteractive 
 ENV PATH=$PATH:/opt/bbmap
@@ -30,45 +31,31 @@ RUN cd /tmp \
     && ./configure \
     && make \
     && make install
-
 # ---------- 
-# Bcftools
-RUN cd /tmp \
-    && wget https://github.com/samtools/bcftools/releases/download/${BCFTOOLS_VERSION}/bcftools-${BCFTOOLS_VERSION}.tar.bz2 \
-    && tar xjvf bcftools-${BCFTOOLS_VERSION}.tar.bz2 \
-    && cd bcftools-${BCFTOOLS_VERSION} \
-    && ./configure \
-    && make \
-    && make install
 
-# ---------- 
 # Trimmomatic
 RUN cd /tmp \
     && wget http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmomatic-${TRIMMOMATIC_VERSION}.zip \
     && unzip Trimmomatic-${TRIMMOMATIC_VERSION}.zip \
     && mv Trimmomatic-${TRIMMOMATIC_VERSION}/trimmomatic-${TRIMMOMATIC_VERSION}.jar /usr/local/bin/trimmomatic.jar
+#---------- 
 
-# ---------- 
 # BWA-MEM2
 RUN cd /tmp \
-    && wget https://github.com/bwa-mem2/bwa-mem2/releases/download/v${BWA_MEM2_VERSION}/bwa-mem2-${BWA_MEM2_VERSION}_x64-linux.tar.bz2 \
-    && tar jxf bwa-mem2-${BWA_MEM2_VERSION}_x64-linux.tar.bz2 \
+    && wget https://github.com/bwa-mem2/bwa-mem2/releases/download/v${BWA_MEM_VERSION}/bwa-mem2-${BWA_MEM_VERSION}_x64-linux.tar.bz2 \
+    && tar jxf bwa-mem2-${BWA_MEM_VERSION}_x64-linux.tar.bz2 \
     && mv bwa-mem2-2.2.1_x64-linux/* /usr/local/bin/
+#---------- 
 
-# ---------- 
-# Picard
+# BWA 
 RUN cd /tmp \
-    && wget https://github.com/broadinstitute/picard/releases/download/${PICARD_VERSION}/picard.jar \
-    && mv picard.jar /usr/local/bin
+    && wget https://github.com/lh3/bwa/archive/refs/tags/v${BWA_VERSION}.tar.gz \
+    && tar -xvzf v${BWA_VERSION}.tar.gz \
+    && ls \
+    && cd bwa-${BWA_VERSION} && make \
+    && mv bwa /usr/local/bin/
+#---------- 
 
-# ---------- 
-# Seqkit
-RUN cd /tmp \
-    && wget https://github.com/shenwei356/seqkit/releases/download/v${SEQKIT_VERSION}/seqkit_linux_amd64.tar.gz \
-    && tar xzvf seqkit_linux_amd64.tar.gz \
-    && mv seqkit /usr/local/bin
-
-# ---------- 
 # iVar and HTSLib
 RUN cd /tmp \
     && wget https://github.com/samtools/htslib/releases/download/${HTSLIB_VERSION}/htslib-${HTSLIB_VERSION}.tar.bz2 \
@@ -85,25 +72,16 @@ RUN cd /tmp \
     && ./configure \
     && make \
     && make install
-
-# ---------- 
-# Seqtk
-RUN cd /tmp \
-    && wget https://github.com/lh3/seqtk/archive/refs/tags/v${SEQTK_VERSION}.tar.gz \ 
-    && tar xzvf v${SEQTK_VERSION}.tar.gz \ 
-    && cd seqtk-${SEQTK_VERSION} \ 
-    && make \
-    && mv seqtk /usr/local/bin
-
 #----------
+
 #PanDepth
 RUN cd /tmp \
     && wget https://github.com/HuiyangYu/PanDepth/releases/download/v${PANDEPTH_VERSION}/PanDepth-${PANDEPTH_VERSION}-Linux-x86_64.tar.gz \
     && tar zvxf PanDepth-${PANDEPTH_VERSION}-Linux-x86_64.tar.gz \
     && cd PanDepth-${PANDEPTH_VERSION}-Linux-x86_64 \
     && mv pandepth /usr/local/bin
-
 # ----------
+
 # Clean up
 RUN apt autoremove -y wget libncurses5-dev bzip2 gcc g++ make zlib1g-dev libbz2-dev liblzma-dev unzip autoconf \
     && rm -rf /var/lib/apt/lists/* /tmp/*

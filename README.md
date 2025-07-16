@@ -2,7 +2,9 @@
 
 strm = streamlined
 
-This is a fork of the [original REVICA](https://github.com/greninger-lab/revica), meant for faster assembly of viral genomes from short-read sequencing data. It uses the newer BWA-MEM2 aligner and employs additional assembly quality checks to provide higher-quality consensus genomes, while striving to make output files and reporting more concise and informative.
+This is a fork of the [original REVICA](https://github.com/greninger-lab/revica), meant for faster assembly of viral genomes from short-read sequencing data. It uses the BWA MEM aligner and employs additional assembly quality checks to provide higher-quality consensus genomes, while striving to make output files and reporting more concise and informative.
+
+**Update 2025 July 16**: BWA MEM is now the default aligner used, due to [this issue](https://github.com/bwa-mem2/bwa-mem2/issues/262) with BWA MEM2. To use BWA MEM2, pass the `--use_mem2` option.
 
 ---
 
@@ -113,7 +115,6 @@ where REF_TAG should be unique to a species-specific segment/genome. Take these 
 >AF406813.1 EV Porcine enterovirus 8 strain V13, complete genome
 ```
 You can specify your own reference database with `--db $REF_DB`.
-
 
 
 ## Contact

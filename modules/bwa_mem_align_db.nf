@@ -1,12 +1,13 @@
-process BWA_MEM2_ALIGN_DB {
+process BWA_MEM_ALIGN_DB {
     tag "$meta.id"
     label 'process_high'
-    container 'quay.io/epil02/revica-strm:0.0.4'
+    container 'quay.io/epil02/revica-strm:0.0.5'
 
 
     input:
     tuple val(meta), path(fastq)
     tuple path(db), path(db_indexed)
+    val use_mem2
 
     output:
     tuple val(meta), path("*covstats.tsv"), emit: covstats
@@ -18,6 +19,7 @@ process BWA_MEM2_ALIGN_DB {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def input = meta.single_end ? "$fastq" : "${fastq[0]} ${fastq[1]}"
+    def bwa = use_mem2 ? "bwa-mem2" : "bwa"
 
     """
     # this flag combines 0x4 and 0x800, which means:
@@ -27,7 +29,7 @@ process BWA_MEM2_ALIGN_DB {
     FLAG=2052
 
     ## run bwa-mem2 
-    bwa-mem2 mem \
+    $bwa mem \
         $db \
         $input \
         -t $task.cpus \

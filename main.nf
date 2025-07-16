@@ -99,12 +99,14 @@ workflow {
     if (!params.skip_consensus) { 
         REFERENCE_PREP (
                 ch_ref_prep_input,
-                file(params.db)
+                file(params.db),
+                params.use_mem2
                 ) 
 
         CONSENSUS_ASSEMBLY (
                 REFERENCE_PREP.out.reads,
                 REFERENCE_PREP.out.ref,
+                params.use_mem2
                 )
 
         BAM_TO_FASTQ(

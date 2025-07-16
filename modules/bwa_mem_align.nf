@@ -1,11 +1,12 @@
-process BWA_MEM2_ALIGN {
+process BWA_MEM_ALIGN {
     tag "${meta.id}_${ref_info.acc}_${ref_info.tag}"
     label 'process_high'
-    container 'quay.io/epil02/revica-strm:0.0.4'
+    container 'quay.io/epil02/revica-strm:0.0.5'
 
     input:
     tuple val(meta), path(fastq)
     tuple val(meta), val(ref_info), path(ref)
+    val use_mem2
 
     output:
     tuple val(meta), val(ref_info), path("*.sorted.bam"), path("*.sorted.bam.bai"), emit: bam
@@ -25,6 +26,7 @@ process BWA_MEM2_ALIGN {
 
     def min_coverage = task.ext.min_coverage
     def min_depth = task.ext.min_depth
+    def bwa = use_mem2 ? "bwa-mem2" : "bwa"
 
     // this currently only supports ref paths to a fasta file, not a directory or subdirectory
     """
@@ -34,11 +36,10 @@ process BWA_MEM2_ALIGN {
     # we can't let these reads survive.
     FLAG=2052
 
-    bwa-mem2 index $ref
+    $bwa index $ref
 
-    ## run bwa-mem2 
-    bwa-mem2 mem \
-        -B 20 \
+    ## run bwa
+    $bwa mem \
         $ref \
         $input \
         -t $task.cpus \

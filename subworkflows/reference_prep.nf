@@ -6,8 +6,8 @@
 // for downstream alignment and consensus assembly processes.
 //
 
-include { BWA_MEM2_INDEX        } from '../modules/bwa_mem2_index' 
-include { BWA_MEM2_ALIGN_DB     } from '../modules/bwa_mem2_align_db'
+include { BWA_MEM_INDEX        } from '../modules/bwa_mem_index' 
+include { BWA_MEM_ALIGN_DB     } from '../modules/bwa_mem_align_db'
 include { SELECT_REFERENCE      } from '../modules/select_reference'                     
 include { MAKE_REFERENCE_FASTA  } from '../modules/make_reference_fasta'
 
@@ -16,20 +16,23 @@ workflow REFERENCE_PREP {
     take:                                                                          
     ch_reads    // channel: [ val(meta), path(reads) ]                  
     db          // path: db
+    use_mem2    // val: use_mem2
                                                                                    
     main:
                                                                                    
-    BWA_MEM2_INDEX (
-        db
+    BWA_MEM_INDEX (
+        db,
+        use_mem2
     )
 
-    BWA_MEM2_ALIGN_DB (
+    BWA_MEM_ALIGN_DB (
         ch_reads,
-        BWA_MEM2_INDEX.out.indexed_fasta
+        BWA_MEM_INDEX.out.indexed_fasta,
+        use_mem2
     )
                                                                                    
     SELECT_REFERENCE (                                                             
-        BWA_MEM2_ALIGN_DB.out.covstats
+        BWA_MEM_ALIGN_DB.out.covstats
     )                                                                              
 
     // Unpack and reformat the list so each item emitted by the channel is

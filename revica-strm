@@ -41,12 +41,13 @@ revica-strm - reference-based assembly of viral genomes
 {header("USAGE:")}
 revica-strm {B_BLUE}INPUT_DIR{CLR} (other options)
 
-{header("Input/output:")}
+{header("General:")}
 {B_BLUE}INPUT_DIR{CLR}           {ARG_PATH}      Input path (should be a directory) with FASTQ/FASTQ.gz files
 --output            {ARG_PATH}      Output directory (default: 'revica-output')
 --run_name          {ARG_TEXT}      Name of the analysis run (default: 'run')
 --refs              {ARG_PATH}      Reference FASTA file (default: uses pipeline's embedded assets/ref.fa)
 --print_log         {ARG_FLAG}      Print pipeline output to screen
+--use_mem2          {ARG_FLAG}      Use BWA-MEM2 instead of the default BWA
 --unpaired_sra      {ARG_FLAG}      Include unpaired reads in SRA paired-end FASTQ files (creates single fastq of R1 and R2)
 
 {header("Runtime")}
