@@ -1,5 +1,5 @@
 process MULTIQC {
-    container 'quay.io/biocontainers/multiqc:1.28--pyhdfd78af_0 '
+    container 'quay.io/biocontainers/multiqc:1.28--pyhdfd78af_0'
     tag "OUTDIR: ${output_dir}"
     label = 'process_high' 
     errorStrategy = 'ignore'
