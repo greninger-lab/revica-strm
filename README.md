@@ -45,35 +45,42 @@ This repository includes two example reference databases usable for assembly:
 ## Workflow
 ![Workflow](revica_workflow_diagram.png)
 
+## Usage
+
+`revica-strm <DIRECTORY WITH FASTQS> -profile docker [OPTIONS]`
+
+Run `revica-strm -h` for option details.
+
 ## Installation
 
-1. download the latest `revica-strm` run script and make it executable by running this command:
-```
+1. Install [Nextflow](https://www.nextflow.io/docs/latest/install.html) if you haven't already
+2. Install [Docker](https://docs.docker.com/desktop/) if you haven't already
+3. download the latest `revica-strm` run script and make it executable by running this command:
+
+```bash
 wget https://raw.githubusercontent.com/greninger-lab/revica-strm/refs/heads/main/revica-strm
 chmod +x revica-strm
+revica-strm
 ```
 
-For convenience, it's recommended to move this file to somewhere in your `$PATH`, so you can run it from other directories via `revica-strm`. Otherwise, you'll have to run it with `./revica-strm`, or the absolute path to the file.
-
-2. Install [Docker](https://docs.docker.com/desktop/) if you haven't already
-3. Install [Nextflow](https://www.nextflow.io/docs/latest/install.html) if you haven't already
+**For convenience, it's recommended to move `revica-strm` to somewhere in your `$PATH`, so you can run it from other directories**. Otherwise, you'll have to run it with something like `eval path/to/revica-strm`. For instructions on adding to `$PATH`, see [here](https://superuser.com/questions/488173/how-can-i-edit-the-path-on-linux).
 
 ## Instructions
 
 1. Ensure the docker desktop client is updated and running
 
-2. Arrange all input fastqs (can be plain .fastq ro compressed .fastq.gz) in their own directory.
+2. Arrange all input FASTQs (can be plain .fastq or compressed .fastq.gz) in their own directory.
 
-##### 🚨 <span style="color: red;">MANDATORY: </span>all fastq files must have unique sample names before the first underscore ('_') character.
+##### 🚨 <span style="color: red;">MANDATORY: </span>all FASTQ files must have unique sample names before the first underscore ('_') character.
 
 RIGHT: ```sample1_R1.fastq.gz sample1_R2.fastq.gz```  
 WRONG: ```sample_1_R1.fastq.gz sample_2_R1.fastq.gz```  
 
 - In the wrong case, sample_1_R1 would get wrongly paired with sample_2_R1.
 - *It's recommended to have the read mate info (e.g. R1, 1) immediately follow the first underscore, after the unique sample name.*
-- if samples do not have underscores, this logic applies to the period ('.') character instead.
+- if sample names do not have underscores, this logic applies to the period ('.') character instead.
 
-3. once you're sure your fastqs are correctly named, run:
+3. once you're sure your FASTQs are correctly named, run:
 
 ```
 revica-strm <fastq_dir> -profile docker --output <out_dir>
@@ -92,7 +99,7 @@ Once the pipeline is done, consensus genomes can be found in `$out_dir/final_fil
 
 ### Running the pipeline with advanced nextflow options
 
-The `devira` script is just a wrapper over the basic `nextflow run` command; it creates a fastq samplesheet from given input directory, and passes other arguments to nextflow itself. You can pass any of the typical nextflow arguments to the `devira` script. This includes the `-c` command to specify advanced options for, as an example, running the pipeline on AWS Batch or other cloud computing environments.
+The `revica-strm` script is just a wrapper over the basic `nextflow run` command; it creates a fastq samplesheet from given input directory, and passes other arguments to `nextflow run` itself. You can pass any of the typical `nextflow run` arguments to the `revica-strm` script. This includes the `-c` command to specify advanced options for, as an example, running the pipeline on AWS Batch or other cloud computing environments.
 
 ### Removing host (human) reads
 Inputs to revica-strm can optionally be filtered with Kraken2 and a user-supplied Kraken2 database. This database should be comprised of host/contaminant genomes desired to be removed from downstream analysis.
