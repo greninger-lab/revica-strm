@@ -9,8 +9,10 @@ import signal
 
 DIV_LEN = min(os.get_terminal_size()[0], 100)
 
+
 def print_divider(color):
     print(f"\n{color}{"".join(["="] * DIV_LEN)}{CLR}\n")
+
 
 def print_title(title, color):
     n = DIV_LEN - (len(title) + 2)
@@ -18,8 +20,10 @@ def print_title(title, color):
     l, r = n + d, n
     print(f"\n{color}{"".join(l * ["="])} {title} {"".join(r * ["="])}{CLR}")
 
+
 def header(s):
     return f"{B_GREEN}{s}{CLR}"
+
 
 B_GREEN = "\033[1;32m"
 B_YELLOW = "\033[1;33m"
@@ -29,11 +33,11 @@ B_MAGENTA = "\033[1;35m"
 CLR = "\033[0m"
 BROWN = "\033[0;33m"
 
-ARG_TEXT=f"{B_MAGENTA}TEXT{CLR}"
-ARG_PATH=f"{B_YELLOW}PATH{CLR}"
-ARG_INT=f"{B_BLUE}INT{CLR}"
-ARG_FLAG=f"{B_RED}FLAG{CLR}"
-ARG_DECIMAL=f"{BROWN}DECIMAL{CLR}"
+ARG_TEXT = f"{B_MAGENTA}TEXT{CLR}"
+ARG_PATH = f"{B_YELLOW}PATH{CLR}"
+ARG_INT = f"{B_BLUE}INT{CLR}"
+ARG_FLAG = f"{B_RED}FLAG{CLR}"
+ARG_DECIMAL = f"{BROWN}DECIMAL{CLR}"
 
 HELP = f"""
 revica-strm - reference-based assembly of viral genomes
@@ -48,7 +52,7 @@ revica-strm {B_BLUE}INPUT_DIR{CLR} (other options)
 --refs              {ARG_PATH}      Reference FASTA file (default: uses pipeline's embedded assets/ref.fa)
 --print_log         {ARG_FLAG}      Print pipeline output to screen
 --use_mem2          {ARG_FLAG}      Use BWA-MEM2 instead of the default BWA
---unpaired_sra      {ARG_FLAG}      Include unpaired reads in SRA paired-end FASTQ files (creates single fastq of R1 and R2)
+--sra_proper_pair   {ARG_FLAG}      Exclude unpaired reads from being exported to SRA fastqs for paired-end alignments. 
 
 {header("Runtime")}
 -profile            {ARG_TEXT}      Use with "docker" to run the pipeline with docker (avoids having to download all software used)
@@ -97,11 +101,15 @@ revica-strm {B_BLUE}INPUT_DIR{CLR} (other options)
 --local             {ARG_FLAG}      Run the downloaded pipeline, expected to be in the current directory. Not recommended.
 """
 
+
 def make_fastq_map(dir):
-    files = [f for f in os.listdir(dir) if f.endswith(".fastq") or f.endswith(".fastq.gz")]
+    files = [
+        f for f in os.listdir(dir) if f.endswith(".fastq") or f.endswith(".fastq.gz")
+    ]
 
     paired_files = find_pairs(dir, files)
     return paired_files
+
 
 def find_pairs(dir, files):
     pairs = defaultdict(list)
@@ -110,7 +118,9 @@ def find_pairs(dir, files):
         pairs[f.split(temp_delim)[0]].append(os.path.join(dir, f))
 
     for pair in pairs.values():
-        assert len(pair) <= 2, f"""
+        assert (
+            len(pair) <= 2
+        ), f"""
         more than 2 files per pair, file names are not unique enough: {pair};
         Ensure that filenames before the first '_' or '.' are unique to the sample.
         """
@@ -119,6 +129,7 @@ def find_pairs(dir, files):
             pair.append("")
 
     return pairs
+
 
 def confirm_samplesheet(fastq_map):
     print("\nsample\tfastq_1\tfastq_2")
@@ -129,13 +140,14 @@ def confirm_samplesheet(fastq_map):
     print("")
 
     while True:
-            response = input("Does the samplesheet look correct? [y/n]").strip().lower()
-            if response in ['yes', 'y']:
-                return True
-            elif response in ['no', 'n']:
-                sys.exit(0)
-            else:
-                print("Please enter 'yes' or 'no'.")
+        response = input("Does the samplesheet look correct? [y/n]").strip().lower()
+        if response in ["yes", "y"]:
+            return True
+        elif response in ["no", "n"]:
+            sys.exit(0)
+        else:
+            print("Please enter 'yes' or 'no'.")
+
 
 def confirm_profile(profile_setting):
     if not profile_setting:
@@ -148,14 +160,15 @@ def confirm_profile(profile_setting):
 
     while True:
         response = input(r_text).strip().lower()
-        if response in ['yes', 'y']:
+        if response in ["yes", "y"]:
             return True
-        elif response in ['no', 'n']:
+        elif response in ["no", "n"]:
             sys.exit(0)
         else:
             print("Please enter 'yes' or 'no'")
 
-def make_samplesheet(dir, samplesheet_name = "samplesheet.csv", sep = ","):
+
+def make_samplesheet(dir, samplesheet_name="samplesheet.csv", sep=","):
     fastq_map = make_fastq_map(dir)
 
     if sep == "," and not samplesheet_name.endswith(".csv"):
@@ -174,7 +187,11 @@ def make_samplesheet(dir, samplesheet_name = "samplesheet.csv", sep = ","):
 
 
 def check_commit_history():
-    output = subprocess.run(["nextflow", "pull", "greninger-lab/revica-strm"], stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
+    output = subprocess.run(
+        ["nextflow", "pull", "greninger-lab/revica-strm"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
     if "contains uncommitted changes" in str(output.stdout):
         print(output.stdout.decode("utf-8"))
         print(f"{B_RED}This is a routine error. To correct this, please run:{CLR}")
@@ -184,14 +201,19 @@ def check_commit_history():
     else:
         print(f"{B_GREEN}Commit history clean. Proceeding...{CLR}")
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=False, exit_on_error=False)
-    _ = parser.add_argument("input", help = argparse.SUPPRESS)
-    _ = parser.add_argument("-profile", required=False, default=None, help = argparse.SUPPRESS)
-    _ = parser.add_argument("--print_log", action="store_true", help = argparse.SUPPRESS)
-    _ = parser.add_argument("--branch", default="main", choices=["main", "staging"], help = argparse.SUPPRESS)
-    _ = parser.add_argument("-h", "--help", action="store_true", help = argparse.SUPPRESS)
-    _ = parser.add_argument("--local", action="store_true", help = argparse.SUPPRESS)
+    _ = parser.add_argument("input", help=argparse.SUPPRESS)
+    _ = parser.add_argument(
+        "-profile", required=False, default=None, help=argparse.SUPPRESS
+    )
+    _ = parser.add_argument("--print_log", action="store_true", help=argparse.SUPPRESS)
+    _ = parser.add_argument(
+        "--branch", default="main", choices=["main", "staging"], help=argparse.SUPPRESS
+    )
+    _ = parser.add_argument("-h", "--help", action="store_true", help=argparse.SUPPRESS)
+    _ = parser.add_argument("--local", action="store_true", help=argparse.SUPPRESS)
 
     try:
         args, extra = parser.parse_known_args()
@@ -216,16 +238,27 @@ if __name__ == "__main__":
 
     print_title("RUN LOAD", B_BLUE)
     if args.local:
-        if not os.path.exists('main.nf'):
-            print("Cannot find main.nf in current run directory (pipeline is not downloaded. Exiting...)")
+        if not os.path.exists("main.nf"):
+            print(
+                "Cannot find main.nf in current run directory (pipeline is not downloaded. Exiting...)"
+            )
             exit(1)
 
         print("Running pipeline locally...")
-        run_cmd = ['nextflow', 'run', 'main.nf', '--input', 'samplesheet.csv'] + extra
+        run_cmd = ["nextflow", "run", "main.nf", "--input", "samplesheet.csv"] + extra
     else:
         print(f"Running pipeline (most recent commit on branch {args.branch})")
         check_commit_history()
-        run_cmd = ['nextflow', 'run', 'greninger-lab/revica-strm', '-r',  args.branch, '-latest', '--input', 'samplesheet.csv'] + extra
+        run_cmd = [
+            "nextflow",
+            "run",
+            "greninger-lab/revica-strm",
+            "-r",
+            args.branch,
+            "-latest",
+            "--input",
+            "samplesheet.csv",
+        ] + extra
 
     exc_path = os.path.dirname(__file__)
     print_divider(B_BLUE)
@@ -238,7 +271,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Abort signal recieved! Killing nextflow run...")
         p.send_signal(signal.SIGINT)
-        p.send_signal(signal.SIGINT) # sending twice since nextflow wants to confirm
+        p.send_signal(signal.SIGINT)  # sending twice since nextflow wants to confirm
         p.wait()
         sys.exit(1)
 

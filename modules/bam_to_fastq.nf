@@ -6,7 +6,7 @@ process BAM_TO_FASTQ {
 
     input:
     tuple val(meta), val(ref_info), path(bam), path(bai)
-    val include_unpaired
+    val sra_proper_pair
 
     output:
     path "*_SRA.fastq.gz", optional: true, emit: fastq
@@ -16,33 +16,28 @@ process BAM_TO_FASTQ {
 
     def output = ""
     def prep = ""
-    def inbam = ""
+    def inbam = "$bam"
+    def cleanup = ""
 
-    // single end, including everything
+    // single end, dump all reads into a single file.
     if (meta.single_end) {
         output = "-0 ${prefix}_SRA.fastq.gz"
-        prep = ""
-        inbam = "$bam"
     }
 
-    // paired end, including everything, change flag
-    if (!include_unpaired & !meta.single_end) {
-        output = "-1 ${prefix}_1_SRA.fastq.gz -2 ${prefix}_2_SRA.fastq.gz"
-        prep = "samtools sort -o ${prefix}_name_sorted.bam -N -@ ${task.cpus} $bam" 
-        inbam = "${prefix}_name_sorted.bam"
+    // paired end, dump all reads into a single file, regardless of proper pairing.
+    if (!sra_proper_pair & !meta.single_end) {
+        output = "-o ${prefix}_SRA.fastq.gz"
     }
 
-    // paired end, include pairs only
-    if (include_unpaired & !meta.single_end) {
-        output = "-1 ${prefix}_1_SRA.fastq.gz -2 ${prefix}_2_SRA.fastq.gz -s ${prefix}_unpaired_SRA.fastq.gz"
+    // paired end, dump only properly-paired reads into a single file.
+    if (sra_proper_pair & !meta.single_end) {
+        output = "-o ${prefix}_SRA.fastq.gz -s /dev/null"
         prep = "samtools sort -o ${prefix}_name_sorted.bam -N -@ ${task.cpus} $bam" 
         inbam = "${prefix}_name_sorted.bam"
+        cleanup = "rm ${prefix}_name_sorted.bam"
     }
 
     """
-
-    echo $output
-    echo $include_unpaired
 
     if [[ \$(basename "$bam") = "FAILED.sorted.bam" ]]; then
         echo "Skipping bam to fastq conversion; alignment with ${prefix} failed depth/coverage previously"
@@ -58,7 +53,7 @@ process BAM_TO_FASTQ {
     -@ ${task.cpus} \\
     $output
 
-    rm -f ${prefix}_name_sorted.bam
+    $cleanup
 
     """
 }
