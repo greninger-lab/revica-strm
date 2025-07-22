@@ -1,6 +1,6 @@
 process BAM_TO_FASTQ {
 
-    container 'quay.io/epil02/revica-strm:0.0.4'
+    container 'quay.io/epil02/revica-strm:0.0.6'
     tag "${meta.id}_${ref_info.acc}_${ref_info.tag}"
     label 'process_high'
 
@@ -14,22 +14,51 @@ process BAM_TO_FASTQ {
     script:
     def prefix = task.ext.prefix ?: ''
 
-    // if single end or include unpaired, output everything to a single fastq file
-    // otherwise, if paired end and not including unpaired, output to -1 and -2.
-    def output = !meta.single_end && !include_unpaired ? "-1 ${prefix}_SRA_1.fastq.gz -2 ${prefix}_SRA_1.fastq.gz -s ${prefix}_unpaired.fastq.gz" : " -0 ${prefix}_SRA.fastq.gz -s ${prefix}_SRA.fastq.gz"
+    def output = ""
+    def prep = ""
+    def inbam = ""
 
+    // single end, including everything
+    if (meta.single_end) {
+        output = "-0 ${prefix}_SRA.fastq.gz"
+        prep = ""
+        inbam = "$bam"
+    }
+
+    // paired end, including everything, change flag
+    if (!include_unpaired & !meta.single_end) {
+        output = "-1 ${prefix}_1_SRA.fastq.gz -2 ${prefix}_2_SRA.fastq.gz"
+        prep = "samtools sort -o ${prefix}_name_sorted.bam -N -@ ${task.cpus} $bam" 
+        inbam = "${prefix}_name_sorted.bam"
+    }
+
+    // paired end, include pairs only
+    if (include_unpaired & !meta.single_end) {
+        output = "-1 ${prefix}_1_SRA.fastq.gz -2 ${prefix}_2_SRA.fastq.gz -s ${prefix}_unpaired_SRA.fastq.gz"
+        prep = "samtools sort -o ${prefix}_name_sorted.bam -N -@ ${task.cpus} $bam" 
+        inbam = "${prefix}_name_sorted.bam"
+    }
 
     """
+
+    echo $output
+    echo $include_unpaired
+
     if [[ \$(basename "$bam") = "FAILED.sorted.bam" ]]; then
         echo "Skipping bam to fastq conversion; alignment with ${prefix} failed depth/coverage previously"
         exit 0 # shouldn't cause fail if the outputs are optional
     fi
 
+    $prep
+
     samtools fastq \\
-    $bam \\
+    $inbam \\
     -F 4 \\
-    $output \\
     -N \\
-    -@ ${task.cpus}
+    -@ ${task.cpus} \\
+    $output
+
+    rm -f ${prefix}_name_sorted.bam
+
     """
 }
