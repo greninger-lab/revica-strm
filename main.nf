@@ -69,6 +69,7 @@ workflow {
                 params.save_trimmed_fail,
                 params.save_merged,
                 params.skip_fastp,
+                params.min_trimmed_reads,
                 )
 
         ch_sample_input = FASTQ_TRIM_FASTP_MULTIQC.out.reads

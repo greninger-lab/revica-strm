@@ -11,11 +11,12 @@ def getFastpReadsAfterFiltering(json_file) {
 workflow FASTQ_TRIM_FASTP_MULTIQC {
 
     take:
-    ch_reads              // channel: [ val(meta), path(reads)  ]
-    ch_adapter_fasta      // channel: [ path(fasta) ]
-    val_save_trimmed_fail // value: boolean
-    val_save_merged       // value: boolean
-    val_skip_fastp        // value: boolean
+    ch_reads                // channel: [ val(meta), path(reads)  ]
+    ch_adapter_fasta        // channel: [ path(fasta) ]
+    val_save_trimmed_fail   // value: boolean
+    val_save_merged         // value: boolean
+    val_skip_fastp          // value: boolean
+    val_min_read_trim_limit // value: int 
 
     main:
     ch_trim_reads        = ch_reads
@@ -43,7 +44,7 @@ workflow FASTQ_TRIM_FASTP_MULTIQC {
         .join(ch_trim_json)
         .map {
             meta, reads, json ->
-                if (getFastpReadsAfterFiltering(json) > 10000 ) {
+                if (getFastpReadsAfterFiltering(json) >= val_min_read_trim_limit ) {
                     [ meta, reads ]
                 }
         }

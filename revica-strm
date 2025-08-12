@@ -53,6 +53,7 @@ revica-strm {B_BLUE}INPUT_DIR{CLR} (other options)
 --print_log         {ARG_FLAG}      Print pipeline output to screen
 --use_mem2          {ARG_FLAG}      Use BWA-MEM2 instead of the default BWA
 --sra_proper_pair   {ARG_FLAG}      Exclude unpaired reads from being exported to SRA fastqs for paired-end alignments. 
+--min_trimmed_reads {ARG_INT}       Exclude samples if they have a read count below this number after trimming.
 
 {header("Runtime")}
 -profile            {ARG_TEXT}      Use with "docker" to run the pipeline with docker (avoids having to download all software used)
