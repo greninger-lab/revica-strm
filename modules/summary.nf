@@ -35,8 +35,8 @@ process SUMMARY {
     pct_reads_mapped_formatted_ref=\$(printf "%.2f" "\${pct_reads_mapped}")
 
     # coverage/depth
-    coverage_ref=\$(awk 'BEGIN {FS="\t"} NR==2 {print \$5}' $init_covstats)
-    mean_depth_ref=\$(awk 'BEGIN {FS="\t"} NR==2 {print \$6}' $init_covstats)
+    coverage_ref=\$(awk 'BEGIN {FS="\t"} NR==2 {print \$6}' $init_covstats)
+    mean_depth_ref=\$(awk 'BEGIN {FS="\t"} NR==2 {print \$7}' $init_covstats)
 
     ##############################
     # ALIGN TO INITIAL CONSENSUS #
@@ -49,8 +49,8 @@ process SUMMARY {
     pct_reads_mapped_formatted_c1=\$(printf "%.2f" "\${pct_reads_mapped}")
 
     # coverage/depth
-    coverage_c1=\$(awk 'BEGIN {FS="\t"} NR==2 {print \$5}' $final_covstats)
-    mean_depth_c1=\$(awk 'BEGIN {FS="\t"} NR==2 {print \$6}' $final_covstats)
+    coverage_c1=\$(awk 'BEGIN {FS="\t"} NR==2 {print \$6}' $final_covstats)
+    mean_depth_c1=\$(awk 'BEGIN {FS="\t"} NR==2 {print \$7}' $final_covstats)
 
     ####################
     # CONSENSUS GENOME #

@@ -43,15 +43,18 @@ process BWA_MEM_ALIGN {
         $ref \
         $input \
         -t $task.cpus \
-        | samtools view -bS -F \$FLAG -@ $task.cpus > ${prefix}.bam
+        | samtools view -bS -F \$FLAG -@ $task.cpus > ${prefix}
 
     # check if alignment is above depth/coverage thresholds
-    pandepth -i ${prefix}.bam -o ${prefix} -t ${task.cpus}
-    gunzip ${prefix}.chr.stat.gz 
+    #pandepth -i ${prefix}.bam -o ${prefix} -t ${task.cpus}
+    #gunzip ${prefix}.chr.stat.gz 
+
+    samtools sort ${prefix} -@ ${task.cpus} -o ${prefix}.bam
+    samtools coverage -d 0 ${prefix}.bam > ${prefix}_depth.tsv
 
     mapped=\$(samtools view -c -F \$FLAG -@ $task.cpus ${prefix}.bam)
 
-    prep_pandepth_output.py ${prefix}.chr.stat $ref ${prefix}_covstats.tsv \\
+    prep_pandepth_output.py ${prefix}_depth.tsv $ref ${prefix}_covstats.tsv \\
         --extra_cols "reads_mapped_${iter}:\$mapped"
 
     coverage=\$(awk 'BEGIN {FS="\t"} NR>1 {print \$5}' "${prefix}_covstats.tsv")

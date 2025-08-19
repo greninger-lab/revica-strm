@@ -33,17 +33,21 @@ process BWA_MEM_ALIGN_DB {
         $db \
         $input \
         -t $task.cpus \
-        | samtools view -bS -F \$FLAG -@ 2 > ${prefix}.bam
+        | samtools view -bS -F \$FLAG -@ 2 > ${prefix}
 
 
     ## run pandepth to get coverage/depth reporting
-    pandepth -i ${prefix}.bam -o ${prefix} -t ${task.cpus}
-    gunzip -f ${prefix}.chr.stat.gz
+    #pandepth -i ${prefix}.bam -o ${prefix} -t ${task.cpus}
+    #gunzip -f ${prefix}.chr.stat.gz
+
+    samtools sort -@ ${task.cpus} ${prefix} -o ${prefix}.bam
+    rm ${prefix}
+    samtools coverage -d 0 ${prefix}.bam > ${prefix}_depth.tsv
 
     ## replace abbreviated ref names in pandepth with originals from db
     ## we do this because BWA_MEM only records the alignment ref before the first space, which is
     ## usually just the acc number. We need the rest of the fasta header for downstream analyses
 
-    prep_pandepth_output.py ${prefix}.chr.stat $db ${prefix}_covstats.tsv
+    prep_pandepth_output.py ${prefix}_depth.tsv $db ${prefix}_covstats.tsv
     """
 }
