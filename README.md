@@ -8,17 +8,27 @@ This is a fork of the [original REVICA](https://github.com/greninger-lab/revica)
 
 ---
 
-revica-strm is a reference-based viral consensus genome assembly pipeline for some of the most common respiratory viruses. revica-strm currently supports genome assembly of:
-- Enterovirus (EV)
-- Seasonal human coronavirus (HCOV)
+revica-strm is a reference-based viral consensus genome assembly pipeline for some of the most common respiratory viruses. revica-strm default references datasets currently supports genome assembly of:
+
+- Enterovirus (EV, RV)
+- Parechovirus (HPeV)
+- Seasonal human coronavirus (229E, HKU1, NL63, OC43)
+- SARS-CoV-2
 - Human metapneumovirus (HMPV)
 - Human respiratory syncytial virus (HRSV)
-- Human parainfluenza virus (HPIV)
+- Human parainfluenza virus (HPIV1-4)
 - Measles morbillivirus (MeV)
-- Influenza A virus (FluA)
-- Influenza B virus (FluB)
-- Human adenovirus (HAdV)
-- SARS-CoV-2
+- Mumps Virus (MuV)
+- Rubella virus (RuV)
+- Influenza A virus (H1N1, H3N2, H5N1, H5N5, H7N9)
+- Influenza B virus (Victoria, Yamagata)
+- Influenza C virus
+- Human adenovirus (HAdV A-G)
+- Human Bocavirus
+- Anellovirus
+- Herpesvirus (HSV1, HSV2, HHV-6, HHV-7, CMV, EBV, VZV, KSHV)
+- Polyomavirus (WUPyV, KIPyV)
+- Nipah virus (NiV)
 
 ## How it works
 
