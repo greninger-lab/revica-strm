@@ -22,7 +22,7 @@ if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input sample
 
 // if db not set
 
-if (!params.db) { exit 1, "Reference database not specified!"}
+if (!params.refs) { exit 1, "Reference database not specified!"}
 //
 // SUBWORKFLOWS
 //
@@ -100,7 +100,7 @@ workflow {
     if (!params.skip_consensus) { 
         REFERENCE_PREP (
                 ch_ref_prep_input,
-                file(params.db),
+                file(params.refs),
                 params.use_mem2
                 ) 
 
