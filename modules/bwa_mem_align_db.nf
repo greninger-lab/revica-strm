@@ -1,6 +1,6 @@
 process BWA_MEM_ALIGN_DB {
     tag "$meta.id"
-    label 'process_high'
+    label 'process_medium'
     container 'quay.io/epil02/revica-strm:0.0.5'
 
 
@@ -11,6 +11,7 @@ process BWA_MEM_ALIGN_DB {
 
     output:
     tuple val(meta), path("*covstats.tsv"), emit: covstats
+    tuple val(meta), path("*.bam") // emiting so we can save to output folder
 
     when:
     task.ext.when == null || task.ext.when
@@ -25,22 +26,17 @@ process BWA_MEM_ALIGN_DB {
     # this flag combines 0x4 and 0x800, which means:
     # 1. read is unmapped
     # 2. read is supplementary alignment (chimeric, not representative alignment)
-    # we can't let these reads survive.
+    # reads with either of these flags will be removed.
     FLAG=2052
 
     ## run bwa-mem2 
     $bwa mem \
         $db \
         $input \
-        -t $task.cpus \
-        | samtools view -bS -F \$FLAG -@ 2 > ${prefix}
+        -t ${task.cpus} \
+        | samtools view -bS -F \$FLAG -@ ${task.cpus} > ${prefix}
 
-
-    ## run pandepth to get coverage/depth reporting
-    #pandepth -i ${prefix}.bam -o ${prefix} -t ${task.cpus}
-    #gunzip -f ${prefix}.chr.stat.gz
-
-    samtools sort -@ ${task.cpus} ${prefix} -o ${prefix}.bam
+    samtools sort -@ ${task.cpus} ${prefix} -m 4G -o ${prefix}.bam
     rm ${prefix}
     samtools coverage -d 0 ${prefix}.bam > ${prefix}_depth.tsv
 

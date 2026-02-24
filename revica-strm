@@ -24,7 +24,6 @@ def print_title(title, color):
 def header(s):
     return f"{B_GREEN}{s}{CLR}"
 
-
 B_GREEN = "\033[1;32m"
 B_YELLOW = "\033[1;33m"
 B_RED = "\033[1;31m"
@@ -73,7 +72,7 @@ revica-strm {B_BLUE}INPUT_DIR{CLR} (other options)
 --kraken2_db        {ARG_PATH}      Path to Kraken2 database (default: uses pipeline's kraken2_db)
 
 {header("Subsampling")}
---sample            {ARG_INT}       Use SEQTK to subsample reads to the number specified (default: off)
+--sample            {ARG_INT}       Use SEQTK to subsample reads to the number specified (default: 3000000). Set to "false" to disable
 --save_sample_reads {ARG_FLAG}      Save the subsampled reads in the output directory.
 
 {header("Reference selection thresholds")}
@@ -81,6 +80,8 @@ revica-strm {B_BLUE}INPUT_DIR{CLR} (other options)
 --ref_min_cov       {ARG_INT}       The minimum coverage (in percent) an alignment against a reference to qualify for assembly (default: 30)
 
 {header("Assembly construction thresholds")}
+--mpileup_max_depth     {ARG_INT}   The maximum BAM depth sampled by samtools mpileup during consensus generation (default: 100)
+
 --cons_init_min_depth   {ARG_INT}   The minimum depth of an alignment against the initial consensus to continue construction (default: 5)
 --cons_init_min_cov     {ARG_INT}   The minimum coverage of an alignment against the initial consensus to continue construction (default: 60)
 
@@ -100,6 +101,7 @@ revica-strm {B_BLUE}INPUT_DIR{CLR} (other options)
 {header("Misc")}
 --branch            {ARG_TEXT}      The branch of the pipeline to use. Default (and stable): main. Unstable branch: staging.
 --local             {ARG_FLAG}      Run the downloaded pipeline, expected to be in the current directory. Not recommended.
+--del_nondb_bams    {ARG_FLAG}      Delete all output BAMs except for the one showing alignment to the entire reference database.
 """
 
 
@@ -196,7 +198,7 @@ def check_commit_history():
     if "contains uncommitted changes" in str(output.stdout):
         print(output.stdout.decode("utf-8"))
         print(f"{B_RED}This is a routine error. To correct this, please run:{CLR}")
-        print("rm -r $HOME/.nextflow/assets/greninger-lab/revica-strm/")
+        print("rm -r ~/.nextflow/assets/greninger-lab/revica-strm/")
         print("And confirm deletion of all files (this clears nextflow's cache).")
         sys.exit(0)
     else:

@@ -3,8 +3,7 @@
    ========================================================================================
    revica-strm
    ========================================================================================
-   Github Repo:
-   https://github.com/greninger-lab/revica-strm
+   Github Repo: https://github.com/greninger-lab/revica-strm
 
 Author:
 Eli Piliper <epil02@uw.edu>
@@ -55,7 +54,13 @@ log.info " ██║  ██║███████╗ ╚████╔╝ �
 log.info " ╚═╝  ╚═╝╚══════╝  ╚═══╝  ╚═╝ ╚═════╝╚═╝  ╚═╝      ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝     ╚═╝ "
 log.info "                                                                                        "
 
-log.info "Detected {} threads on this machine...", Runtime.runtime.availableProcessors()
+// Save run params to file
+import groovy.json.JsonOutput
+
+workflow.onComplete {
+    jsonStr = JsonOutput.toJson(params)
+    file("${params.output}/params.json").text = JsonOutput.prettyPrint(jsonStr)
+}
 
 workflow {
 
@@ -137,3 +142,4 @@ workflow {
 
     }
 }
+
