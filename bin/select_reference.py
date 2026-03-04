@@ -53,7 +53,7 @@ if __name__ == "__main__":
                 # init_ref_candidates.append(temp[0])
                 to_sort.append(temp)
 
-    sorted_by_coverage_depth = sorted(to_sort, key=lambda x: (x[COV_COL_IDX], x[DEPTH_COL_IDX]), reverse=True)
+    sorted_by_coverage_depth = sorted(to_sort, key=lambda x: (float(x[COV_COL_IDX]), float(x[DEPTH_COL_IDX])), reverse=True)
     init_ref_candidates = [entry[0] for entry in sorted_by_coverage_depth]
 
     # create a dictionary of references to be used for consensus calling
