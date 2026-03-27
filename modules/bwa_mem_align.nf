@@ -1,6 +1,6 @@
 process BWA_MEM_ALIGN {
     tag "${meta.id}_${ref_info.acc}_${ref_info.tag}"
-    label 'process_high'
+    label 'process_medium'
     container 'quay.io/epil02/revica-strm:0.0.5'
 
     input:
@@ -33,7 +33,7 @@ process BWA_MEM_ALIGN {
     # this flag combines 0x4 and 0x800, which means:
     # 1. read is unmapped
     # 2. read is supplementary alignment (chimeric, not representative alignment)
-    # we can't let these reads survive.
+    # reads with either of these flags will be removed.
     FLAG=2052
 
     $bwa index $ref
@@ -45,11 +45,7 @@ process BWA_MEM_ALIGN {
         -t $task.cpus \
         | samtools view -bS -F \$FLAG -@ $task.cpus > ${prefix}
 
-    # check if alignment is above depth/coverage thresholds
-    #pandepth -i ${prefix}.bam -o ${prefix} -t ${task.cpus}
-    #gunzip ${prefix}.chr.stat.gz 
-
-    samtools sort ${prefix} -@ ${task.cpus} -o ${prefix}.bam
+    samtools sort ${prefix} -@ ${task.cpus} -m 4G -o ${prefix}.bam
     samtools coverage -d 0 ${prefix}.bam > ${prefix}_depth.tsv
 
     mapped=\$(samtools view -c -F \$FLAG -@ $task.cpus ${prefix}.bam)
@@ -63,9 +59,7 @@ process BWA_MEM_ALIGN {
     # Check if thresholds are met
     if [ "\$(echo "\$coverage >= $min_coverage" | bc)" -eq 1 ] && [ "\$(echo "\$mean_depth >= $min_depth" | bc)" -eq 1 ]; then
         echo "alignment thresholds met!"
-        #samtools view -b -F \$FLAG -@ ${task.cpus} "${prefix}.bam" -o "${prefix}_mapped.bam"
-        #samtools sort -@ ${task.cpus} -o "${prefix}.sorted.bam" "${prefix}_mapped.bam"
-        samtools sort -@ ${task.cpus} -o "${prefix}.sorted.bam" "${prefix}.bam"
+        samtools sort -@ ${task.cpus} -m 4G -o "${prefix}.sorted.bam" "${prefix}.bam"
         samtools index -@ ${task.cpus} "${prefix}.sorted.bam"
     else
         echo "alignment failed to meet thresholds! Depth: \$mean_depth, Coverage: \$coverage"

@@ -47,7 +47,9 @@ The important outputs are found in the output directory (specified by `--output`
 This repository includes two example reference databases usable for assembly:
 
 #### general respiratory viruses
-- `assets/ref.fa`: a general purpose database containing sequences for the aforementioned supported viruses
+- `assets/ref_20251119.fa`: Our most up-to-date database with a balance between sequence redundance and species diversity. It is the default.
+
+- `assets/ref.fa`: a general purpose database containing sequences for the aforementioned supported viruses. It is highly redundant and the classical revica database.
 
 #### influenza only
 - `assets/flu.fasta`: the database used in the [Andersen Lab's avian influenza project](https://github.com/andersen-lab/avian-influenza). This database has been supplemented with recent influenza A H5, H1N1 and H3N1 strains, as well as Influenza B, across all available species collected from 2023-2024.
@@ -75,13 +77,14 @@ revica-strm
 
 **For convenience, it's recommended to move `revica-strm` to somewhere in your `$PATH`, so you can run it from other directories**. Otherwise, you'll have to run it with something like `eval path/to/revica-strm`. For instructions on adding to `$PATH`, see [here](https://superuser.com/questions/488173/how-can-i-edit-the-path-on-linux).
 
+
 ## Instructions
 
 1. Ensure the docker desktop client is updated and running
 
 2. Arrange all input FASTQs (can be plain .fastq or compressed .fastq.gz) in their own directory.
 
-##### 🚨 <span style="color: red;">MANDATORY: </span>all FASTQ files must have unique sample names before the first underscore ('_') character.
+##### 🚨 MANDATORY: all FASTQ files must have unique sample names before the first underscore ('\_') character.
 
 RIGHT: ```sample1_R1.fastq.gz sample1_R2.fastq.gz```  
 WRONG: ```sample_1_R1.fastq.gz sample_2_R1.fastq.gz```  
@@ -104,6 +107,10 @@ revica-strm fastq_example -profile docker
 For a description of all options, run `revica-strm -h`.
 
 Once the pipeline is done, consensus genomes can be found in `$out_dir/final_files/final_assemblies/`. For reports of any genomes/samples that failed assembly QC thresholds, see files in `$out_dir/fail`.
+
+## Notes on storage use
+Nextflow tracks its internal progress via the creation of a work directory (default = `./work`). This can grow to be quite large; it is advised that if you are operating with limited disk space to batch your datasets into smaller runs and delete the work directory in-between. Note that the work directory enables Nextflow to run from the last error/crash-point with the `-resume` flag, so the work directory should only be deleted if you are certain that you are done with your dataset and/or have no more space.
+
 
 ## 🤓 For developers
 
