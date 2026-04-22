@@ -138,7 +138,7 @@ where REF_TAG should be unique to a species-specific segment/genome. Take these 
 >NC_007375.1 fluA_PB1 Influenza A virus (A/Korea/426/1968(H2N2)) segment 2, complete sequence
 >AF406813.1 EV Porcine enterovirus 8 strain V13, complete genome
 ```
-You can specify your own reference database with `--db $REF_DB`.
+You can specify your own reference database with `--refs $REF_DB`.
 
 
 ## Contact
