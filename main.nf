@@ -37,6 +37,7 @@ include { SEQTK_SAMPLE              } from './modules/seqtk_sample'
 include { SUMMARY                   } from './modules/summary'
 include { KRAKEN2                   } from './modules/kraken2'
 include { BAM_TO_FASTQ              } from './modules/bam_to_fastq'
+include { DEDUP_CONSENSUS           } from './modules/dedup_consensus'
 
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
@@ -114,6 +115,21 @@ workflow {
                 REFERENCE_PREP.out.ref,
                 params.use_mem2
                 )
+
+        if (params.check_dup) {
+            CONSENSUS_ASSEMBLY.out.final_covstats
+                .join(CONSENSUS_ASSEMBLY.out.final_consensus, by: [0, 1])
+                .map { meta, ref_info, covstats, consensus -> [ meta, ref_info.dupchk_tag, ref_info, covstats, consensus ] }
+                .groupTuple(by: [0, 1])
+                .set { ch_dedup_input }
+
+            DEDUP_CONSENSUS (
+                ch_dedup_input
+            )
+
+            DEDUP_CONSENSUS.out.report
+                .collectFile(storeDir: "${params.output}/dedup", name: "${params.run_name}_dedup_report.tsv", keepHeader: true, sort: { f -> f.readLines()[1].split('\t')[0..1].join('\t') })
+        }
 
         BAM_TO_FASTQ(
             CONSENSUS_ASSEMBLY.out.bam,

@@ -47,9 +47,7 @@ The important outputs are found in the output directory (specified by `--output`
 This repository includes two example reference databases usable for assembly:
 
 #### general respiratory viruses
-- `assets/ref_20251119.fa`: Our most up-to-date database with a balance between sequence redundance and species diversity. It is the default.
-
-- `assets/ref.fa`: a general purpose database containing sequences for the aforementioned supported viruses. It is highly redundant and the classical revica database.
+- `assets/ref_20251119_reheadered.fa`: Our most up-to-date database with a balance between sequence redundance and species diversity. It is the default.
 
 #### influenza only
 - `assets/flu.fasta`: the database used in the [Andersen Lab's avian influenza project](https://github.com/andersen-lab/avian-influenza). This database has been supplemented with recent influenza A H5, H1N1 and H3N1 strains, as well as Influenza B, across all available species collected from 2023-2024.
@@ -111,6 +109,10 @@ Once the pipeline is done, consensus genomes can be found in `$out_dir/final_fil
 ## Notes on storage use
 Nextflow tracks its internal progress via the creation of a work directory (default = `./work`). This can grow to be quite large; it is advised that if you are operating with limited disk space to batch your datasets into smaller runs and delete the work directory in-between. Note that the work directory enables Nextflow to run from the last error/crash-point with the `-resume` flag, so the work directory should only be deleted if you are certain that you are done with your dataset and/or have no more space.
 
+## 2026-Nov-10: checking for redundant consensus sequences
+When using a reference DB with entries that are highly similar but have distinct ref tags (e.g. H5N1_PB1 and H5N5_PB1), REVICA-STRM can occasionally assemble multiple consensus sequences for a sample that really has just one organism. REVICA-STRM now has an optional flag (`--check_dup`) that will cluster sequences by their dedup tag (see [Reference database](#Reference-database)), perform pairwise alignments on each cluster, and report consensus sequences per-sample that have high pairwise-identity (default: >= 99.9%) in `$out_dir/dedup`. Within each cluster, consensus sequences are ranked by coverage, then depth; each is grouped under the first higher-ranked consensus it matches, and that higher-ranked consensus is reported as the distinct consensus. 
+
+This is a purely post-processing step with no impact on upstream steps: all output consensus sequences are preserved regardless of similarity, pending review using the dedup report.
 
 ## 🤓 For developers
 
@@ -127,17 +129,25 @@ To use this, run revica-strm with the `--run-kraken2` and `--kraken2_variants_ho
 >To create a database we recommend for removal of human reads, see [these instructions](making_kraken2_human_db.md).
 
 ### Reference database
-The reference database is comprised of multiple representatives of a variety of respiratory virus species such as enterovirus, seasonal coronavirus, SARS-CoV2, parainfluenza, measles, influenza, and more. Inspect `assets/ref.fa` if curious. If you intend to use your own database, ensure the fasta headers are structured as follows:   
+The reference database is comprised of multiple representatives of a variety of respiratory virus species such as enterovirus, seasonal coronavirus, SARS-CoV2, parainfluenza, measles, influenza, and more. Inspect `assets/ref_20251119_reheadered.fa` if curious. If you intend to use your own database, ensure the fasta headers are structured as follows:   
 
-```ACCESSION<SPACE>REF_TAG<SPACE>SAMPLE_HEADER```   
+```ACCESSION<SPACE>DEDUP_TAG<SPACE>REF_TAG<SPACE>SAMPLE_HEADER<SPACE>|<SPACE>NCBI_TITLE```   
 
-where REF_TAG should be unique to a species-specific segment/genome. Take these entries for Flu A segments PB1 and NS1, and an enterovirus genome, for example:
+where REF_TAG should be unique to a species-specific segment/genome, and DEDUP_TAG groups entries that should be checked against each other for redundant consensus sequences (see [checking for redundant consensus sequences](#2026-Nov-10-checking-for-redundant-consensus-sequences)). We use `<species_taxid>[_<segment>]` (e.g. all Flu A PB1 entries share one DEDUP_TAG, regardless of subtype). SAMPLE_HEADER is what is reported in the `ref_header` column of the run summary. The `| NCBI_TITLE` part is optional and is ignored by the pipeline. Take these entries for Flu A segments PB1 and NS1, and an enterovirus genome, for example:
 
 ```
->NC_007364.1 fluA_NS1 Influenza A virus (A/goose/Guangdong/1/1996(H5N1)) segment 8, complete sequence
->NC_007375.1 fluA_PB1 Influenza A virus (A/Korea/426/1968(H2N2)) segment 2, complete sequence
->AF406813.1 EV Porcine enterovirus 8 strain V13, complete genome
+>KX023793.1 2955291_PB1 FluA_H1N1_PB1 A/DC/2/2016 | Influenza A virus (A/DC/2/2016(H1N1)) segment 2 polymerase PB1 (PB1) gene, complete cds; and nonfunctional PB1-F2 protein (PB1-F2) gene, complete sequence
+>KX023799.1 2955291_NS FluA_H1N1_NS A/DC/2/2016 | Influenza A virus (A/DC/2/2016(H1N1)) segment 8 nuclear export protein (NEP) and nonstructural protein 1 (NS1) genes, complete cds
+>PQ895337.1 3428506 EV_D68 SH2024-25870 | Enterovirus D68 isolate SH2024-25870, complete genome
 ```
+
+#### Converting an existing database
+`bin/reheader_ref_fasta.py` converts a database in the old `ACCESSION<SPACE>REF_TAG<SPACE>SAMPLE_HEADER` format to the format above. It looks up each accession's species taxid (and the record title) from NCBI, builds the DEDUP_TAG (the segment is parsed from the old REF_TAG), and keeps the old tag and header as REF_TAG and SAMPLE_HEADER. It also writes a lookup table of all the old and new values:
+
+```
+bin/reheader_ref_fasta.py -i ref.fa -o ref.reheadered.fa -t ref.lookup.tsv [-k $NCBI_API_KEY]
+```
+
 You can specify your own reference database with `--refs $REF_DB`.
 
 

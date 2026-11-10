@@ -48,7 +48,7 @@ revica-strm {B_BLUE}INPUT_DIR{CLR} (other options)
 {B_BLUE}INPUT_DIR{CLR}           {ARG_PATH}      Input path (should be a directory) with FASTQ/FASTQ.gz files
 --output            {ARG_PATH}      Output directory (default: 'revica-output')
 --run_name          {ARG_TEXT}      Name of the analysis run (default: 'run')
---refs              {ARG_PATH}      Reference FASTA file (default: uses pipeline's embedded assets/ref.fa)
+--refs              {ARG_PATH}      Reference FASTA file (default: uses pipeline's embedded assets/ref_20251119_reheadered.fa)
 --print_log         {ARG_FLAG}      Print pipeline output to screen
 --use_mem2          {ARG_FLAG}      Use BWA-MEM2 instead of the default BWA
 --sra_proper_pair   {ARG_FLAG}      Exclude unpaired reads from being exported to SRA fastqs for paired-end alignments. 
@@ -92,6 +92,10 @@ revica-strm {B_BLUE}INPUT_DIR{CLR} (other options)
 --ivar_fin_t        {ARG_DECIMAL}   The ambiguity threshold for iVar consensus when creating the final consensus (default: 0.4)
 --ivar_fin_t        {ARG_INT}       The minimum mapping quality a read must have to be used during consensus construction (default: 20)
 --var_fin_m         {ARG_INT}       The minimum depth at an alignment base; if below this, base is marked as "N" (default: 3)
+
+{header("Deduplication")}
+--check_dup         {ARG_FLAG}      Report near-identical consensuses among references of the same dedup group (written to OUTPUT/dedup)
+--dedup_threshold   {ARG_DECIMAL}   The minimum pairwise identity for two consensuses to be considered near-duplicates (default: 0.999)
 
 {header("Compute resources")}
 --max_cpus          {ARG_INT}       Maximum CPUs to use (default: 128)

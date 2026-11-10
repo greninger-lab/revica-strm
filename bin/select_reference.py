@@ -61,25 +61,28 @@ if __name__ == "__main__":
     for i in init_ref_candidates:
         # add .split(' ')[0] to get just the accession
         acc = i.split(" ")[0]
-        # get header tag
-        tag = i.split(" ")[1]
+        # get dupchk_tag (species_taxid[_segment]) and tag (descriptive tag)
+        dupchk_tag = i.split(" ")[1]
+        tag = i.split(" ")[2]
         # get header info
-        info = " ".join(i.split(" ")[2:])
+        info = " ".join(i.split(" ")[3:]).split(" | ")[0]
         if not tag in init_ref_header:
-            init_ref_header[tag] = [acc, info]
+            init_ref_header[tag] = [acc, dupchk_tag, info]
 
     # if reference(s) selected, output relevant info to file
     if init_ref_header:
         output_file_name = args.b + "_refs.tsv"
         output_file = open(output_file_name, "a+")
         for i in init_ref_header:
-            # output format: reference accession <tab> reference header tag <tab> reference header info
+            # output format: acc <tab> dupchk_tag <tab> tag <tab> header info
             output_file.write(
                 str(init_ref_header[i][0])
                 + "\t"
+                + str(init_ref_header[i][1])
+                + "\t"
                 + str(i)
                 + "\t"
-                + str(init_ref_header[i][1])
+                + str(init_ref_header[i][2])
                 + "\n"
             )
         output_file.close()

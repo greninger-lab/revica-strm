@@ -36,7 +36,7 @@ workflow REFERENCE_PREP {
     )                                                                              
 
     // Unpack and reformat the list so each item emitted by the channel is
-    // [ [ meta.id, meta.single_end ], [ ref_inf.acc, ref_info.tag, ref_info.header ] ]              
+    // [ [ meta.id, meta.single_end ], [ ref_info.acc, ref_info.dupchk_tag, ref_info.tag, ref_info.header ] ]              
     SELECT_REFERENCE.out.refs_tsv
         .map { meta, refs_tsv -> add_ref_info_to_meta(meta, refs_tsv) }                                                
         .flatten().collate( 2,false )
@@ -63,7 +63,7 @@ workflow REFERENCE_PREP {
 
 //
 // Parse the output refs_tsv file from SELECT_REFERENCE and return a LIST of
-// [ [ meta.id, meta.single_end ], [ ref_inf.acc, ref_info.tag, ref_info.header ] ]
+// [ [ meta.id, meta.single_end ], [ ref_info.acc, ref_info.dupchk_tag, ref_info.tag, ref_info.header ] ]
 // for the selected reference(s)          
 def add_ref_info_to_meta(meta, refs_tsv) {
     def new_meta_list = []
@@ -71,7 +71,7 @@ def add_ref_info_to_meta(meta, refs_tsv) {
     refs_tsv.text.eachLine { line ->
         def new_meta = []
         def fields = line.split('\t')
-        new_meta = [ meta, [ acc: fields[0], tag: fields[1], header: fields[2].toString() ] ]
+        new_meta = [ meta, [ acc: fields[0], dupchk_tag: fields[1], tag: fields[2], header: fields[3].toString() ] ]
         new_meta_list.add(new_meta)
     }
     
